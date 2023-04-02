@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'releases?/**'
+      - 'features?/**'
+      - 'pr/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required for GitVersion
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+
+      - name: 'NuGet: Configure sources'
+        run: |
+          dotnet nuget remove source nuget.org
+          dotnet nuget add source -n nuget.org -u gautelo -p ${{ secrets.NUGET_TOKEN }}  --store-password-in-clear-text "https://api.nuget.org/v3/index.json"
+          dotnet nuget add source -n github    -u loken   -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text "https://nuget.pkg.github.com/loken/index.json"
+
+      - name: Versioning
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+          additionalArguments: /updateprojectfiles
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build -o ./output/nuget
+
+      - name: 'Nuget: Push to GH Packages'
+        if: ${{ env.GitVersion_PreReleaseLabel != '' }}
+        run: dotnet nuget push ./output/nuget/*.nupkg --source "github" --api-key ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Nuget: Push release to nuget.org'
+        if: ${{ env.GitVersion_PreReleaseLabel == '' }}
+        run: dotnet nuget push ./output/nuget/*.nupkg --source "nuget.org" --api-key ${{ secrets.NUGET_TOKEN }}
