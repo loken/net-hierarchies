@@ -1,0 +1,12 @@
+<Project>
+
+  <!--Add Build to BeforeTargets if you want to print some variables to the build output for temporary msbuild debugging.-->
+  <Target Name="_PrintVars" BeforeTargets="">
+    <Message Importance="high" Text="IsTestProject: $(IsTestProject)" />
+    <Message Importance="high" Text="ProjectName:   $(ProjectName)" />
+    <Message Importance="high" Text="AssemblyName:  $(AssemblyName)" />
+    <Message Importance="high" Text="RootNamespace: $(RootNamespace)" />
+    <Message Importance="high" Text="IsPackable:    $(IsPackable)" />
+  </Target>
+
+</Project>

@@ -1,0 +1,33 @@
+<Project>
+
+  <PropertyGroup>
+    <IsTestProject>$(MSBuildProjectName.EndsWith('.Tests'))</IsTestProject>
+    <IsPackable Condition="'$(IsPackable)' == ''">true</IsPackable>
+
+    <AssemblyName>Loken.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>Loken.$(MSBuildProjectName.Replace('.Tests', ''))</RootNamespace>
+    <Authors>Gaute Løken</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(IsPackable)">
+    <DebugType>embedded</DebugType>
+    <IncludeSymbols>false</IncludeSymbols>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageProjectUrl>https://github.com/loken/loken-hierarchies-net</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(IsPackable)">
+    <!--Locked: So that we don't add it to each project by accident when updating packages.-->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="[1.1.1]">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--We always want to be able to access internals from the corresponding test project.-->
+    <InternalsVisibleTo Condition="!$(IsTestProject)" Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+
+</Project>
