@@ -32,8 +32,8 @@ jobs:
       - name: 'NuGet: Configure sources'
         run: |
           dotnet nuget remove source nuget.org
-          dotnet nuget add source -n nuget.org -u gautelo -p ${{ secrets.NUGET_TOKEN }}  --store-password-in-clear-text "https://api.nuget.org/v3/index.json"
-          dotnet nuget add source -n github    -u loken   -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text "https://nuget.pkg.github.com/loken/index.json"
+          dotnet nuget add source -n nuget.org -u gautelo -p ${{ secrets.NUGET_TOKEN }}    --store-password-in-clear-text "https://api.nuget.org/v3/index.json"
+          dotnet nuget add source -n github    -u loken   -p ${{ secrets.NUGET_GH_TOKEN }} --store-password-in-clear-text "https://nuget.pkg.github.com/loken/index.json"
 
       - name: Versioning
         uses: gittools/actions/gitversion/execute@v0
@@ -55,7 +55,7 @@ jobs:
 
       - name: 'Nuget: Push to GH Packages'
         if: ${{ env.GitVersion_PreReleaseLabel != '' }}
-        run: dotnet nuget push ./output/nuget/*.nupkg --source "github" --api-key ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push ./output/nuget/*.nupkg --source "github" --api-key ${{ secrets.NUGET_GH_TOKEN }}
 
       - name: 'Nuget: Push release to nuget.org'
         if: ${{ env.GitVersion_PreReleaseLabel == '' }}
