@@ -94,6 +94,13 @@ public class Node<T>
 	public bool IsInternal => !IsLeaf;
 
 	/// <summary>
+	/// A node is "linked" when it is neither a root nor a child.
+	/// A node is "linked" when it has a parent or at least one child.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	public bool IsLinked => !IsRoot || !IsLeaf;
+
+	/// <summary>
 	/// Attach the provided <paramref name="nodes"/> as <see cref="Children"/>.
 	/// </summary>
 	/// <param name="nodes">Nodes to attach.</param>
@@ -118,7 +125,7 @@ public class Node<T>
 	}
 
 	/// <summary>
-	/// Detatch the node from it's <see cref="Parent"/>.
+	/// Detach the node from it's <see cref="Parent"/>.
 	/// </summary>
 	/// <returns>The node itself for method chaining purposes.</returns>
 	/// <exception cref="Exception">When the node is a root.</exception>
@@ -140,13 +147,31 @@ public class Node<T>
 		return this;
 	}
 
-	public void Dismantle(bool detach = true)
+	/// <summary>
+	/// Dismantling a node means to cascade detach it.
+	/// We always caschade detach the children.
+	/// We may also cascade up the ancestry, in which case the node is detached,
+	/// and then the parent is dismantled, leading to the whole linked structure
+	/// ending up unlinked.
+	/// </summary>
+	/// <param name="includeAncestry">
+	/// Should we cascade through the ancestry (true) or only cascade through the children (false)?
+	/// <para>No default value is because the caller should always make an active choice.</para>
+	/// </param>
+	/// <returns>The node itself for method chaining purposes.</returns>
+	public Node<T> Dismantle(bool includeAncestry)
 	{
-		if (!IsRoot && detach)
+		if (!IsRoot && includeAncestry)
+		{
+			var parent = Parent!;
 			Detach();
+			parent.Dismantle(true);
+		}
 
 		foreach (var descendant in GetDescendants(false))
 			descendant.Detach();
+
+		return this;
 	}
 
 	/// <summary>
@@ -155,12 +180,9 @@ public class Node<T>
 	/// <param name="includeSelf">
 	/// Should the node itself be yielded (true) or should it start
 	/// with its <see cref="Children"/> (false)?
+	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>An enumeration of nodes.</returns>
-	/// <remarks>
-	/// No default value is provided for <paramref name="includeSelf"/>
-	/// because the caller should always make an active choice.
-	/// </remarks>
 	public IEnumerable<Node<T>> GetDescendants(bool includeSelf)
 	{
 		var queue = new Queue<Node<T>>();
@@ -184,12 +206,9 @@ public class Node<T>
 	/// <param name="includeSelf">
 	/// Should the node itself be yielded (true) or should it start
 	/// with its <see cref="Parent"/> (false)?
+	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>An enumeration of nodes.</returns>
-	/// <remarks>
-	/// No default value is provided for <paramref name="includeSelf"/>
-	/// because the caller should always make an active choice.
-	/// </remarks>
 	public IEnumerable<Node<T>> GetAncestors(bool includeSelf)
 	{
 		var curr = includeSelf ? this : Parent;
