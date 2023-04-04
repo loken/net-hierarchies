@@ -16,14 +16,14 @@ namespace Loken.Hierarchies;
 /// In order to support serialization we ignore the Parent relationship. Otherwise a serializer will trip up on circular dependencies.
 /// </remarks>
 [DataContract]
-public class Node<T>
-	where T : notnull
+public class Node<TItem>
+	where TItem : notnull
 {
 	/// <summary>
 	/// The value is the subject/content of the node.
 	/// </summary>
 	[DataMember, JsonInclude]
-	public required T Value { get; init; }
+	public required TItem Value { get; init; }
 
 	/// <summary>
 	/// Links to the node nodes.
@@ -31,14 +31,14 @@ public class Node<T>
 	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
 	/// </summary>
 	[DataMember, JsonInclude]
-	public ISet<Node<T>>? Children { get; private set; }
+	public ISet<Node<TItem>>? Children { get; private set; }
 
 	/// <summary>
 	/// Link to the parent node.
 	/// No parent node means it's a "root".
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
-	public Node<T>? Parent { get; private set; }
+	public Node<TItem>? Parent { get; private set; }
 
 	/// <summary>
 	/// A node is a "root" when there is no <see cref="Parent"/>.
@@ -74,14 +74,14 @@ public class Node<T>
 	/// <exception cref="ArgumentException">
 	/// When any of the <paramref name="nodes"/> is already attached to another <see cref="Parent"/>.
 	/// </exception>
-	public Node<T> Attach(params Node<T>[] nodes)
+	public Node<TItem> Attach(params Node<TItem>[] nodes)
 	{
 		foreach (var node in nodes)
 		{
 			if (node.Parent != null)
 				throw new ArgumentException($"The {nameof(Parent)} must be null before attaching it to another {nameof(Parent)}", nameof(nodes));
 
-			Children ??= new HashSet<Node<T>>();
+			Children ??= new HashSet<Node<TItem>>();
 
 			Children.Add(node);
 			node.Parent = this;
@@ -95,7 +95,7 @@ public class Node<T>
 	/// </summary>
 	/// <returns>The node itself for method chaining purposes.</returns>
 	/// <exception cref="Exception">When the node is a root.</exception>
-	public Node<T> Detach()
+	public Node<TItem> Detach()
 	{
 		if (Parent is null)
 			throw new Exception("Can't detach a root node as there's nothing to detach it from.");
@@ -125,7 +125,7 @@ public class Node<T>
 	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>The node itself for method chaining purposes.</returns>
-	public Node<T> Dismantle(bool includeAncestry)
+	public Node<TItem> Dismantle(bool includeAncestry)
 	{
 		if (!IsRoot && includeAncestry)
 		{
@@ -149,9 +149,9 @@ public class Node<T>
 	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>An enumeration of nodes.</returns>
-	public IEnumerable<Node<T>> GetDescendants(bool includeSelf)
+	public IEnumerable<Node<TItem>> GetDescendants(bool includeSelf)
 	{
-		var queue = new Queue<Node<T>>();
+		var queue = new Queue<Node<TItem>>();
 		if (includeSelf)
 			queue.Enqueue(this);
 		else if (Children is not null)
@@ -175,7 +175,7 @@ public class Node<T>
 	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>An enumeration of nodes.</returns>
-	public IEnumerable<Node<T>> GetAncestors(bool includeSelf)
+	public IEnumerable<Node<TItem>> GetAncestors(bool includeSelf)
 	{
 		var curr = includeSelf ? this : Parent;
 		while (curr != null)
@@ -189,15 +189,15 @@ public class Node<T>
 	/// <summary>
 	/// Implicitly convert a value into a node, allowing us to pass values to methods that takes nodes.
 	/// </summary>
-	public static implicit operator Node<T>(T item)
+	public static implicit operator Node<TItem>(TItem item)
 	{
-		return new Node<T>() { Value = item };
+		return new Node<TItem>() { Value = item };
 	}
 
 	/// <summary>
 	/// Implicitly convert a node into a value, allowing us to unwrap the value from its node.
 	/// </summary>
-	public static implicit operator T(Node<T> node)
+	public static implicit operator TItem(Node<TItem> node)
 	{
 		return node.Value;
 	}
@@ -216,7 +216,7 @@ public class Node<T>
 
 	public override bool Equals(object? obj)
 	{
-		return obj is Node<T> other && Value.Equals(other.Value);
+		return obj is Node<TItem> other && Value.Equals(other.Value);
 	}
 	#endregion
 }
