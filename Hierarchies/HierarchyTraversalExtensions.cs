@@ -88,7 +88,7 @@ public static class HierarchyTraversalExtensions
 			if (match(node, depth))
 				return;
 
-			if (node.Children is not null)
+			if (!node.IsLeaf)
 				queue.Enqueue(node.Children);
 		}
 	}
@@ -116,7 +116,7 @@ public static class HierarchyTraversalExtensions
 
 			yield return transform(node, depth);
 
-			if (node.Children is not null)
+			if (!node.IsLeaf)
 				queue.Enqueue(node.Children);
 		}
 	}
@@ -135,7 +135,7 @@ public static class HierarchyTraversalExtensions
 			var node = queue.Dequeue();
 			yield return node;
 
-			if (node.Children is not null)
+			if (!node.IsLeaf)
 				queue.Enqueue(node.Children);
 		}
 	}

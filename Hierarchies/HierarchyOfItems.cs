@@ -103,7 +103,7 @@ public class Hierarchy<TItem, TId>
 
 		this.Traverse((node, depth) =>
 		{
-			if (node.Children is not null && node.Children.Count > 0)
+			if (!node.IsLeaf && node.Children.Count > 0)
 			{
 				var nodeId = Identify(node);
 				map.LazySet(nodeId).AddRange(node.Children.Select(child => Identify(child)));

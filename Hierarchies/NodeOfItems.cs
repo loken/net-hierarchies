@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Loken.System.Collections;
 
@@ -44,12 +45,14 @@ public class Node<TItem>
 	/// A node is a "root" when there is no <see cref="Parent"/>.
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
+	[MemberNotNullWhen(false, nameof(Parent))]
 	public bool IsRoot => Parent is null;
 
 	/// <summary>
 	/// A node is a "leaf" when there are no <see cref="Children"/>.
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
+	[MemberNotNullWhen(false, nameof(Children))]
 	public bool IsLeaf => Children is null or { Count: 0 };
 
 	/// <summary>
@@ -57,6 +60,7 @@ public class Node<TItem>
 	/// meaning it's either "internal" or a "leaf".
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
+	[MemberNotNullWhen(true, nameof(Children))]
 	public bool IsInternal => !IsLeaf;
 
 	/// <summary>
@@ -74,14 +78,18 @@ public class Node<TItem>
 	/// <exception cref="ArgumentException">
 	/// When any of the <paramref name="nodes"/> is already attached to another <see cref="Parent"/>.
 	/// </exception>
+	[MemberNotNull(nameof(Children))]
 	public Node<TItem> Attach(params Node<TItem>[] nodes)
 	{
+		if (nodes.Length == 0)
+			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more");
+
+		Children ??= new HashSet<Node<TItem>>();
+
 		foreach (var node in nodes)
 		{
 			if (node.Parent != null)
 				throw new ArgumentException($"The {nameof(Parent)} must be null before attaching it to another {nameof(Parent)}", nameof(nodes));
-
-			Children ??= new HashSet<Node<TItem>>();
 
 			Children.Add(node);
 			node.Parent = this;
@@ -97,10 +105,10 @@ public class Node<TItem>
 	/// <exception cref="Exception">When the node is a root.</exception>
 	public Node<TItem> Detach()
 	{
-		if (Parent is null)
+		if (IsRoot)
 			throw new Exception("Can't detach a root node as there's nothing to detach it from.");
 
-		if (Parent.Children is null || !Parent.Children.Contains(this))
+		if (Parent.IsLeaf || !Parent.Children.Contains(this))
 			throw new Exception("Invalid object state: It should not be possible for the node not to be a child of its parent!.");
 
 		Parent.Children.Remove(this);
@@ -154,14 +162,14 @@ public class Node<TItem>
 		var queue = new Queue<Node<TItem>>();
 		if (includeSelf)
 			queue.Enqueue(this);
-		else if (Children is not null)
+		else if (!IsLeaf)
 			queue.Enqueue(Children);
 
 		while (queue.Count > 0)
 		{
 			var node = queue.Dequeue();
 			yield return node;
-			if (node.Children is not null)
+			if (!node.IsLeaf)
 				queue.Enqueue(node.Children);
 		}
 	}
