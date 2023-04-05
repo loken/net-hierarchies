@@ -20,6 +20,10 @@ namespace Loken.Hierarchies;
 public class Node<TItem>
 	where TItem : notnull
 {
+	[DataMember(Name = nameof(Children))]
+	[JsonInclude, JsonPropertyName(nameof(Children))]
+	private ISet<Node<TItem>>? _children;
+
 	/// <summary>
 	/// The value is the subject/content of the node.
 	/// </summary>
@@ -31,8 +35,8 @@ public class Node<TItem>
 	/// No nodes means it's a "leaf".
 	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
 	/// </summary>
-	[DataMember, JsonInclude]
-	public ISet<Node<TItem>>? Children { get; private set; }
+	[IgnoreDataMember, JsonIgnore]
+	public IEnumerable<Node<TItem>> Children => _children?.AsEnumerable() ?? Enumerable.Empty<Node<TItem>>();
 
 	/// <summary>
 	/// Link to the parent node.
@@ -52,15 +56,15 @@ public class Node<TItem>
 	/// A node is a "leaf" when there are no <see cref="Children"/>.
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
-	[MemberNotNullWhen(false, nameof(Children))]
-	public bool IsLeaf => Children is null or { Count: 0 };
+	[MemberNotNullWhen(false, nameof(_children))]
+	public bool IsLeaf => _children is null or { Count: 0 };
 
 	/// <summary>
 	/// A node is "internal" when it has <see cref="Children"/>,
 	/// meaning it's either "internal" or a "leaf".
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
-	[MemberNotNullWhen(true, nameof(Children))]
+	[MemberNotNullWhen(true, nameof(_children))]
 	public bool IsInternal => !IsLeaf;
 
 	/// <summary>
@@ -78,20 +82,20 @@ public class Node<TItem>
 	/// <exception cref="ArgumentException">
 	/// When any of the <paramref name="nodes"/> is already attached to another <see cref="Parent"/>.
 	/// </exception>
-	[MemberNotNull(nameof(Children))]
+	[MemberNotNull(nameof(_children))]
 	public Node<TItem> Attach(params Node<TItem>[] nodes)
 	{
 		if (nodes.Length == 0)
 			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more");
 
-		Children ??= new HashSet<Node<TItem>>();
+		_children ??= new HashSet<Node<TItem>>();
 
 		foreach (var node in nodes)
 		{
 			if (node.Parent != null)
 				throw new ArgumentException($"The {nameof(Parent)} must be null before attaching it to another {nameof(Parent)}", nameof(nodes));
 
-			Children.Add(node);
+			_children.Add(node);
 			node.Parent = this;
 		}
 
@@ -111,10 +115,10 @@ public class Node<TItem>
 		if (Parent.IsLeaf || !Parent.Children.Contains(this))
 			throw new Exception("Invalid object state: It should not be possible for the node not to be a child of its parent!.");
 
-		Parent.Children.Remove(this);
+		Parent._children.Remove(this);
 
-		if (Parent.Children.Count == 0)
-			Parent.Children = null;
+		if (Parent.IsLeaf)
+			Parent._children = null;
 
 		Parent = null;
 
