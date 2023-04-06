@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using Loken.System.Collections;
-using Loken.System;
 
 namespace Loken.Hierarchies;
 
@@ -149,78 +147,6 @@ public class Node<TItem>
 		Parent = null;
 
 		return this;
-	}
-
-	/// <summary>
-	/// Dismantling a node means to cascade detach it.
-	/// We always caschade detach the nodes.
-	/// We may also cascade up the ancestry, in which case the node is detached,
-	/// and then the parent is dismantled, leading to the whole linked structure
-	/// ending up unlinked.
-	/// </summary>
-	/// <param name="includeAncestry">
-	/// Should we cascade through the ancestry (true) or only cascade through the nodes (false)?
-	/// <para>No default value is because the caller should always make an active choice.</para>
-	/// </param>
-	/// <returns>The node itself for method chaining purposes.</returns>
-	public Node<TItem> Dismantle(bool includeAncestry)
-	{
-		if (!IsRoot && includeAncestry)
-		{
-			var parent = Parent!;
-			DetachSelf();
-			parent.Dismantle(true);
-		}
-
-		foreach (var descendant in GetDescendants(false))
-			descendant.DetachSelf();
-
-		return this;
-	}
-
-	/// <summary>
-	/// Performs a breadth first traversal yielding each node.
-	/// </summary>
-	/// <param name="includeSelf">
-	/// Should the node itself be yielded (true) or should it start
-	/// with its <see cref="Children"/> (false)?
-	/// <para>No default value is because the caller should always make an active choice.</para>
-	/// </param>
-	/// <returns>An enumeration of nodes.</returns>
-	public IEnumerable<Node<TItem>> GetDescendants(bool includeSelf)
-	{
-		var queue = new Queue<Node<TItem>>();
-		if (includeSelf)
-			queue.Enqueue(this);
-		else if (!IsLeaf)
-			queue.Enqueue(Children);
-
-		while (queue.Count > 0)
-		{
-			var node = queue.Dequeue();
-			yield return node;
-			if (!node.IsLeaf)
-				queue.Enqueue(node.Children);
-		}
-	}
-
-	/// <summary>
-	/// Walks up the <see cref="Parent"/> links yielding each node.
-	/// </summary>
-	/// <param name="includeSelf">
-	/// Should the node itself be yielded (true) or should it start
-	/// with its <see cref="Parent"/> (false)?
-	/// <para>No default value is because the caller should always make an active choice.</para>
-	/// </param>
-	/// <returns>An enumeration of nodes.</returns>
-	public IEnumerable<Node<TItem>> GetAncestors(bool includeSelf)
-	{
-		var curr = includeSelf ? this : Parent;
-		while (curr != null)
-		{
-			yield return curr;
-			curr = curr.Parent;
-		}
 	}
 
 	#region Implicit operators
