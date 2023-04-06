@@ -52,14 +52,14 @@ public static class Hierarchy
 	/// <summary>
 	/// Create a rooted <see cref="Hierarchy{TId}"/> with linked <see cref="Node{TId}"/>s inferred from the <paramref name="relations"/>.
 	/// </summary>
-	public static Hierarchy<TId> FromRelations<TId>(params Relation<TId>[] relations)
+	public static Hierarchy<TId> FromRelations<TId>(params (TId parent, TId child)[] relations)
 		where TId : notnull
 	{
 		var items = new HashSet<TId>();
 		foreach (var relation in relations)
 		{
-			items.Add(relation.Parent);
-			items.Add(relation.Child);
+			items.Add(relation.parent);
+			items.Add(relation.child);
 		}
 
 		var hierarchy = Create(items.ToArray());

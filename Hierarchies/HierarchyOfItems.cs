@@ -55,18 +55,18 @@ public class Hierarchy<TItem, TId>
 		return GetNode(id);
 	}
 
-	public IEnumerable<Relation<TId>> ToRelations()
+	public IEnumerable<(TId parent, TId child)> ToRelations()
 	{
 		foreach (var node in _nodes.Values.Where(n => !n.IsRoot))
 			yield return (Identify(node.Parent!), Identify(node));
 	}
 
-	public Hierarchy<TItem, TId> UsingRelations(params Relation<TId>[] relations)
+	public Hierarchy<TItem, TId> UsingRelations(params (TId parent, TId child)[] relations)
 	{
 		foreach (var relation in relations)
 		{
-			var child = _nodes[relation.Child];
-			var parent = _nodes[relation.Parent];
+			var child = _nodes[relation.child];
+			var parent = _nodes[relation.parent];
 			parent.Attach(child);
 		}
 
