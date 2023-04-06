@@ -16,10 +16,10 @@ public static class Traverse
 	/// <param name="element">The starting element.</param>
 	/// <param name="next">Describes what the next element of the sequence should be, if any.</param>
 	/// <returns>An enumeration of elements.</returns>
-	public static IEnumerable<TEl> Sequence<TEl>(TEl element, Func<TEl, TEl?> next)
+	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, Func<TEl, TEl?> next)
 		where TEl : notnull
 	{
-		return Sequence(element, (n, s) => s.Next(next(n)));
+		return Sequence(element, (el, signal) => signal.Next(next(el)));
 	}
 
 	/// <summary>
@@ -32,9 +32,12 @@ public static class Traverse
 	/// <param name="element">The starting element.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of elements.</returns>
-	public static IEnumerable<TEl> Sequence<TEl>(TEl element, Action<TEl, SequenceSignal<TEl>> traverse)
+	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, Action<TEl, SequenceSignal<TEl>> traverse)
 		where TEl : notnull
 	{
+		if (element is null)
+			yield break;
+
 		var signal = new SequenceSignal<TEl>(element);
 
 		while (signal.TryGetNext(out TEl? current))
@@ -55,10 +58,10 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Tree<TNode>(TNode root, Func<TNode, IEnumerable<TNode>> next)
+	public static IEnumerable<TNode> Tree<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>> next)
 		where TNode : notnull
 	{
-		return Tree(new[] { root }, (n, s) => s.Next(next(n)));
+		return Tree(root, (n, s) => s.Next(next(n)));
 	}
 
 	/// <summary>
@@ -73,10 +76,11 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Tree<TNode>(TNode root, Action<TNode, GraphSignal<TNode>> traverse)
+	public static IEnumerable<TNode> Tree<TNode>(TNode? root, Action<TNode, GraphSignal<TNode>> traverse)
 		where TNode : notnull
 	{
-		return Tree(new[] { root }, traverse);
+		var roots = root is not null ? new[] { root } : Enumerable.Empty<TNode>();
+		return Tree(roots, traverse);
 	}
 
 	/// <summary>
@@ -113,10 +117,10 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode root, Func<TNode, IEnumerable<TNode>> next)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>> next)
 		where TNode : notnull
 	{
-		return Graph(new[] { root }, (n, s) => s.Next(next(n)));
+		return Graph(root, (n, s) => s.Next(next(n)));
 	}
 
 	/// <summary>
@@ -130,10 +134,11 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode root, Action<TNode, GraphSignal<TNode>> traverse)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Action<TNode, GraphSignal<TNode>> traverse)
 		where TNode : notnull
 	{
-		return Graph(new[] { root }, traverse);
+		var roots = root is not null ? new[] { root } : Enumerable.Empty<TNode>();
+		return Graph(roots, traverse);
 	}
 
 
