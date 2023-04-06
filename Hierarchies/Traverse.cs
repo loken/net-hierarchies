@@ -41,7 +41,7 @@ public static class Traverse
 		{
 			traverse(current, signal);
 
-			if (!signal.Skipped)
+			if (signal.ShouldYield())
 				yield return current;
 		}
 	}
@@ -100,7 +100,7 @@ public static class Traverse
 		{
 			traverse(current, signal);
 
-			if (!signal.Skipped)
+			if (signal.ShouldYield())
 				yield return current;
 		}
 	}
@@ -165,7 +165,7 @@ public static class Traverse
 
 			traverse(current, signal);
 
-			if (!signal.Skipped)
+			if (signal.ShouldYield())
 				yield return current;
 		}
 	}
@@ -177,8 +177,7 @@ public static class Traverse
 		where TEl : notnull
 	{
 		private TEl? NextEl;
-
-		internal bool Skipped { get; private set; }
+		private bool Skipped;
 
 		internal SequenceSignal(TEl element)
 		{
@@ -194,6 +193,7 @@ public static class Traverse
 
 				Skipped = false;
 				NextEl = default;
+				Index++;
 
 				return true;
 			}
@@ -203,6 +203,30 @@ public static class Traverse
 				return false;
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal bool ShouldYield()
+		{
+			if (Skipped)
+			{
+				return false;
+			}
+			else
+			{
+				Count++;
+				return true;
+			}
+		}
+
+		/// <summary>
+		/// The number of elements returned so far.
+		/// </summary>
+		public int Count { get; private set; } = 0;
+
+		/// <summary>
+		/// The source index of the current element.
+		/// </summary>
+		public int Index { get; private set; } = -1;
 
 		/// <summary>
 		/// Call this when you want to signal that the current element should be skipped,
@@ -230,12 +254,16 @@ public static class Traverse
 		where TNode : notnull
 	{
 		private readonly Queue<TNode> Queue = new();
-
-		internal bool Skipped { get; private set; }
+		private uint DepthCount = 0;
+		private bool Skipped;
 
 		internal GraphSignal(IEnumerable<TNode> roots)
 		{
-			Queue.Enqueue(roots);
+			foreach (var root in roots)
+			{
+				Queue.Enqueue(root);
+				DepthCount++;
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -243,6 +271,12 @@ public static class Traverse
 		{
 			if (Queue.TryDequeue(out node))
 			{
+				if (DepthCount-- == 0)
+				{
+					Depth++;
+					DepthCount = (uint)Queue.Count;
+				}
+
 				Skipped = false;
 				return true;
 			}
@@ -252,6 +286,30 @@ public static class Traverse
 				return false;
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal bool ShouldYield()
+		{
+			if (Skipped)
+			{
+				return false;
+			}
+			else
+			{
+				Count++;
+				return true;
+			}
+		}
+
+		/// <summary>
+		/// Depth of the current root relative to the traversal roots.
+		/// </summary>
+		public uint Depth { get; private set; } = 0;
+
+		/// <summary>
+		/// The number of elements returned so far.
+		/// </summary>
+		public int Count { get; private set; } = 0;
 
 		/// <summary>
 		/// Call this when you want to signal that the current root should be skipped,

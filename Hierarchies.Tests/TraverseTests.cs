@@ -10,43 +10,61 @@ public class TraverseTests
 		var expected = Enumerable.Range(0, 5).ToArray();
 		var list = new LinkedList<int>(expected);
 
-		var nodes = Traverse.Sequence(list.First!, node => node?.Next);
+		var elements = Traverse.Sequence(list.First!, el => el?.Next);
 
-		var actual = nodes.Select(n => n.Value).ToArray();
+		var actual = elements.Select(el => el.Value).ToArray();
 
 		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
-	public void Sequence_WithSkipAndExclusion_YieldsCorrectValues()
+	public void Sequence_WithSkip_YieldsCorrectValues()
 	{
-		var root = Node.Create(1).Attach(
-			Node.Create(2).Attach(
-				Node.Create(3).Attach(
-					Node.Create(4))));
+		var list = new LinkedList<int>(Enumerable.Range(1, 4));
 
-		var nodes = Traverse.Sequence(root, (node, signal) =>
+		var elements = Traverse.Sequence(list.First!, (el, signal) =>
 		{
 			// Skip odd numbers.
-			if (node.Value % 2 == 1)
+			if (el.Value % 2 == 1)
 				signal.Skip();
 
-			// By not providing the child as a next value at node 3
-			// we don't iterate into node 4 which would otherwise not be skipped.
-			if (node.Value < 3)
-				signal.Next(node.Children.SingleOrDefault());
+			// By not providing the child as a next value at el 3
+			// we don't iterate into el 4 which would otherwise not be skipped.
+			if (el.Value < 3)
+				signal.Next(el.Next);
 		});
 
 		var expected = new[] { 2 };
-		var actual = nodes.Select(n => n.Value).ToArray();
+		var actual = elements.Select(el => el.Value).ToArray();
 
-		// We only want node 3 to be returned because we only want even numbers,
-		// and we stop the iteration at node 3.
+		// We only want el 3 to be returned because we only want even numbers,
+		// and we stop the iteration at el 3.
 		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
-	public void Tree_BreadthFirst_YieldsCorrectOrder()
+	public void Sequence_WithSkip_ReportsCorrectIndexAndCount()
+	{
+		// We set it up so that index and value matches
+		// and so that we exclude odd values from the result.
+		var expectedCounts = new[] { 0, 1, 1, 2, 2 };
+		var list = new LinkedList<int>(new[] { 0, 1, 2, 3, 4 });
+
+		var elements = Traverse.Sequence(list.First!, (el, signal) =>
+		{
+			var expectedCount = expectedCounts[signal.Index];
+			Assert.Equal(expectedCount, signal.Count);
+			Assert.Equal(el.Value, signal.Index);
+
+			if (signal.Index % 2 == 1)
+				signal.Skip();
+
+			signal.Next(el.Next);
+		}).ToArray();
+	}
+
+	[Fact]
+	public void Tree_Simple_YieldsCorrectOrder()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -66,7 +84,7 @@ public class TraverseTests
 	}
 
 	[Fact]
-	public void Tree_BreadthFirstWithSkipAndExclusion_YieldsCorrectOrder()
+	public void Tree_WithSkipAndExclusion_YieldsCorrectOrder()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -79,7 +97,7 @@ public class TraverseTests
 
 		var nodes = Traverse.Tree(root, (node, signal) =>
 		{
-			// Do not include children of 3 which is 31 and 32.
+			// Exclude children of 3 which is 31 and 32.
 			if (node.Value != 3)
 				signal.Next(node.Children);
 
@@ -92,6 +110,27 @@ public class TraverseTests
 		var actual = nodes.Select(n => n.Value).ToArray();
 
 		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void Tree_Signal_ProvidesCorrectDepth()
+	{
+		var root = Node.Create(0).Attach(
+			Node.Create(1).Attach(
+				Node.Create(11),
+				Node.Create(12).Attach(121)),
+			Node.Create(2),
+			Node.Create(3).Attach(
+				Node.Create(31),
+				Node.Create(32)));
+
+		var nodes = Traverse.Tree(root, (node, signal) =>
+		{
+			// Due to our value scheme the depth is equal to
+			// the number of digits which we can get with a bit of math.
+			var expectedDepth = node.Value == 0 ? 0 : Math.Floor(Math.Log10(node.Value) + 1);
+			Assert.Equal(expectedDepth, signal.Depth);
+		}).ToArray();
 	}
 
 	[Fact]
