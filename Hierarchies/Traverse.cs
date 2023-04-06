@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies;
+﻿using Loken.System.Collections;
+
+namespace Loken.Hierarchies;
 
 /// <summary>
 /// Provides traversal for sequences, trees and graphs.
@@ -75,25 +77,15 @@ public static class Traverse
 	public static IEnumerable<TNode> Tree<TNode>(TNode node, Action<TNode, GraphSignal<TNode>> traverse)
 		where TNode : notnull
 	{
-		var queue = new Queue<TNode>();
-		var signal = new GraphSignal<TNode>();
+		var signal = new GraphSignal<TNode>(node);
 
-		queue.Enqueue(node);
-
-		while (queue.Count > 0)
+		while (signal.Queue.TryDequeue(out TNode? current))
 		{
-			var current = queue.Dequeue();
-
 			signal.Reset();
 			traverse(current, signal);
 
 			if (!signal.Skipped)
 				yield return current;
-
-			foreach (var next in signal.NextNodes)
-			{
-				queue.Enqueue(next);
-			}
 		}
 	}
 
@@ -130,15 +122,10 @@ public static class Traverse
 		// the GC could not clean up any enumerated nodes until we are done traversing the graph.
 		var visited = new HashSet<int>();
 
-		var queue = new Queue<TNode>();
-		var signal = new GraphSignal<TNode>();
+		var signal = new GraphSignal<TNode>(node);
 
-		queue.Enqueue(node);
-
-		while (queue.Count > 0)
+		while (signal.Queue.TryDequeue(out TNode? current))
 		{
-			var current = queue.Dequeue();
-
 			if (!visited.Add(current.GetHashCode()))
 				continue;
 
@@ -147,11 +134,6 @@ public static class Traverse
 
 			if (!signal.Skipped)
 				yield return current;
-
-			foreach (var next in signal.NextNodes)
-			{
-				queue.Enqueue(next);
-			}
 		}
 	}
 
@@ -195,17 +177,16 @@ public static class Traverse
 	/// <summary>
 	/// Use this to signal to the traversal what's <see cref="Next"/> and what to <see cref="Skip"/>.
 	/// </summary>
-	public sealed class GraphSignal<T>
-		where T : notnull
+	public sealed class GraphSignal<TNode>
+		where TNode : notnull
 	{
-		private readonly List<T> Nodes = new();
+		internal readonly Queue<TNode> Queue = new();
 
 		internal bool Skipped { get; private set; }
-		internal IEnumerable<T> NextNodes => Nodes?.AsEnumerable() ?? Enumerable.Empty<T>();
 
-		internal GraphSignal(params T[] nodes)
+		internal GraphSignal(params TNode[] nodes)
 		{
-			Nodes.AddRange(nodes);
+			Queue.Enqueue(nodes);
 		}
 
 		/// <summary>
@@ -219,17 +200,16 @@ public static class Traverse
 		/// <summary>
 		/// Call this when traversal should continue to a sub sequence of child nodes.
 		/// </summary>
-		public void Next(params T[] nodes) => Nodes.AddRange(nodes);
+		public void Next(params TNode[] nodes) => Queue.Enqueue(nodes);
 
 		/// <summary>
 		/// Call this when traversal should continue to a sub sequence of child nodes.
 		/// </summary>
-		public void Next(IEnumerable<T> nodes) => Nodes.AddRange(nodes);
+		public void Next(IEnumerable<TNode> nodes) => Queue.Enqueue(nodes);
 
 		internal void Reset()
 		{
 			Skipped = false;
-			Nodes.Clear();
 		}
 	}
 
