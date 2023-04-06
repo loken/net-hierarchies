@@ -59,7 +59,7 @@ public static class Traverse
 	public static IEnumerable<TNode> Tree<TNode>(TNode node, Func<TNode, IEnumerable<TNode>> next)
 		where TNode : notnull
 	{
-		return Tree(node, (n, s) => s.Next(next(n)));
+		return Tree(new[] { node }, (n, s) => s.Next(next(n)));
 	}
 
 	/// <summary>
@@ -77,7 +77,25 @@ public static class Traverse
 	public static IEnumerable<TNode> Tree<TNode>(TNode node, Action<TNode, GraphSignal<TNode>> traverse)
 		where TNode : notnull
 	{
-		var signal = new GraphSignal<TNode>(node);
+		return Tree(new[] { node }, traverse);
+	}
+
+	/// <summary>
+	/// Traverse a tree of nodes.
+	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
+	/// and whether to include or skip the current node.</para>
+	/// <para>By providing no next nodes you exclude the children of the current node from traversal.</para>
+	/// </summary>
+	/// <remarks>A tree should not have any cycles. If it does,
+	/// use <see cref="Graph{TNode}(TNode, Action{TNode, GraphSignal{TNode}})"/> instead.</remarks>
+	/// <typeparam name="TNode">The type of node.</typeparam>
+	/// <param name="nodes">The starting nodes are treated as the roots of the tree.</param>
+	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
+	/// <returns>An enumeration of nodes.</returns>
+	public static IEnumerable<TNode> Tree<TNode>(IEnumerable<TNode> nodes, Action<TNode, GraphSignal<TNode>> traverse)
+		where TNode : notnull
+	{
+		var signal = new GraphSignal<TNode>(nodes);
 
 		while (signal.Queue.TryDequeue(out TNode? current))
 		{
@@ -100,7 +118,7 @@ public static class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(TNode node, Func<TNode, IEnumerable<TNode>> next)
 		where TNode : notnull
 	{
-		return Graph(node, (n, s) => s.Next(next(n)));
+		return Graph(new[] { node }, (n, s) => s.Next(next(n)));
 	}
 
 	/// <summary>
@@ -117,12 +135,30 @@ public static class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(TNode node, Action<TNode, GraphSignal<TNode>> traverse)
 		where TNode : notnull
 	{
+		return Graph(new[] { node }, traverse);
+	}
+
+
+	/// <summary>
+	/// Traverse a graph of nodes.
+	/// <para>Similar to <see cref="Traverse.Tree"/>, but detects graph cycles.</para>
+	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
+	/// and whether to include or skip the current node.</para>
+	/// <para>By providing no next nodes you exclude the children of the current node from traversal.</para>
+	/// </summary>
+	/// <typeparam name="TNode">The type of node.</typeparam>
+	/// <param name="nodes">The starting nodes are treated as the roots of the graph.</param>
+	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
+	/// <returns>An enumeration of nodes.</returns>
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> nodes, Action<TNode, GraphSignal<TNode>> traverse)
+		where TNode : notnull
+	{
 		// We use a set of hash codes instead of a set of nodes for detecting cycles.
 		// This way we consume less memory. If we were to keep the nodes in the visited set
 		// the GC could not clean up any enumerated nodes until we are done traversing the graph.
 		var visited = new HashSet<int>();
 
-		var signal = new GraphSignal<TNode>(node);
+		var signal = new GraphSignal<TNode>(nodes);
 
 		while (signal.Queue.TryDequeue(out TNode? current))
 		{
@@ -185,6 +221,11 @@ public static class Traverse
 		internal bool Skipped { get; private set; }
 
 		internal GraphSignal(params TNode[] nodes)
+		{
+			Queue.Enqueue(nodes);
+		}
+
+		internal GraphSignal(IEnumerable<TNode> nodes)
 		{
 			Queue.Enqueue(nodes);
 		}
