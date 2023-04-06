@@ -24,7 +24,20 @@ public class NodeLinkingTests
 		Node<string> child = "child";
 		root.Attach(child);
 
-		child.Detach();
+		root.Detach(child);
+
+		Assert.False(root.IsLinked);
+		Assert.False(child.IsLinked);
+	}
+
+	[Fact]
+	public void DetachSelf_UnlinksBothWays()
+	{
+		Node<string> root = "root";
+		Node<string> child = "child";
+		root.Attach(child);
+
+		child.DetachSelf();
 
 		Assert.False(root.IsLinked);
 		Assert.False(child.IsLinked);

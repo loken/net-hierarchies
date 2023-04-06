@@ -167,7 +167,7 @@ public class Hierarchy<TItem, TId>
 		if (_roots.Contains(node))
 			_roots.Remove(node);
 		else
-			node.Detach();
+			node.DetachSelf();
 
 		_nodes.Remove(Identify(node));
 	}

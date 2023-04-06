@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Loken.System.Collections;
+using Loken.System;
 
 namespace Loken.Hierarchies;
 
@@ -103,11 +104,36 @@ public class Node<TItem>
 	}
 
 	/// <summary>
+	/// Detach the provided <paramref name="nodes"/> so they are no longer <see cref="Children"/>.
+	/// </summary>
+	/// <returns>The node itself for method chaining purposes.</returns>
+	/// <exception cref="Exception">When the node is a root.</exception>
+	public Node<TItem> Detach(params Node<TItem>[] nodes)
+	{
+		if (nodes.Length == 0)
+			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more nodes.");
+
+		if (IsLeaf || !nodes.All(_children.Contains))
+			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must all be children.");
+
+		foreach (var node in nodes)
+		{
+			_children.Remove(node);
+			node.Parent = null;
+		}
+
+		if (IsLeaf)
+			_children = null;
+
+		return this;
+	}
+
+	/// <summary>
 	/// Detach the node from it's <see cref="Parent"/>.
 	/// </summary>
 	/// <returns>The node itself for method chaining purposes.</returns>
 	/// <exception cref="Exception">When the node is a root.</exception>
-	public Node<TItem> Detach()
+	public Node<TItem> DetachSelf()
 	{
 		if (IsRoot)
 			throw new Exception("Can't detach a root node as there's nothing to detach it from.");
@@ -127,13 +153,13 @@ public class Node<TItem>
 
 	/// <summary>
 	/// Dismantling a node means to cascade detach it.
-	/// We always caschade detach the children.
+	/// We always caschade detach the nodes.
 	/// We may also cascade up the ancestry, in which case the node is detached,
 	/// and then the parent is dismantled, leading to the whole linked structure
 	/// ending up unlinked.
 	/// </summary>
 	/// <param name="includeAncestry">
-	/// Should we cascade through the ancestry (true) or only cascade through the children (false)?
+	/// Should we cascade through the ancestry (true) or only cascade through the nodes (false)?
 	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>The node itself for method chaining purposes.</returns>
@@ -142,12 +168,12 @@ public class Node<TItem>
 		if (!IsRoot && includeAncestry)
 		{
 			var parent = Parent!;
-			Detach();
+			DetachSelf();
 			parent.Dismantle(true);
 		}
 
 		foreach (var descendant in GetDescendants(false))
-			descendant.Detach();
+			descendant.DetachSelf();
 
 		return this;
 	}
