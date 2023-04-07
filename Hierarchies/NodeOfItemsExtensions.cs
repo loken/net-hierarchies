@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies;
+﻿using Loken.Hierarchies.Traversal;
+
+namespace Loken.Hierarchies;
 
 public static class NodeOfItemsExtensions
 {
