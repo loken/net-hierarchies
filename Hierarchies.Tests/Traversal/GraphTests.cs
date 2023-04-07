@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies.Traversal;
+﻿using Loken.System.Collections.MultiMap;
+
+namespace Loken.Hierarchies.Traversal;
 
 public class GraphTests
 {
@@ -115,5 +117,28 @@ public class GraphTests
 		var actual = nodes.AsItems().ToArray();
 
 		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void Traverse_Processes_WithCorrectDepth()
+	{
+		var hierarchy = Hierarchy.FromChildMap("""
+			A:A1,A2
+			A1:A11,A12
+			A2:A21
+			B:B1
+			B1:B12
+			""".ParseMultiMap());
+
+		var traversed = new List<(string item, int depth)>();
+		Traverse.Graph(hierarchy.Roots, (node, signal) =>
+		{
+			signal.Next(node.Children);
+
+			traversed.Add((node.Item, signal.Depth));
+		});
+
+		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
+		Assert.All(traversed, ((string item, int depth) t) => Assert.Equal(t.item.Length - 1, t.depth));
 	}
 }

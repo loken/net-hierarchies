@@ -1,3 +1,4 @@
+using Loken.Hierarchies.Traversal;
 using Loken.System.Collections;
 
 namespace Loken.Hierarchies;
@@ -9,7 +10,7 @@ namespace Loken.Hierarchies;
 /// <param name="item">The <typeparamref name="TItem"/> to check.</param>
 /// <param name="depth">The number of levels traversed when encountering the <paramref name="item"/>. Starts at 0 for roots.</param>
 /// <returns>True if the <paramref name="item"/> is a result, False otherwise.</returns>
-public delegate bool Match<in TItem>(TItem item, uint depth)
+public delegate bool Match<in TItem>(TItem item, int depth)
 	where TItem : notnull;
 
 /// <summary>
@@ -20,7 +21,7 @@ public delegate bool Match<in TItem>(TItem item, uint depth)
 /// <param name="item">The <typeparamref name="TItem"/> to transform.</param>
 /// <param name="depth">The number of levels traversed when encountering the <paramref name="item"/>. Starts at 0 for roots.</param>
 /// <returns>The transformation result.</returns>
-public delegate TResult Transform<in TItem, out TResult>(TItem item, uint depth)
+public delegate TResult Transform<in TItem, out TResult>(TItem item, int depth)
 	where TItem : notnull
 	where TResult : notnull;
 
@@ -50,47 +51,15 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		Node<TItem>? result = null;
-		hierarchy.Traverse((node, depth) =>
+		return Traverse.Graph(hierarchy.Roots, (node, signal) =>
 		{
-			if (match(node, depth))
-			{
-				result = node;
-				return true;
-			}
-			return false;
-		});
+			signal.Next(node.Children);
 
-		return result;
-	}
-
-	/// <summary>
-	/// Traverse the <paramref name="hierarchy"/> and <paramref name="match"/> each <see cref="Node{TItem}"/>.
-	/// Traversal will stop as soon as <paramref name="match"/> returns <c>true</c>.
-	/// </summary>
-	public static void Traverse<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Match<Node<TItem>> match)
-		where TId : notnull
-		where TItem : notnull
-	{
-		var queue = new Queue<Node<TItem>>(hierarchy.Roots);
-		var depth = 0u;
-		var depthCount = queue.Count;
-
-		while (queue.Count > 0)
-		{
-			Node<TItem> node = queue.Dequeue();
-			if (depthCount-- == 0)
-			{
-				depth++;
-				depthCount = queue.Count;
-			}
-
-			if (match(node, depth))
-				return;
-
-			if (!node.IsLeaf)
-				queue.Enqueue(node.Children);
-		}
+			if (match(node, signal.Depth))
+				signal.End();
+			else
+				signal.Skip();
+		}).SingleOrDefault();
 	}
 
 	/// <summary>
@@ -102,7 +71,7 @@ public static class HierarchyTraversalExtensions
 		where TResult : notnull
 	{
 		var queue = new Queue<Node<TItem>>(hierarchy.Roots);
-		var depth = 0u;
+		var depth = 0;
 		var depthCount = queue.Count;
 
 		while (queue.Count > 0)

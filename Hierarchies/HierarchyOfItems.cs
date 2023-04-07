@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Loken.Hierarchies.Traversal;
 using Loken.System.Collections;
 
 namespace Loken.Hierarchies;
@@ -101,15 +102,15 @@ public class Hierarchy<TItem, TId>
 	{
 		var map = new Dictionary<TId, ISet<TId>>();
 
-		this.Traverse((node, depth) =>
+		Traverse.Graph(Roots, (node, signal) =>
 		{
+			signal.Next(node.Children);
+
 			if (!node.IsLeaf)
 			{
 				var nodeId = Identify(node);
 				map.LazySet(nodeId).AddRange(node.Children.Select(child => Identify(child)));
 			}
-
-			return false;
 		});
 
 		return map;
@@ -119,13 +120,13 @@ public class Hierarchy<TItem, TId>
 	{
 		var map = new Dictionary<TId, ISet<TId>>();
 
-		this.Traverse((node, depth) =>
+		Traverse.Graph(Roots, (node, signal) =>
 		{
+			signal.Next(node.Children);
+
 			var nodeId = Identify(node);
 			foreach (var ancestor in node.GetAncestors(false))
 				map.LazySet(Identify(ancestor)).Add(nodeId);
-
-			return false;
 		});
 
 		return map;
@@ -135,13 +136,13 @@ public class Hierarchy<TItem, TId>
 	{
 		var map = new Dictionary<TId, ISet<TId>>();
 
-		this.Traverse((node, depth) =>
+		Traverse.Graph(Roots, (node, signal) =>
 		{
+			signal.Next(node.Children);
+
 			var nodeId = Identify(node);
 			foreach (var ancestor in node.GetAncestors(false))
 				map.LazySet(nodeId).Add(Identify(ancestor));
-
-			return false;
 		});
 
 		return map;
