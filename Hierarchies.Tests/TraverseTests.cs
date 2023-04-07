@@ -78,7 +78,7 @@ public class TraverseTests
 		var nodes = Traverse.Tree(root, node => node.Children);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.Select(n => n.Item).ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -107,7 +107,7 @@ public class TraverseTests
 		});
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
-		var actual = nodes.Select(n => n.Item).ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -173,7 +173,7 @@ public class TraverseTests
 		var nodes = Traverse.Graph(first, node => node.Children);
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.Select(n => n.Item).ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}

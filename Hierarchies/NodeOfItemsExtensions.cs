@@ -61,4 +61,14 @@ public static class NodeOfItemsExtensions
 		var first = includeSelf ? node : node.Parent;
 		return Traverse.Sequence(first, n => n.Parent);
 	}
+
+	/// <summary>
+	/// Select the <see cref="Node{TItem}.Item"/> from each of the <paramref name="nodes"/>.
+	/// </summary>
+	public static IEnumerable<TItem> ToItems<TItem>(this IEnumerable<Node<TItem>> nodes)
+		where TItem : notnull
+	{
+		return nodes.Select(n => n.Item);
+		;
+	}
 }
