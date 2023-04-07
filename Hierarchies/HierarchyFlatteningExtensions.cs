@@ -30,7 +30,7 @@ public static class HierarchyFlatteningExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetAncestorNodes(id, includeSelf).ToItems();
+		return hierarchy.GetAncestorNodes(id, includeSelf).AsItems();
 		;
 	}
 
@@ -70,7 +70,7 @@ public static class HierarchyFlatteningExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendantNodes(id, includeSelf).ToItems();
+		return hierarchy.GetDescendantNodes(id, includeSelf).AsItems();
 		;
 	}
 

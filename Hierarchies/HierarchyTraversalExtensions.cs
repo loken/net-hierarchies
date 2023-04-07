@@ -147,7 +147,7 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.EnumerateNodes().ToItems();
+		return hierarchy.EnumerateNodes().AsItems();
 		;
 	}
 }
