@@ -5,14 +5,14 @@ using System.Text.Json.Serialization;
 namespace Loken.Hierarchies;
 
 /// <summary>
-/// Wrapper for a <see cref="Value"/> participating in a double-linked graph.
+/// Wrapper for a <see cref="Item"/> participating in a double-linked graph.
 /// <para>
 /// By using a wrapper rather than require specific properties on the type parameter
 /// we don't need to make any assumptions about the wrapped <see cref="Type"/>.
 /// </para>
 /// </summary>
 /// <remarks>
-/// Nodes are considered equal when they share the same <see cref="Value"/> instance regardless of its links.
+/// Nodes are considered equal when they share the same <see cref="Item"/> instance regardless of its links.
 /// In order to support serialization we ignore the Parent relationship. Otherwise a serializer will trip up on circular dependencies.
 /// </remarks>
 [DataContract]
@@ -24,10 +24,10 @@ public class Node<TItem>
 	private ISet<Node<TItem>>? _children;
 
 	/// <summary>
-	/// The value is the subject/content of the node.
+	/// The item is the subject/content of the node.
 	/// </summary>
 	[DataMember, JsonInclude]
-	public required TItem Value { get; init; }
+	public required TItem Item { get; init; }
 
 	/// <summary>
 	/// Links to the node nodes.
@@ -151,36 +151,36 @@ public class Node<TItem>
 
 	#region Implicit operators
 	/// <summary>
-	/// Implicitly convert a value into a node, allowing us to pass values to methods that takes nodes.
+	/// Implicitly convert an item into a node, allowing us to pass items to methods that take nodes.
 	/// </summary>
 	public static implicit operator Node<TItem>(TItem item)
 	{
-		return new Node<TItem>() { Value = item };
+		return new Node<TItem>() { Item = item };
 	}
 
 	/// <summary>
-	/// Implicitly convert a node into a value, allowing us to unwrap the value from its node.
+	/// Implicitly convert a node into an item, allowing us to unwrap the item from its node.
 	/// </summary>
 	public static implicit operator TItem(Node<TItem> node)
 	{
-		return node.Value;
+		return node.Item;
 	}
 	#endregion
 
 	#region Object overrides
 	public override string? ToString()
 	{
-		return Value.ToString();
+		return Item.ToString();
 	}
 
 	public override int GetHashCode()
 	{
-		return Value.GetHashCode();
+		return Item.GetHashCode();
 	}
 
 	public override bool Equals(object? obj)
 	{
-		return obj is Node<TItem> other && Value.Equals(other.Value);
+		return obj is Node<TItem> other && Item.Equals(other.Item);
 	}
 	#endregion
 }

@@ -39,8 +39,8 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		Node<TItem>? node = hierarchy.FindNode((node, depth) => match(node.Value, depth));
-		return node is null ? default : node.Value;
+		Node<TItem>? node = hierarchy.FindNode((node, depth) => match(node.Item, depth));
+		return node is null ? default : node.Item;
 	}
 
 	/// <summary>
@@ -147,6 +147,6 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.EnumerateNodes().Select(n => n.Value);
+		return hierarchy.EnumerateNodes().Select(n => n.Item);
 	}
 }

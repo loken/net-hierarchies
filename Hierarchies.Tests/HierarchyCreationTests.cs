@@ -19,7 +19,7 @@ public class HierarchyCreationTests
 		hc.Attach("B1", "B11");
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 
 	[Fact]
@@ -42,7 +42,7 @@ public class HierarchyCreationTests
 		hc.Attach(node);
 
 		Assert.Equal(1, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A" }, hc.Roots.Select(r => r.Value).ToArray());
+		Assert.Equivalent(new[] { "A" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 
 	[Fact]
@@ -58,7 +58,7 @@ public class HierarchyCreationTests
 			("B1", "B13"));
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 
 	[Fact]
@@ -84,7 +84,7 @@ public class HierarchyCreationTests
 				("B1", "B13"));
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value.Id).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item.Id).ToArray());
 	}
 
 	[Fact]
@@ -115,7 +115,7 @@ public class HierarchyCreationTests
 		var hc = Hierarchy.Create(item => item.Id, items).UsingOther(idHierarchy);
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value.Id).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item.Id).ToArray());
 	}
 
 	[Fact]
@@ -129,7 +129,7 @@ public class HierarchyCreationTests
 		var hc = Hierarchy.FromChildMap(childMap);
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 
 	[Fact]
@@ -142,6 +142,6 @@ public class HierarchyCreationTests
 		""".ParseMultiMap());
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Value).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 }

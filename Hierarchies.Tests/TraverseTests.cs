@@ -78,7 +78,7 @@ public class TraverseTests
 		var nodes = Traverse.Tree(root, node => node.Children);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.Select(n => n.Value).ToArray();
+		var actual = nodes.Select(n => n.Item).ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -98,16 +98,16 @@ public class TraverseTests
 		var nodes = Traverse.Tree(root, (node, signal) =>
 		{
 			// Exclude children of 3 which is 31 and 32.
-			if (node.Value != 3)
+			if (node.Item != 3)
 				signal.Next(node.Children);
 
 			// Skip children of 1 which is 11 and 12.
-			if (node.Parent?.Value == 1)
+			if (node.Parent?.Item == 1)
 				signal.Skip();
 		});
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
-		var actual = nodes.Select(n => n.Value).ToArray();
+		var actual = nodes.Select(n => n.Item).ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -128,7 +128,7 @@ public class TraverseTests
 		{
 			// Due to our value scheme the depth is equal to
 			// the number of digits which we can get with a bit of math.
-			var expectedDepth = node.Value == 0 ? 0 : Math.Floor(Math.Log10(node.Value) + 1);
+			var expectedDepth = node.Item == 0 ? 0 : Math.Floor(Math.Log10(node.Item) + 1);
 			Assert.Equal(expectedDepth, signal.Depth);
 		}).ToArray();
 	}
@@ -148,7 +148,7 @@ public class TraverseTests
 			signal.Next(node.Children);
 
 			// We want to stop traversal once we find the item we want
-			// and to skip every other value.
+			// and to skip every other item.
 			if (node == expected)
 				signal.End();
 			else
@@ -173,7 +173,7 @@ public class TraverseTests
 		var nodes = Traverse.Graph(first, node => node.Children);
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.Select(n => n.Value).ToArray();
+		var actual = nodes.Select(n => n.Item).ToArray();
 
 		Assert.Equal(expected, actual);
 	}

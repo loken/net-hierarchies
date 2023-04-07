@@ -1,35 +1,35 @@
 ﻿namespace Loken.Hierarchies;
 
 /// <summary>
-/// Factory class for <see cref="Node{T}"/> which allow us to infer
+/// Factory class for <see cref="Node{TItem}"/> which allow us to infer
 /// the type parameter from the arguments.
 /// </summary>
 public static class Node
 {
 	/// <summary>
-	/// Create a <see cref="Node{T}"/> from the <paramref name="value"/>.
+	/// Create a <see cref="Node{TItem}"/> from the <paramref name="item"/>.
 	/// </summary>
-	public static Node<T> Create<T>(T value)
-		where T : notnull
+	public static Node<TItem> Create<TItem>(TItem item)
+		where TItem : notnull
 	{
-		return new() { Value = value };
+		return new() { Item = item };
 	}
 
 	/// <summary>
-	/// Create a <see cref="Node{T}"/> for each of the <paramref name="values"/>.
+	/// Create a <see cref="Node{TItem}"/> for each of the <paramref name="items"/>.
 	/// </summary>
-	public static IEnumerable<Node<T>> CreateMany<T>(IEnumerable<T> values)
-		where T : notnull
+	public static IEnumerable<Node<TItem>> CreateMany<TItem>(IEnumerable<TItem> items)
+		where TItem : notnull
 	{
-		return values.Select(val => new Node<T>() { Value = val });
+		return items.Select(item => new Node<TItem>() { Item = item });
 	}
 
 	/// <summary>
-	/// Create a <see cref="Node{T}"/> for each of the <paramref name="values"/>.
+	/// Create a <see cref="Node{TItem}"/> for each of the <paramref name="items"/>.
 	/// </summary>
-	public static Node<T>[] CreateMany<T>(params T[] values)
-		where T : notnull
+	public static Node<TItem>[] CreateMany<TItem>(params TItem[] items)
+		where TItem : notnull
 	{
-		return CreateMany(values.AsEnumerable()).ToArray();
+		return CreateMany(items.AsEnumerable()).ToArray();
 	}
 }

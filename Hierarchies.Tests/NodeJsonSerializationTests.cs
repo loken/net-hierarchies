@@ -4,17 +4,17 @@ namespace Loken.Hierarchies;
 public class NodeJsonSerializationTests
 {
 	[Fact]
-	public void Stuff()
+	public void JsonConvert_BothWays_Works()
 	{
 		const string expectedJson = """
 		{
 		  "Children": [
 		    {
 		      "Children": null,
-		      "Value": "a"
+		      "Item": "a"
 		    }
 		  ],
-		  "Value": "root"
+		  "Item": "root"
 		}
 		""";
 
