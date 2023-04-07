@@ -19,7 +19,7 @@ public sealed class GraphSignal<TNode>
 	private readonly ISet<int>? Visited;
 
 	private readonly Queue<TNode> Queue = new();
-	private uint DepthCount = 0;
+	private int DepthCount = 0;
 	private bool Skipped;
 
 	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false)
@@ -61,7 +61,7 @@ public sealed class GraphSignal<TNode>
 			if (DepthCount-- == 0)
 			{
 				Depth++;
-				DepthCount = (uint)Queue.Count;
+				DepthCount = Queue.Count;
 			}
 
 			Skipped = false;
@@ -89,7 +89,7 @@ public sealed class GraphSignal<TNode>
 	/// <summary>
 	/// Depth of the current root relative to the traversal roots.
 	/// </summary>
-	public uint Depth { get; private set; } = 0;
+	public int Depth { get; private set; } = 0;
 
 	/// <summary>
 	/// The number of elements returned so far.
