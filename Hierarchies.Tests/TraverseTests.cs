@@ -134,6 +134,31 @@ public class TraverseTests
 	}
 
 	[Fact]
+	public void Tree_SkipAndEnd_FindNode()
+	{
+		var root = Node.Create(0).Attach(
+			Node.Create(1).Attach(
+				Node.Create(11),
+				Node.Create(12).Attach(121)));
+
+		// Let's implement a search for a single node.
+		int expected = 12;
+		int actual = Traverse.Tree(root, (node, signal) =>
+		{
+			signal.Next(node.Children);
+
+			// We want to stop traversal once we find the item we want
+			// and to skip every other value.
+			if (node == expected)
+				signal.End();
+			else
+				signal.Skip();
+		}).Single();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
 	public void Graph_Circular_BreaksOnVisited()
 	{
 		var last = Node.Create(4);

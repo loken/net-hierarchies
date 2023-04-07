@@ -336,6 +336,14 @@ public static class Traverse
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Next(IEnumerable<TNode> nodes) => Queue.Enqueue(nodes);
+
+		/// <summary>
+		/// Call this when all traversal should end immediately.
+		/// <para>Ending traversal of a particular branch is controlled by not calling
+		/// <see cref="Next"/> for that branch.</para>
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void End() => Queue.Clear();
 	}
 
 }
