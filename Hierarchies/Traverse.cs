@@ -50,66 +50,6 @@ public static class Traverse
 	}
 
 	/// <summary>
-	/// Traverse a tree of roots.
-	/// </summary>
-	/// <remarks>A tree should not have any cycles. If it does,
-	/// use <see cref="Graph{TNode}(TNode, Func{TNode, IEnumerable{TNode}})"/> instead.</remarks>
-	/// <typeparam name="TNode">The type of root.</typeparam>
-	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
-	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Tree<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>> next)
-		where TNode : notnull
-	{
-		return Tree(root, (n, s) => s.Next(next(n)));
-	}
-
-	/// <summary>
-	/// Traverse a tree of roots.
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next roots
-	/// and whether to include or skip the current root.</para>
-	/// <para>By providing no next roots you exclude the children of the current root from traversal.</para>
-	/// </summary>
-	/// <remarks>A tree should not have any cycles. If it does,
-	/// use <see cref="Graph{TNode}(TNode, Action{TNode, GraphSignal{TNode}})"/> instead.</remarks>
-	/// <typeparam name="TNode">The type of root.</typeparam>
-	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
-	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Tree<TNode>(TNode? root, Action<TNode, GraphSignal<TNode>> traverse)
-		where TNode : notnull
-	{
-		var roots = root is not null ? new[] { root } : Enumerable.Empty<TNode>();
-		return Tree(roots, traverse);
-	}
-
-	/// <summary>
-	/// Traverse a tree of roots.
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next roots
-	/// and whether to include or skip the current root.</para>
-	/// <para>By providing no next roots you exclude the children of the current root from traversal.</para>
-	/// </summary>
-	/// <remarks>A tree should not have any cycles. If it does,
-	/// use <see cref="Graph{TNode}(TNode, Action{TNode, GraphSignal{TNode}})"/> instead.</remarks>
-	/// <typeparam name="TNode">The type of root.</typeparam>
-	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
-	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Tree<TNode>(IEnumerable<TNode> roots, Action<TNode, GraphSignal<TNode>> traverse)
-		where TNode : notnull
-	{
-		var signal = new GraphSignal<TNode>(roots);
-
-		while (signal.TryGetNext(out TNode? current))
-		{
-			traverse(current, signal);
-
-			if (signal.ShouldYield())
-				yield return current;
-		}
-	}
-
-	/// <summary>
 	/// Traverse a graph of roots.
 	/// <para>Similar to <see cref="Traverse.Tree"/>, but detects graph cycles.</para>
 	/// </summary>
@@ -117,10 +57,10 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 root for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>> next)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>> next, bool detectCycles = false)
 		where TNode : notnull
 	{
-		return Graph(root, (n, s) => s.Next(next(n)));
+		return Graph(root, (n, s) => s.Next(next(n)), detectCycles);
 	}
 
 	/// <summary>
@@ -134,11 +74,11 @@ public static class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Action<TNode, GraphSignal<TNode>> traverse)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Action<TNode, GraphSignal<TNode>> traverse, bool detectCycles = false)
 		where TNode : notnull
 	{
 		var roots = root is not null ? new[] { root } : Enumerable.Empty<TNode>();
-		return Graph(roots, traverse);
+		return Graph(roots, traverse, detectCycles);
 	}
 
 
@@ -153,21 +93,13 @@ public static class Traverse
 	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of roots.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, Action<TNode, GraphSignal<TNode>> traverse)
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, Action<TNode, GraphSignal<TNode>> traverse, bool detectCycles = false)
 		where TNode : notnull
 	{
-		// We use a set of hash codes instead of a set of roots for detecting cycles.
-		// This way we consume less memory. If we were to keep the roots in the visited set
-		// the GC could not clean up any enumerated roots until we are done traversing the graph.
-		var visited = new HashSet<int>();
-
-		var signal = new GraphSignal<TNode>(roots);
+		var signal = new GraphSignal<TNode>(roots, detectCycles);
 
 		while (signal.TryGetNext(out TNode? current))
 		{
-			if (!visited.Add(current.GetHashCode()))
-				continue;
-
 			traverse(current, signal);
 
 			if (signal.ShouldYield())
@@ -258,12 +190,22 @@ public static class Traverse
 	public sealed class GraphSignal<TNode>
 		where TNode : notnull
 	{
+		/// <summary>
+		/// We use a set of hash codes instead of a set of roots for detecting cycles.
+		/// This way we consume less memory. If we were to keep the roots in the visited set
+		/// the GC could not clean up any enumerated roots until we are done traversing the graph.
+		/// </summary>
+		private readonly ISet<int>? Visited;
+
 		private readonly Queue<TNode> Queue = new();
 		private uint DepthCount = 0;
 		private bool Skipped;
 
-		internal GraphSignal(IEnumerable<TNode> roots)
+		internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false)
 		{
+			if (detectCycles)
+				Visited = new HashSet<int>();
+
 			foreach (var root in roots)
 			{
 				Queue.Enqueue(root);
@@ -273,6 +215,25 @@ public static class Traverse
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal bool TryGetNext([MaybeNullWhen(false)] out TNode node)
+		{
+			if (Visited is not null)
+			{
+				while (TryGetNextInternal(out node))
+				{
+					if (Visited.Add(node.GetHashCode()))
+						return true;
+				}
+
+				return false;
+			}
+			else
+			{
+				return TryGetNextInternal(out node);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private bool TryGetNextInternal([MaybeNullWhen(false)] out TNode node)
 		{
 			if (Queue.TryDequeue(out node))
 			{

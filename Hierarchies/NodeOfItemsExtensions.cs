@@ -43,7 +43,7 @@ public static class NodeOfItemsExtensions
 		where TItem : notnull
 	{
 		var roots = includeSelf ? new[] { node } : node.Children;
-		return Traverse.Tree(roots, (n, signal) => signal.Next(n.Children));
+		return Traverse.Graph(roots, (n, signal) => signal.Next(n.Children), false);
 	}
 
 	/// <summary>

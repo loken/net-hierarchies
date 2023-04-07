@@ -64,7 +64,7 @@ public class TraverseTests
 	}
 
 	[Fact]
-	public void Tree_Simple_YieldsCorrectOrder()
+	public void Graph_Simple_YieldsCorrectOrder()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -75,7 +75,7 @@ public class TraverseTests
 				Node.Create(31),
 				Node.Create(32)));
 
-		var nodes = Traverse.Tree(root, node => node.Children);
+		var nodes = Traverse.Graph(root, node => node.Children);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -84,7 +84,7 @@ public class TraverseTests
 	}
 
 	[Fact]
-	public void Tree_WithSkipAndExclusion_YieldsCorrectOrder()
+	public void Graph_WithSkipAndExclusion_YieldsCorrectOrder()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -95,7 +95,7 @@ public class TraverseTests
 				Node.Create(31),
 				Node.Create(32)));
 
-		var nodes = Traverse.Tree(root, (node, signal) =>
+		var nodes = Traverse.Graph(root, (node, signal) =>
 		{
 			// Exclude children of 3 which is 31 and 32.
 			if (node.Item != 3)
@@ -113,7 +113,7 @@ public class TraverseTests
 	}
 
 	[Fact]
-	public void Tree_Signal_ProvidesCorrectDepth()
+	public void Graph_Signal_ProvidesCorrectDepth()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -124,7 +124,7 @@ public class TraverseTests
 				Node.Create(31),
 				Node.Create(32)));
 
-		var nodes = Traverse.Tree(root, (node, signal) =>
+		var nodes = Traverse.Graph(root, (node, signal) =>
 		{
 			// Due to our value scheme the depth is equal to
 			// the number of digits which we can get with a bit of math.
@@ -134,7 +134,7 @@ public class TraverseTests
 	}
 
 	[Fact]
-	public void Tree_SkipAndEnd_FindNode()
+	public void Graph_SkipAndEnd_FindNode()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -143,7 +143,7 @@ public class TraverseTests
 
 		// Let's implement a search for a single node.
 		int expected = 12;
-		int actual = Traverse.Tree(root, (node, signal) =>
+		int actual = Traverse.Graph(root, (node, signal) =>
 		{
 			signal.Next(node.Children);
 
@@ -170,7 +170,7 @@ public class TraverseTests
 		// Make it circular!
 		last.Attach(first);
 
-		var nodes = Traverse.Graph(first, node => node.Children);
+		var nodes = Traverse.Graph(first, node => node.Children, true);
 
 		var expected = new[] { 1, 2, 3, 4 };
 		var actual = nodes.ToItems().ToArray();
