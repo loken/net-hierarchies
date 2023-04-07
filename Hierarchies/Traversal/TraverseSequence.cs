@@ -12,7 +12,7 @@ public static partial class Traverse
 	/// <param name="element">The starting element.</param>
 	/// <param name="next">Describes what the next element of the sequence should be, if any.</param>
 	/// <returns>An enumeration of elements.</returns>
-	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, Func<TEl, TEl?> next)
+	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, NextElement<TEl> next)
 		where TEl : notnull
 	{
 		return Sequence(element, (el, signal) => signal.Next(next(el)));
@@ -28,7 +28,7 @@ public static partial class Traverse
 	/// <param name="element">The starting element.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of elements.</returns>
-	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, Action<TEl, SequenceSignal<TEl>> traverse)
+	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, TraverseElement<TEl> traverse)
 		where TEl : notnull
 	{
 		if (element is null)

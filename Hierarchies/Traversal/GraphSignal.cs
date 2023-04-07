@@ -5,7 +5,8 @@ using Loken.System.Collections;
 namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
-/// Use this to signal to the traversal what's <see cref="Next"/> and what to <see cref="Skip"/>.
+/// Use this to signal to the traversal what's <see cref="Next"/>,
+/// what to <see cref="Skip"/> and whether to <see cref="End"/>.
 /// </summary>
 public sealed class GraphSignal<TNode>
 	where TNode : notnull
