@@ -19,6 +19,10 @@ namespace Loken.Hierarchies;
 public class Node<TItem>
 	where TItem : notnull
 {
+	/// <summary>
+	/// Backing field for <see cref="Children"/>.
+	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
+	/// </summary>
 	[DataMember(Name = nameof(Children))]
 	[JsonInclude, JsonPropertyName(nameof(Children))]
 	private ISet<Node<TItem>>? _children;
@@ -32,7 +36,6 @@ public class Node<TItem>
 	/// <summary>
 	/// Links to the node nodes.
 	/// No nodes means it's a "leaf".
-	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
 	public IEnumerable<Node<TItem>> Children => _children?.AsEnumerable() ?? Enumerable.Empty<Node<TItem>>();

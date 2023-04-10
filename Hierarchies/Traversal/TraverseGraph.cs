@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies.Traversal;
+﻿using Loken.System.Collections;
+
+namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
 /// Provides traversal for sequences, trees and graphs.
@@ -33,8 +35,7 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false)
 		where TNode : notnull
 	{
-		var roots = root is not null ? new[] { root } : Enumerable.Empty<TNode>();
-		return Graph(roots, traverse, detectCycles);
+		return Graph(root.ToEnumerable(), traverse, detectCycles);
 	}
 
 

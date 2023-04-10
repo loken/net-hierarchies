@@ -1,4 +1,5 @@
 using Loken.Hierarchies.Traversal;
+using Loken.System.Collections;
 
 namespace Loken.Hierarchies;
 
@@ -38,8 +39,7 @@ public static class NodeFindExtensions
 	public static IEnumerable<Node<TItem>> Find<TItem>(this Node<TItem>? root, GraphMatch<Node<TItem>> match, bool detectCycles = false)
 		where TItem : notnull
 	{
-		var roots = root is not null ? new[] { root } : Enumerable.Empty<Node<TItem>>();
-		return roots.Find(match, detectCycles);
+		return root.ToEnumerable().Find(match, detectCycles);
 	}
 
 	/// <summary>
@@ -48,8 +48,7 @@ public static class NodeFindExtensions
 	public static IEnumerable<Node<TItem>> Find<TItem>(this Node<TItem>? root, TItem item, IEqualityComparer<TItem>? comparer = default, bool detectCycles = false)
 		where TItem : notnull
 	{
-		comparer ??= EqualityComparer<TItem>.Default;
-		return root.Find((node, signal) => comparer.Equals(node.Item, item), detectCycles);
+		return root.ToEnumerable().Find(item, comparer, detectCycles);
 	}
 
 	/// <summary>
