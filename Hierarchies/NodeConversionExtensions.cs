@@ -26,4 +26,24 @@ public static class NodeConversionExtensions
 	{
 		return items.Select(item => (Node<TItem>)item);
 	}
+
+	/// <summary>
+	/// Map each of the <paramref name="items"/> to its <typeparamref name="TId"/>.
+	/// </summary>
+	public static IEnumerable<TId> AsIds<TItem, TId>(this IEnumerable<TItem> items, Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return items.Select(item => identify(item));
+	}
+
+	/// <summary>
+	/// Map each of the <paramref name="nodes"/> to its <typeparamref name="TId"/>.
+	/// </summary>
+	public static IEnumerable<TId> AsIds<TItem, TId>(this IEnumerable<Node<TItem>> nodes, Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return nodes.Select(n => identify(n.Item));
+	}
 }

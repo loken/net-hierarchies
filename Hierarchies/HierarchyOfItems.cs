@@ -109,7 +109,7 @@ public class Hierarchy<TItem, TId>
 			if (!node.IsLeaf)
 			{
 				var nodeId = Identify(node);
-				map.LazySet(nodeId).AddRange(node.Children.Select(child => Identify(child)));
+				map.LazySet(nodeId).AddRange(node.Children.AsIds(Identify));
 			}
 		});
 
