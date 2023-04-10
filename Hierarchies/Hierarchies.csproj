@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loken.Extensions.System" Version="0.2.2" />
+    <PackageReference Include="Loken.Extensions.System" Version="0.2.3" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using Loken.Hierarchies.Traversal;
-using Loken.System.Collections;
 
 namespace Loken.Hierarchies;
 
@@ -96,56 +94,6 @@ public class Hierarchy<TItem, TId>
 		_roots.AddRange(_nodes.Values.Where(n => n.IsRoot));
 
 		return this;
-	}
-
-	public IDictionary<TId, ISet<TId>> ToChildMap()
-	{
-		var map = new Dictionary<TId, ISet<TId>>();
-
-		Traverse.Graph(Roots, (node, signal) =>
-		{
-			signal.Next(node.Children);
-
-			if (!node.IsLeaf)
-			{
-				var nodeId = Identify(node);
-				map.LazySet(nodeId).AddRange(node.Children.AsIds(Identify));
-			}
-		});
-
-		return map;
-	}
-
-	public IDictionary<TId, ISet<TId>> ToDescendantMap()
-	{
-		var map = new Dictionary<TId, ISet<TId>>();
-
-		Traverse.Graph(Roots, (node, signal) =>
-		{
-			signal.Next(node.Children);
-
-			var nodeId = Identify(node);
-			foreach (var ancestor in node.GetAncestors(false))
-				map.LazySet(Identify(ancestor)).Add(nodeId);
-		});
-
-		return map;
-	}
-
-	public IDictionary<TId, ISet<TId>> ToAncestorMap()
-	{
-		var map = new Dictionary<TId, ISet<TId>>();
-
-		Traverse.Graph(Roots, (node, signal) =>
-		{
-			signal.Next(node.Children);
-
-			var nodeId = Identify(node);
-			foreach (var ancestor in node.GetAncestors(false))
-				map.LazySet(nodeId).Add(Identify(ancestor));
-		});
-
-		return map;
 	}
 
 	public void Attach(Node<TItem> root)
