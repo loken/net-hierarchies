@@ -1,7 +1,9 @@
-﻿namespace Loken.Hierarchies;
+﻿using Loken.System.Collections;
+
+namespace Loken.Hierarchies;
 
 /// <summary>
-/// A <see cref="Hierarchy{TId,TId}"/> where the items are the ids.
+/// A <see cref="Hierarchy{TId,TId}"/> where the items are the IDs.
 /// Created through <see cref="Hierarchy"/>.
 /// </summary>
 /// <remarks>
@@ -11,15 +13,29 @@
 public class Hierarchy<TId> : Hierarchy<TId, TId>
 	where TId : notnull
 {
-	internal Hierarchy() : base(t => t)
+	internal Hierarchy() : base(id => id)
 	{
 	}
 
-	internal Hierarchy(params TId[] items) : base(t => t, items)
+	internal Hierarchy(IDictionary<TId, ISet<TId>> childMap) : base(id => id)
 	{
-	}
+		foreach (var parentId in childMap.Keys)
+		{
+			var parentNode = new Node<TId>() { Item = parentId };
+			_roots.Add(parentNode);
+			_nodes.Add(parentId, parentNode);
+		}
 
-	internal Hierarchy(IEnumerable<TId> items) : base(t => t, items)
-	{
+		foreach (var (parentId, childIds) in childMap)
+		{
+			var parentNode = _nodes[parentId];
+
+			foreach (var childId in childIds)
+			{
+				var childNode = _nodes.Lazy(childId, () => new Node<TId> { Item = childId });
+				parentNode.Attach(childNode);
+				_roots.Remove(childNode);
+			}
+		}
 	}
 }

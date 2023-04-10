@@ -7,82 +7,87 @@ namespace Loken.Hierarchies;
 public static class Hierarchy
 {
 	/// <summary>
-	/// Create an unrooted <see cref="Hierarchy{TItem, TId}"/> with loose <see cref="Node{T}"/>s from the <paramref name="items"/>.
-	/// Chain this with a <c>Using*</c> method in order to build the relationships.
+	/// Create an empty <see cref="Hierarchy{TItem, TId}"/>.
 	/// </summary>
-	public static Hierarchy<TItem, TId> Create<TItem, TId>(Func<TItem, TId> identify, params TItem[] items)
+	public static Hierarchy<TItem, TId> CreateEmpty<TItem, TId>(Func<TItem, TId> identify)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return new Hierarchy<TItem, TId>(identify, items);
+		return new Hierarchy<TItem, TId>(identify);
 	}
 
 	/// <summary>
-	/// Create an unrooted <see cref="Hierarchy{T, TId}"/> with loose <see cref="Node{T}"/>s from the <paramref name="items"/>.
-	/// Chain this with a <c>Using*</c> method in order to build the relationships.
+	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
+	/// with relationships inferred from the <paramref name="childMap"/>.
 	/// </summary>
-	public static Hierarchy<TItem, TId> Create<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items)
+	public static Hierarchy<TItem, TId> CreateMapped<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return new Hierarchy<TItem, TId>(identify, items);
+		return new Hierarchy<TItem, TId>(identify, items, childMap);
 	}
 
 	/// <summary>
-	/// Create an unrooted <see cref="Hierarchy{TId}"/> with loose <see cref="Node{TId}"/>s from the <paramref name="ids"/>.
-	/// Chain this with a <c>Using*</c> method in order to build the relationships.
+	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
+	/// with relationships inferred from the <paramref name="relations"/>.
 	/// </summary>
-	public static Hierarchy<TId> Create<TId>(params TId[] ids)
+	public static Hierarchy<TItem, TId> CreateRelational<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, params (TId parent, TId child)[] relations)
 		where TId : notnull
+		where TItem : notnull
 	{
-		return new Hierarchy<TId>(ids);
+		var childMap = relations.ToChildMap();
+		return new Hierarchy<TItem, TId>(identify, items, childMap);
 	}
 
 	/// <summary>
-	/// Create an unrooted <see cref="Hierarchy{TId}"/> with loose <see cref="Node{TId}"/>s from the <paramref name="ids"/>.
-	/// Chain this with a <c>Using*</c> method in order to build the relationships.
+	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
+	/// with relationships matching those found in the <paramref name="other"/> hierarchy.
 	/// </summary>
-	public static Hierarchy<TId> Create<TId>(IEnumerable<TId> ids)
+	public static Hierarchy<TItem, TId> CreateMatching<TItem, TId, TOther>(Func<TItem, TId> identify, IEnumerable<TItem> items, Hierarchy<TOther, TId> other)
 		where TId : notnull
+		where TItem : notnull
+		where TOther : notnull
 	{
-		return new Hierarchy<TId>(ids);
+		var childMap = other.Roots.ToChildMap(other.Identify);
+		return new Hierarchy<TItem, TId>(identify, items, childMap);
 	}
 
 
 	/// <summary>
-	/// Create a rooted <see cref="Hierarchy{TId}"/> with linked <see cref="Node{TId}"/>s inferred from the <paramref name="relations"/>.
+	/// Create an empty <see cref="Hierarchy{TId}"/>.
 	/// </summary>
-	public static Hierarchy<TId> FromRelations<TId>(params (TId parent, TId child)[] relations)
+	public static Hierarchy<TId> CreateEmpty<TId>()
 		where TId : notnull
 	{
-		var items = new HashSet<TId>();
-		foreach (var relation in relations)
-		{
-			items.Add(relation.parent);
-			items.Add(relation.child);
-		}
-
-		var hierarchy = Create(items.ToArray());
-		hierarchy.UsingRelations(relations);
-		return hierarchy;
+		return new Hierarchy<TId>();
 	}
 
 	/// <summary>
-	/// Create a rooted <see cref="Hierarchy{TId}"/> with linked <see cref="Node{TId}"/>s inferred from the <paramref name="childMap"/>.
+	/// Create a <see cref="Hierarchy{TId}"/> with nodes and relationships inferred from the <paramref name="childMap"/>.
 	/// </summary>
-	public static Hierarchy<TId> FromChildMap<TId>(IDictionary<TId, ISet<TId>> childMap)
+	public static Hierarchy<TId> CreateMapped<TId>(IDictionary<TId, ISet<TId>> childMap)
 		where TId : notnull
 	{
-		var items = new HashSet<TId>();
-		foreach (var pair in childMap)
-		{
-			items.Add(pair.Key);
-			foreach (var child in pair.Value)
-				items.Add(child);
-		}
+		return new Hierarchy<TId>(childMap);
+	}
 
-		var hierarchy = Create(items.ToArray());
-		hierarchy.UsingChildMap(childMap);
-		return hierarchy;
+	/// <summary>
+	/// Create a <see cref="Hierarchy{TId}"/> with nodes and relationships inferred from the <paramref name="relations"/>.
+	/// </summary>
+	public static Hierarchy<TId> CreateRelational<TId>(params (TId parent, TId child)[] relations)
+		where TId : notnull
+	{
+		return new Hierarchy<TId>(relations.ToChildMap());
+	}
+
+	/// <summary>
+	/// Create a <see cref="Hierarchy{TId}"/> with nodes and relationships inferred from the <paramref name="relations"/>.
+	/// </summary>
+	public static Hierarchy<TId> CreateMatching<TId, TOther>(Hierarchy<TOther, TId> other)
+		where TId : notnull
+		where TOther : notnull
+	{
+		var childMap = other.Roots.ToChildMap(other.Identify);
+		return new Hierarchy<TId>(childMap);
 	}
 }

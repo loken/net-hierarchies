@@ -6,8 +6,8 @@ namespace Loken.Hierarchies;
 
 /// <summary>
 /// Keeps track of the a set of <see cref="Nodes"/> and their <see cref="Roots"/>
-/// and provides structural modification as well as mapping to- and from relations.
-/// Created through <see cref="Hierarchy"/>.
+/// and provides structural modification.
+/// <para>Created through <see cref="Hierarchy"/>.</para>
 /// </summary>
 /// <typeparam name="TItem">The <see cref="Type"/> of item held by each <see cref="Node{TItem}"/> of the <see cref="Nodes"/>.</typeparam>
 /// <typeparam name="TId">The <see cref="Type"/> of identifier for each of the <see cref="Nodes"/>.</typeparam>
@@ -18,8 +18,8 @@ public class Hierarchy<TItem, TId>
 {
 	public readonly Func<TItem, TId> Identify;
 
-	private readonly Dictionary<TId, Node<TItem>> _nodes = new();
-	private readonly List<Node<TItem>> _roots = new();
+	protected readonly Dictionary<TId, Node<TItem>> _nodes = new();
+	protected readonly List<Node<TItem>> _roots = new();
 
 	[IgnoreDataMember, JsonIgnore]
 	public IReadOnlyCollection<Node<TItem>> Nodes => _nodes.Values;
@@ -34,14 +34,38 @@ public class Hierarchy<TItem, TId>
 		Roots = new ReadOnlyCollection<Node<TItem>>(_roots);
 	}
 
-	internal Hierarchy(Func<TItem, TId> identify, params TItem[] items) : this(identify, (IEnumerable<TItem>)items)
+	internal Hierarchy(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap) : this(identify)
 	{
-	}
+		var cache = new Dictionary<TId, Node<TItem>>();
 
-	internal Hierarchy(Func<TItem, TId> identify, IEnumerable<TItem> items) : this(identify)
-	{
 		foreach (var item in items)
-			_nodes.Add(Identify(item), item);
+		{
+			var id = identify(item);
+			var node = new Node<TItem>() { Item = item };
+
+			cache.Add(id, node);
+
+			if (childMap.ContainsKey(id))
+			{
+				_nodes.Add(id, node);
+				_roots.Add(node);
+			}
+		}
+
+		foreach (var (parentId, childIds) in childMap)
+		{
+			var parentNode = cache[parentId];
+
+			foreach (var childId in childIds)
+			{
+				var childNode = cache[childId];
+
+				parentNode.Attach(childNode);
+
+				_roots.Remove(childNode);
+				_nodes.TryAdd(childId, childNode);
+			}
+		}
 	}
 
 	public Node<TItem> GetNode(TId id)
@@ -56,44 +80,12 @@ public class Hierarchy<TItem, TId>
 
 	public IEnumerable<(TId parent, TId child)> ToRelations()
 	{
-		foreach (var node in _nodes.Values.Where(n => !n.IsRoot))
-			yield return (Identify(node.Parent!), Identify(node));
+		return ToChildMap().ToRelations();
 	}
 
-	public Hierarchy<TItem, TId> UsingRelations(params (TId parent, TId child)[] relations)
+	public IDictionary<TId, ISet<TId>> ToChildMap()
 	{
-		foreach (var relation in relations)
-		{
-			var child = _nodes[relation.child];
-			var parent = _nodes[relation.parent];
-			parent.Attach(child);
-		}
-
-		_roots.AddRange(_nodes.Values.Where(n => n.IsRoot));
-
-		return this;
-	}
-
-	public Hierarchy<TItem, TId> UsingOther<TOther>(Hierarchy<TOther, TId> other)
-		where TOther : notnull
-	{
-		return UsingRelations(other.ToRelations().ToArray());
-	}
-
-	public Hierarchy<TItem, TId> UsingChildMap(IDictionary<TId, ISet<TId>> map)
-	{
-		foreach (var pair in map)
-		{
-			var parent = _nodes[pair.Key];
-			foreach (var childId in pair.Value)
-			{
-				parent.Attach(_nodes[childId]);
-			}
-		}
-
-		_roots.AddRange(_nodes.Values.Where(n => n.IsRoot));
-
-		return this;
+		return Roots.ToChildMap(Identify);
 	}
 
 	public void Attach(Node<TItem> root)

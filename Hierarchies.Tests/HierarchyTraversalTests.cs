@@ -4,7 +4,7 @@ namespace Loken.Hierarchies;
 
 public class HierarchyTraversalTests
 {
-	private static readonly Hierarchy<string> _hierarchy = Hierarchy.FromChildMap("""
+	private static readonly Hierarchy<string> _hierarchy = Hierarchy.CreateMapped("""
 	A:A1,A2
 	A1:A11,A12
 	A2:A21

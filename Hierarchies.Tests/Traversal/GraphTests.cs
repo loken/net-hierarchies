@@ -122,7 +122,7 @@ public class GraphTests
 	[Fact]
 	public void Traverse_Processes_WithCorrectDepth()
 	{
-		var hierarchy = Hierarchy.FromChildMap("""
+		var hierarchy = Hierarchy.CreateMapped("""
 			A:A1,A2
 			A1:A11,A12
 			A2:A21
