@@ -1,6 +1,4 @@
-﻿using Loken.Hierarchies.Traversal;
-
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extensions for traversing <see cref="Node{TItem}"/>s.

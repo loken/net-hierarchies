@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections;
-
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// Factory class for <see cref="Node{TItem}"/> which allow us to infer

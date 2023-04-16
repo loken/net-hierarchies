@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections;
-
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extensions for mapping between different representations of relationships.

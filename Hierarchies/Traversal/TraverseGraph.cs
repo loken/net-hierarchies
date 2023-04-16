@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections;
-
-namespace Loken.Hierarchies.Traversal;
+﻿namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
 /// Provides traversal for sequences, trees and graphs.

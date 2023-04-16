@@ -5,4 +5,3 @@ global using Loken.System;
 global using Loken.System.Collections;
 global using Loken.System.Collections.MultiMap;
 global using Loken.System.ComponentModel;
-global using Xunit;

@@ -1,6 +1,4 @@
-﻿using Loken.Hierarchies.Traversal;
-using Loken.System.Collections;
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extension methods for turning <see cref="Node{TItem}"/> roots into various kinds of relational multi-maps.
