@@ -46,16 +46,6 @@ public class Hierarchy<TItem, TId>
 		return GetNode(id).Item;
 	}
 
-	public IEnumerable<(TId parent, TId child)> ToRelations()
-	{
-		return ToChildMap().ToRelations();
-	}
-
-	public IDictionary<TId, ISet<TId>> ToChildMap()
-	{
-		return Roots.ToChildMap(Identify);
-	}
-
 	/// <summary>
 	/// Attach the provided <paramref name="roots"/>.
 	/// </summary>
