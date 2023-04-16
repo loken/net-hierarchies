@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Loken.Hierarchies.MongoDB</AssemblyName>
+    <RootNamespace>Loken.Hierarchies.Data.MongoDB</RootNamespace>
+
+    <Title>Hierarchies MongoDB</Title>
+    <Description>MongoDB extension of Hierarchies.NET</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hierarchies\Hierarchies.csproj" />
+  </ItemGroup>
+
+</Project>
