@@ -56,6 +56,15 @@ public class Hierarchy<TItem, TId>
 		return Roots.ToChildMap(Identify);
 	}
 
+	/// <summary>
+	/// Attach the provided <paramref name="roots"/>.
+	/// </summary>
+	/// <param name="roots">Nodes to attach.</param>
+	/// <returns>The hierarchy itself for method chaining purposes.</returns>
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of <paramref name="roots"/> of a compatible brand
+	/// that aren't already attached to another parent.
+	/// </exception>
 	public Hierarchy<TItem, TId> Attach(params Node<TItem>[] roots)
 	{
 		if (!roots.All(root => root.IsRoot))
@@ -68,19 +77,38 @@ public class Hierarchy<TItem, TId>
 		return this;
 	}
 
-	public Hierarchy<TItem, TId> Attach(TId parentId, params Node<TItem>[] nodes)
+	/// <summary>
+	/// Attach the provided <paramref name="children"/> to the node of the
+	/// provided <paramref name="parentId"/>.
+	/// </summary>
+	/// <param name="parentId">The id of the node to attach to.</param>
+	/// <param name="children">Nodes to attach.</param>
+	/// <returns>The hierarchy itself for method chaining purposes.</returns>
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
+	/// that aren't already attached to another parent.
+	/// </exception>
+	public Hierarchy<TItem, TId> Attach(TId parentId, params Node<TItem>[] children)
 	{
 		if (!_nodes.ContainsKey(parentId))
 			throw new ArgumentException("Matching parent not yet added", nameof(parentId));
 
-		AddNodes(nodes);
+		AddNodes(children);
 
 		var parentNode = _nodes[parentId];
-		parentNode.Attach(nodes);
+		parentNode.Attach(children);
 
 		return this;
 	}
 
+	/// <summary>
+	/// Detach the provided <paramref name="nodes"/>.
+	/// </summary>
+	/// <param name="nodes">Nodes to detach.</param>
+	/// <returns>The node itself for method chaining purposes.</returns>
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of attached <paramref name="nodes"/>.
+	/// </exception>
 	public Hierarchy<TItem, TId> Detach(params Node<TItem>[] nodes)
 	{
 		foreach (var node in Traverse.Graph(nodes, n => n.Children))

@@ -125,28 +125,29 @@ public class Node<TItem>
 	}
 
 	/// <summary>
-	/// Attach the provided <paramref name="nodes"/> as <see cref="Children"/>.
+	/// Attach the provided <paramref name="children"/>.
 	/// </summary>
-	/// <param name="nodes">Nodes to attach.</param>
+	/// <param name="children">Nodes to attach.</param>
 	/// <returns>The node itself for method chaining purposes.</returns>
-	/// <exception cref="ArgumentException">
-	/// When any of the <paramref name="nodes"/> is already attached to another <see cref="Parent"/>.
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
+	/// that aren't already attached to another parent.
 	/// </exception>
 	[MemberNotNull(nameof(_children))]
-	public Node<TItem> Attach(params Node<TItem>[] nodes)
+	public Node<TItem> Attach(params Node<TItem>[] children)
 	{
-		if (nodes.Length == 0)
-			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more");
+		if (children.Length == 0)
+			throw new InvalidOperationException($"Must provide one or more {nameof(children)}");
 
-		if (nodes.Any(node => node.Parent is not null))
-			throw new ArgumentException($"Must all be without a {nameof(Parent)} before attaching to another {nameof(Parent)}", nameof(nodes));
+		if (children.Any(node => node.Parent is not null))
+			throw new InvalidOperationException($"Must all be without a {nameof(Parent)} before attaching to another {nameof(Parent)}");
 
-		if (!nodes.All(node => node.IsBrandCompatible(this)))
-			throw new ArgumentException("Must all have a compatible brand", nameof(nodes));
+		if (!children.All(node => node.IsBrandCompatible(this)))
+			throw new InvalidOperationException("Must all have a compatible brand");
 
 		_children ??= new HashSet<Node<TItem>>();
 
-		foreach (var node in nodes)
+		foreach (var node in children)
 		{
 			_children.Add(node);
 			node.Parent = this;
@@ -156,22 +157,25 @@ public class Node<TItem>
 	}
 
 	/// <summary>
-	/// Detach the provided <paramref name="nodes"/> so they are no longer <see cref="Children"/>.
+	/// Detach the provided <paramref name="children"/>.
 	/// </summary>
+	/// <param name="children">Nodes to detach.</param>
 	/// <returns>The node itself for method chaining purposes.</returns>
-	/// <exception cref="Exception">When the node is a root.</exception>
-	public Node<TItem> Detach(params Node<TItem>[] nodes)
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of attached and non-branded <paramref name="children"/>.
+	/// </exception>
+	public Node<TItem> Detach(params Node<TItem>[] children)
 	{
-		if (nodes.Length == 0)
-			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more nodes.");
+		if (children.Length == 0)
+			throw new InvalidOperationException($"Must provide one or more {nameof(children)}.");
 
-		if (IsLeaf || !nodes.All(_children.Contains))
-			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must all be children.");
+		if (IsLeaf || !children.All(_children.Contains))
+			throw new InvalidOperationException($"Must all be {nameof(children)}.");
 
-		if (nodes.Any(node => node.IsBranded))
+		if (children.Any(node => node.IsBranded))
 			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
-		foreach (var node in nodes)
+		foreach (var node in children)
 		{
 			_children.Remove(node);
 			node.Parent = null;
@@ -187,11 +191,11 @@ public class Node<TItem>
 	/// Detach the node from it's <see cref="Parent"/>.
 	/// </summary>
 	/// <returns>The node itself for method chaining purposes.</returns>
-	/// <exception cref="Exception">When the node is a root.</exception>
+	/// <exception cref="InvalidOperationException">Must be attached and non-branded.</exception>
 	public Node<TItem> DetachSelf()
 	{
 		if (IsRoot)
-			throw new Exception("Can't detach a root node as there's nothing to detach it from.");
+			throw new InvalidOperationException("Can't detach a root node as there's nothing to detach it from.");
 
 		if (IsBranded)
 			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");

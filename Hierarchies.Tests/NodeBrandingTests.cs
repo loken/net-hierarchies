@@ -10,8 +10,8 @@ public class NodeBrandingTests
 
 		a.Brand("some-brand");
 
-		Assert.Throws<ArgumentException>("nodes", () => a.Attach(b));
-		Assert.Throws<ArgumentException>("nodes", () => b.Attach(a));
+		Assert.Throws<InvalidOperationException>(() => a.Attach(b));
+		Assert.Throws<InvalidOperationException>(() => b.Attach(a));
 	}
 
 	[Fact]
@@ -23,8 +23,8 @@ public class NodeBrandingTests
 		a.Brand("some-brand");
 		b.Brand("other-brand");
 
-		Assert.Throws<ArgumentException>("nodes", () => a.Attach(b));
-		Assert.Throws<ArgumentException>("nodes", () => b.Attach(a));
+		Assert.Throws<InvalidOperationException>(() => a.Attach(b));
+		Assert.Throws<InvalidOperationException>(() => b.Attach(a));
 	}
 
 	[Fact]
