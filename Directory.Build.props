@@ -3,13 +3,10 @@
   <PropertyGroup>
     <IsTestProject>$(MSBuildProjectName.EndsWith('.Tests'))</IsTestProject>
     <IsPackable Condition="'$(IsPackable)' == ''">true</IsPackable>
-
-    <AssemblyName>Loken.$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>Loken.$(MSBuildProjectName.Replace('.Tests', ''))</RootNamespace>
-    <Authors>Gaute Løken</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(IsPackable)">
+    <Authors>Gaute Løken</Authors>
     <DebugType>embedded</DebugType>
     <IncludeSymbols>false</IncludeSymbols>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

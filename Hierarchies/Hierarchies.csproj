@@ -4,6 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>Loken.Hierarchies</AssemblyName>
+    <RootNamespace>Loken.Hierarchies</RootNamespace>
 
     <Title>Hierarchies.NET</Title>
     <Description>.NET library for working with hierarchies of identifiers and identifiable objects.</Description>
