@@ -1,11 +1,9 @@
 namespace Loken.Hierarchies;
 
 /// <summary>
-/// Flattening extensions for <see cref="Hierarchy{TItem,TId}"/>.
-/// Unlike the <see cref="HierarchyTraversalExtensions"/>, these extensions will find detached nodes.
-/// Uses a breadth first approach when flattening descendants.
+/// Extensions for traversing a <see cref="Hierarchy{TItem,TId}"/>.
 /// </summary>
-public static class HierarchyFlatteningExtensions
+public static class HierarchyTraversalExtensions
 {
 	/// <summary>
 	/// Get the chain of <see cref="Node{T}.Parent"/>s starting with the <see cref="Node{T}"/> for the <typeparamref name="TItem"/> matching the <paramref name="id"/>.

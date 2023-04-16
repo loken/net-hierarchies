@@ -2,6 +2,9 @@
 
 namespace Loken.Hierarchies;
 
+/// <summary>
+/// Extensions for traversing <see cref="Node{TItem}"/>s.
+/// </summary>
 public static class NodeTraversalExtensions
 {
 	/// <summary>
