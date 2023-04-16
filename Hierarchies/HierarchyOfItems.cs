@@ -21,6 +21,7 @@ public class Hierarchy<TItem, TId>
 
 	protected readonly List<Node<TItem>> _roots = new();
 	protected readonly Dictionary<TId, Node<TItem>> _nodes = new();
+	protected readonly Dictionary<TId, Action> _debrand = new();
 
 	[IgnoreDataMember, JsonIgnore]
 	public IReadOnlyCollection<Node<TItem>> Nodes => _nodes.Values;
@@ -65,7 +66,7 @@ public class Hierarchy<TItem, TId>
 	public Hierarchy<TItem, TId> Attach(params Node<TItem>[] roots)
 	{
 		if (!roots.All(root => root.IsRoot))
-			throw new ArgumentOutOfRangeException(nameof(roots), "Must all be roots!");
+			throw new InvalidOperationException("Must all be roots!");
 
 		AddNodes(roots);
 
@@ -92,9 +93,14 @@ public class Hierarchy<TItem, TId>
 		foreach (var node in Traverse.Graph(nodes, n => n.Children))
 		{
 			var id = Identify(node.Item);
+			_debrand[id]();
+			_debrand.Remove(id);
 			_nodes.Remove(id);
 			_roots.Remove(node);
 		}
+
+		foreach (var node in nodes)
+			node.DetachSelf();
 
 		return this;
 	}
@@ -104,6 +110,7 @@ public class Hierarchy<TItem, TId>
 		foreach (var node in Traverse.Graph(nodes, n => n.Children))
 		{
 			var id = Identify(node.Item);
+			_debrand.Add(id, node.Brand(this));
 			_nodes.Add(id, node);
 		}
 	}

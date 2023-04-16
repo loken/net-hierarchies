@@ -20,6 +20,16 @@ public class Node<TItem>
 	where TItem : notnull
 {
 	/// <summary>
+	/// The brand is used to lock the node to a specific owner.
+	/// </summary>
+	/// <remarks>
+	/// We're not serializing the brand, since it could be an object reference.
+	/// This means that serialization breaks branding, so one must rebuild the brands
+	/// after serializing.
+	/// </remarks>
+	private object? _brand;
+
+	/// <summary>
 	/// Backing field for <see cref="Children"/>.
 	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
 	/// </summary>
@@ -77,6 +87,44 @@ public class Node<TItem>
 	public bool IsLinked => !IsRoot || !IsLeaf;
 
 	/// <summary>
+	/// Having a brand means that some other entity "owns" the node.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	[MemberNotNullWhen(true, nameof(_brand))]
+	public bool IsBranded => _brand is not null;
+
+	/// <summary>
+	/// When the brands of two nodes are compatible, they may be linked/attached
+	/// in a parent-child relationship.
+	/// </summary>
+	public bool IsBrandCompatible(Node<TItem> other)
+	{
+		if (_brand is null)
+			return other._brand is null;
+		else if (other._brand is null)
+			return false;
+		else
+			return _brand.Equals(other._brand);
+	}
+
+	/// <summary>
+	/// Adds the provided <paramref name="brand"/> to the node,
+	/// providing an action delegate for removing/clearning the brand.
+	/// <para>It is necessary to remove an old brand before you can apply another.</para>
+	/// </summary>
+	/// <param name="brand">The brand should uniquely identify the owner or owning concept.</param>
+	/// <returns>An action that can be called in order to debrand the node.</returns>
+	/// <exception cref="InvalidOperationException">Must clear brand using delegate before you can rebrand a node.</exception>
+	public Action Brand(object brand)
+	{
+		if (_brand is not null)
+			throw new InvalidOperationException("Must clear brand using delegate before you can rebrand a node.");
+
+		_brand = brand;
+		return () => _brand = default;
+	}
+
+	/// <summary>
 	/// Attach the provided <paramref name="nodes"/> as <see cref="Children"/>.
 	/// </summary>
 	/// <param name="nodes">Nodes to attach.</param>
@@ -90,13 +138,16 @@ public class Node<TItem>
 		if (nodes.Length == 0)
 			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must provide one or more");
 
+		if (nodes.Any(node => node.Parent is not null))
+			throw new ArgumentException($"Must all be without a {nameof(Parent)} before attaching to another {nameof(Parent)}", nameof(nodes));
+
+		if (!nodes.All(node => node.IsBrandCompatible(this)))
+			throw new ArgumentException("Must all have a compatible brand", nameof(nodes));
+
 		_children ??= new HashSet<Node<TItem>>();
 
 		foreach (var node in nodes)
 		{
-			if (node.Parent != null)
-				throw new ArgumentException($"The {nameof(Parent)} must be null before attaching it to another {nameof(Parent)}", nameof(nodes));
-
 			_children.Add(node);
 			node.Parent = this;
 		}
@@ -116,6 +167,9 @@ public class Node<TItem>
 
 		if (IsLeaf || !nodes.All(_children.Contains))
 			throw new ArgumentOutOfRangeException(nameof(nodes), $"Must all be children.");
+
+		if (nodes.Any(node => node.IsBranded))
+			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
 		foreach (var node in nodes)
 		{
@@ -138,6 +192,9 @@ public class Node<TItem>
 	{
 		if (IsRoot)
 			throw new Exception("Can't detach a root node as there's nothing to detach it from.");
+
+		if (IsBranded)
+			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
 		if (Parent.IsLeaf || !Parent.Children.Contains(this))
 			throw new Exception("Invalid object state: It should not be possible for the node not to be a child of its parent!.");
