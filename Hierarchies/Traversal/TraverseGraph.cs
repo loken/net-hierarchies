@@ -38,6 +38,19 @@ public static partial class Traverse
 		return Graph(root.ToEnumerable(), traverse, detectCycles);
 	}
 
+	/// <summary>
+	/// Traverse a graph of nodes.
+	/// <para>Similar to <see cref="Traverse.Tree"/>, but detects graph cycles.</para>
+	/// </summary>
+	/// <typeparam name="TNode">The type of node.</typeparam>
+	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
+	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
+	/// <returns>An enumeration of nodes.</returns>
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false)
+		where TNode : notnull
+	{
+		return Graph(roots, (n, s) => s.Next(next(n)), detectCycles);
+	}
 
 	/// <summary>
 	/// Traverse a graph of nodes.
