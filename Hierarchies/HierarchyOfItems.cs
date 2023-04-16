@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Loken.Hierarchies.Traversal;
 
 namespace Loken.Hierarchies;
 
@@ -18,8 +19,8 @@ public class Hierarchy<TItem, TId>
 {
 	public readonly Func<TItem, TId> Identify;
 
-	protected readonly Dictionary<TId, Node<TItem>> _nodes = new();
 	protected readonly List<Node<TItem>> _roots = new();
+	protected readonly Dictionary<TId, Node<TItem>> _nodes = new();
 
 	[IgnoreDataMember, JsonIgnore]
 	public IReadOnlyCollection<Node<TItem>> Nodes => _nodes.Values;
@@ -36,36 +37,9 @@ public class Hierarchy<TItem, TId>
 
 	internal Hierarchy(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap) : this(identify)
 	{
-		var cache = new Dictionary<TId, Node<TItem>>();
+		var roots = Node.Assemble(identify, items, childMap).ToArray();
 
-		foreach (var item in items)
-		{
-			var id = identify(item);
-			var node = new Node<TItem>() { Item = item };
-
-			cache.Add(id, node);
-
-			if (childMap.ContainsKey(id))
-			{
-				_nodes.Add(id, node);
-				_roots.Add(node);
-			}
-		}
-
-		foreach (var (parentId, childIds) in childMap)
-		{
-			var parentNode = cache[parentId];
-
-			foreach (var childId in childIds)
-			{
-				var childNode = cache[childId];
-
-				parentNode.Attach(childNode);
-
-				_roots.Remove(childNode);
-				_nodes.TryAdd(childId, childNode);
-			}
-		}
+		Attach(roots);
 	}
 
 	public Node<TItem> GetNode(TId id)
@@ -88,28 +62,49 @@ public class Hierarchy<TItem, TId>
 		return Roots.ToChildMap(Identify);
 	}
 
-	public void Attach(Node<TItem> root)
+	public Hierarchy<TItem, TId> Attach(params Node<TItem>[] roots)
 	{
-		_roots.Add(root);
-		_nodes.Add(Identify(root.Item), root);
+		if (!roots.All(root => root.IsRoot))
+			throw new ArgumentOutOfRangeException(nameof(roots), "Must all be roots!");
+
+		AddNodes(roots);
+
+		_roots.AddRange(roots);
+
+		return this;
 	}
 
-	public void Attach(TId parentId, Node<TItem> node)
+	public Hierarchy<TItem, TId> Attach(TId parentId, params Node<TItem>[] nodes)
 	{
 		if (!_nodes.ContainsKey(parentId))
 			throw new ArgumentException("Matching parent not yet added", nameof(parentId));
 
-		_nodes[parentId].Attach(node);
-		_nodes.Add(Identify(node.Item), node);
+		AddNodes(nodes);
+
+		var parentNode = _nodes[parentId];
+		parentNode.Attach(nodes);
+
+		return this;
 	}
 
-	public void Detach(Node<TItem> node)
+	public Hierarchy<TItem, TId> Detach(params Node<TItem>[] nodes)
 	{
-		if (_roots.Contains(node))
+		foreach (var node in Traverse.Graph(nodes, n => n.Children))
+		{
+			var id = Identify(node.Item);
+			_nodes.Remove(id);
 			_roots.Remove(node);
-		else
-			node.DetachSelf();
+		}
 
-		_nodes.Remove(Identify(node.Item));
+		return this;
+	}
+
+	private void AddNodes(IEnumerable<Node<TItem>> nodes)
+	{
+		foreach (var node in Traverse.Graph(nodes, n => n.Children))
+		{
+			var id = Identify(node.Item);
+			_nodes.Add(id, node);
+		}
 	}
 }

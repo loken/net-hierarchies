@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections;
-
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// A <see cref="Hierarchy{TId,TId}"/> where the items are the IDs.
@@ -19,23 +17,8 @@ public class Hierarchy<TId> : Hierarchy<TId, TId>
 
 	internal Hierarchy(IDictionary<TId, ISet<TId>> childMap) : base(id => id)
 	{
-		foreach (var parentId in childMap.Keys)
-		{
-			var parentNode = new Node<TId>() { Item = parentId };
-			_roots.Add(parentNode);
-			_nodes.Add(parentId, parentNode);
-		}
+		var roots = Node.Assemble(childMap).ToArray();
 
-		foreach (var (parentId, childIds) in childMap)
-		{
-			var parentNode = _nodes[parentId];
-
-			foreach (var childId in childIds)
-			{
-				var childNode = _nodes.Lazy(childId, () => new Node<TId> { Item = childId });
-				parentNode.Attach(childNode);
-				_roots.Remove(childNode);
-			}
-		}
+		Attach(roots);
 	}
 }
