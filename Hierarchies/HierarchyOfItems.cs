@@ -36,13 +36,6 @@ public class Hierarchy<TItem, TId>
 		Roots = new ReadOnlyCollection<Node<TItem>>(_roots);
 	}
 
-	internal Hierarchy(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap) : this(identify)
-	{
-		var roots = Node.Assemble(identify, items, childMap).ToArray();
-
-		Attach(roots);
-	}
-
 	public Node<TItem> GetNode(TId id)
 	{
 		return _nodes[id];
