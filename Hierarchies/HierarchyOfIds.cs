@@ -14,11 +14,4 @@ public class Hierarchy<TId> : Hierarchy<TId, TId>
 	internal Hierarchy() : base(id => id)
 	{
 	}
-
-	internal Hierarchy(IDictionary<TId, ISet<TId>> childMap) : base(id => id)
-	{
-		var roots = Node.Assemble(childMap).ToArray();
-
-		Attach(roots);
-	}
 }

@@ -68,7 +68,8 @@ public static class Hierarchy
 	public static Hierarchy<TId> CreateMapped<TId>(IDictionary<TId, ISet<TId>> childMap)
 		where TId : notnull
 	{
-		return new Hierarchy<TId>(childMap);
+		var roots = Node.Assemble(childMap).ToArray();
+		return (Hierarchy<TId>)new Hierarchy<TId>().Attach(roots);
 	}
 
 	/// <summary>
@@ -77,7 +78,8 @@ public static class Hierarchy
 	public static Hierarchy<TId> CreateRelational<TId>(params (TId parent, TId child)[] relations)
 		where TId : notnull
 	{
-		return new Hierarchy<TId>(relations.ToChildMap());
+		var childMap = relations.ToChildMap();
+		return CreateMapped(childMap);
 	}
 
 	/// <summary>
@@ -88,6 +90,6 @@ public static class Hierarchy
 		where TOther : notnull
 	{
 		var childMap = other.Roots.ToChildMap(other.Identify);
-		return new Hierarchy<TId>(childMap);
+		return CreateMapped(childMap);
 	}
 }
