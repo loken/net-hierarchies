@@ -152,24 +152,6 @@ public class Node<TItem>
 		return this;
 	}
 
-	#region Implicit operators
-	/// <summary>
-	/// Implicitly convert an item into a node, allowing us to pass items to methods that take nodes.
-	/// </summary>
-	public static implicit operator Node<TItem>(TItem item)
-	{
-		return new Node<TItem>() { Item = item };
-	}
-
-	/// <summary>
-	/// Implicitly convert a node into an item, allowing us to unwrap the item from its node.
-	/// </summary>
-	public static implicit operator TItem(Node<TItem> node)
-	{
-		return node.Item;
-	}
-	#endregion
-
 	#region Object overrides
 	public override string? ToString()
 	{

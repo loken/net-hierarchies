@@ -75,7 +75,7 @@ public class Hierarchy<TItem, TId>
 
 	public TItem Get(TId id)
 	{
-		return GetNode(id);
+		return GetNode(id).Item;
 	}
 
 	public IEnumerable<(TId parent, TId child)> ToRelations()
@@ -91,7 +91,7 @@ public class Hierarchy<TItem, TId>
 	public void Attach(Node<TItem> root)
 	{
 		_roots.Add(root);
-		_nodes.Add(Identify(root), root);
+		_nodes.Add(Identify(root.Item), root);
 	}
 
 	public void Attach(TId parentId, Node<TItem> node)
@@ -100,7 +100,7 @@ public class Hierarchy<TItem, TId>
 			throw new ArgumentException("Matching parent not yet added", nameof(parentId));
 
 		_nodes[parentId].Attach(node);
-		_nodes.Add(Identify(node), node);
+		_nodes.Add(Identify(node.Item), node);
 	}
 
 	public void Detach(Node<TItem> node)
@@ -110,6 +110,6 @@ public class Hierarchy<TItem, TId>
 		else
 			node.DetachSelf();
 
-		_nodes.Remove(Identify(node));
+		_nodes.Remove(Identify(node.Item));
 	}
 }

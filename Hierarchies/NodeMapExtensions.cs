@@ -42,7 +42,7 @@ public static class NodeMapExtensions
 
 			if (!node.IsLeaf)
 			{
-				var nodeId = identify(node);
+				var nodeId = identify(node.Item);
 				map.LazySet(nodeId).AddRange(node.Children.AsIds(identify));
 			}
 		}).EnumerateAll();
@@ -83,9 +83,10 @@ public static class NodeMapExtensions
 		{
 			signal.Next(node.Children);
 
-			var nodeId = identify(node);
+			var nodeId = identify(node.Item);
+
 			foreach (var ancestor in node.GetAncestors(false))
-				map.LazySet(identify(ancestor)).Add(nodeId);
+				map.LazySet(identify(ancestor.Item)).Add(nodeId);
 		}).EnumerateAll();
 
 		return map;
@@ -124,9 +125,9 @@ public static class NodeMapExtensions
 		{
 			signal.Next(node.Children);
 
-			var nodeId = identify(node);
+			var nodeId = identify(node.Item);
 			foreach (var ancestor in node.GetAncestors(false))
-				map.LazySet(nodeId).Add(identify(ancestor));
+				map.LazySet(nodeId).Add(identify(ancestor.Item));
 		}).EnumerateAll();
 
 		return map;

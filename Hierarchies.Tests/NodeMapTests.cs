@@ -7,7 +7,7 @@ public class NodeMapTests
 	private static readonly Node<int> Root = Node.Create(0).Attach(
 		Node.Create(1).Attach(
 			Node.Create(11),
-			Node.Create(12).Attach(121)),
+			Node.Create(12).Attach(Node.Create(121))),
 		Node.Create(2),
 		Node.Create(3).Attach(
 			Node.Create(31),

@@ -7,13 +7,13 @@ public class HierarchyLinkingTests
 	{
 		var hc = Hierarchy.CreateEmpty<string>();
 
-		hc.Attach("A");
-		hc.Attach("A", "A1");
-		hc.Attach("A", "A2");
-		hc.Attach("A2", "A21");
-		hc.Attach("B");
-		hc.Attach("B", "B1");
-		hc.Attach("B1", "B11");
+		hc.Attach(Node.Create("A"));
+		hc.Attach("A", Node.Create("A1"));
+		hc.Attach("A", Node.Create("A2"));
+		hc.Attach("A2", Node.Create("A21"));
+		hc.Attach(Node.Create("B"));
+		hc.Attach("B", Node.Create("B1"));
+		hc.Attach("B1", Node.Create("B11"));
 
 		Assert.Equal(2, hc.Roots.Count);
 		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
@@ -24,16 +24,14 @@ public class HierarchyLinkingTests
 	{
 		var hc = Hierarchy.CreateEmpty<string>();
 
-		Assert.Throws<ArgumentException>(() => hc.Attach("NonExistentParentId", "Node"));
+		Assert.Throws<ArgumentException>(() => hc.Attach("NonExistentParentId", Node.Create("Node")));
 	}
 
 	[Fact]
 	public void Attach_PreBuiltRoot_Works()
 	{
 		var node = Node.Create("A");
-		node.Attach("A1");
-		node.Attach("A2");
-		node.Attach("A21");
+		node.Attach(Node.CreateMany("A1", "A2"));
 
 		var hc = Hierarchy.CreateEmpty<string>();
 		hc.Attach(node);

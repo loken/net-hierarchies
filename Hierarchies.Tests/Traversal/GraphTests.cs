@@ -10,7 +10,7 @@ public class GraphTests
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
 				Node.Create(11),
-				Node.Create(12).Attach(121)),
+				Node.Create(12).Attach(Node.Create(121))),
 			Node.Create(2),
 			Node.Create(3).Attach(
 				Node.Create(31),
@@ -30,7 +30,7 @@ public class GraphTests
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
 				Node.Create(11),
-				Node.Create(12).Attach(121)),
+				Node.Create(12).Attach(Node.Create(121))),
 			Node.Create(2),
 			Node.Create(3).Attach(
 				Node.Create(31),
@@ -59,7 +59,7 @@ public class GraphTests
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
 				Node.Create(11),
-				Node.Create(12).Attach(121)),
+				Node.Create(12).Attach(Node.Create(121))),
 			Node.Create(2),
 			Node.Create(3).Attach(
 				Node.Create(31),
@@ -80,21 +80,21 @@ public class GraphTests
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
 				Node.Create(11),
-				Node.Create(12).Attach(121)));
+				Node.Create(12).Attach(Node.Create(121))));
 
 		// Let's implement a search for a single node.
 		var expected = 12;
-		int actual = Traverse.Graph(root, (node, signal) =>
+		var actual = Traverse.Graph(root, (node, signal) =>
 		{
 			signal.Next(node.Children);
 
 			// We want to stop traversal once we find the item we want
 			// and to skip every other item.
-			if (node == expected)
+			if (node.Item == expected)
 				signal.End();
 			else
 				signal.Skip();
-		}).Single();
+		}).AsItems().Single();
 
 		Assert.Equal(expected, actual);
 	}
