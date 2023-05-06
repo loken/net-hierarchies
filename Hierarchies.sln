@@ -14,7 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hierarchies.Tests", "Hierarchies.Tests\Hierarchies.Tests.csproj", "{953BA708-D34B-49B5-A5B3-0BBD2A4F7DB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hierarchies.MongoDB", "Hierarchies.MongoDB\Hierarchies.MongoDB.csproj", "{F2A8D28B-D648-4BE0-8ADA-B719CB0CC2EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hierarchies.MongoDB", "Hierarchies.MongoDB\Hierarchies.MongoDB.csproj", "{F2A8D28B-D648-4BE0-8ADA-B719CB0CC2EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hierarchies.MongoDB.Tests", "Hierarchies.MongoDB.Tests\Hierarchies.MongoDB.Tests.csproj", "{058812E3-EFC5-42E4-9A53-8C77B2EEC54A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{F2A8D28B-D648-4BE0-8ADA-B719CB0CC2EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2A8D28B-D648-4BE0-8ADA-B719CB0CC2EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2A8D28B-D648-4BE0-8ADA-B719CB0CC2EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{058812E3-EFC5-42E4-9A53-8C77B2EEC54A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{058812E3-EFC5-42E4-9A53-8C77B2EEC54A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{058812E3-EFC5-42E4-9A53-8C77B2EEC54A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{058812E3-EFC5-42E4-9A53-8C77B2EEC54A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

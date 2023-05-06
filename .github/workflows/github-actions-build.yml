@@ -41,6 +41,11 @@ jobs:
           useConfigFile: true
           additionalArguments: /updateprojectfiles
 
+      - name: Docker Compose
+        uses: docker/compose-action@v1.4.1
+        with:
+          compose-file: docker-compose.yml
+
       - name: Restore
         run: dotnet restore
 
