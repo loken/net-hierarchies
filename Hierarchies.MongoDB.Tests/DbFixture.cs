@@ -7,18 +7,8 @@ public class DbFixture : IDisposable
 {
 	static DbFixture()
 	{
-		DotEnv.Load();
-
-		var config = new ConfigurationBuilder()
-			.AddEnvironmentVariables()
-			.Build();
-
-		var username = config.GetSection("MONGO_INITDB_ROOT_USERNAME").Value;
-		var password = config.GetSection("MONGO_INITDB_ROOT_PASSWORD").Value;
-		var connectionString = $"mongodb://{username}:{password}@localhost:27017";
-
 		var collection = new ServiceCollection();
-		collection.AddSingleton<IMongoClient>(new MongoClient(connectionString));
+		collection.AddSingleton<IMongoClient>(new MongoClient(GetConnectionString()));
 
 		collection.BuildServiceProvider();
 
@@ -28,8 +18,22 @@ public class DbFixture : IDisposable
 		Client = services.GetRequiredService<IMongoClient>();
 	}
 
-	public DbFixture()
+	protected static string GetConnectionString()
 	{
+		var isCI = Environment.GetEnvironmentVariable("CI") == "true";
+		if (isCI)
+			return "mongodb://localhost:27017";
+
+		DotEnv.Load();
+
+		var config = new ConfigurationBuilder()
+			.AddEnvironmentVariables()
+			.Build();
+
+		var username = config.GetSection("MONGO_INITDB_ROOT_USERNAME").Value;
+		var password = config.GetSection("MONGO_INITDB_ROOT_PASSWORD").Value;
+
+		return $"mongodb://{username}:{password}@localhost:27017";
 	}
 
 	protected ISet<string> DatabaseNames { get; } = new HashSet<string>();
