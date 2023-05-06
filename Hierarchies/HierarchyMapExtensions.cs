@@ -18,6 +18,16 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a child-map matching the <paramref name="hierarchy"/>.
 	/// </summary>
+	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, RelType type)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return hierarchy.Roots.ToMap(hierarchy.Identify, type);
+	}
+
+	/// <summary>
+	/// Create a child-map matching the <paramref name="hierarchy"/>.
+	/// </summary>
 	public static IDictionary<TId, ISet<TId>> ToChildMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
