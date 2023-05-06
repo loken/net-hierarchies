@@ -8,13 +8,13 @@ public static class HierarchyDataExtensions
 	public static Hierarchy<TId> ToHierarchy<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
 		where TId : notnull
 	{
-		return Hierarchy.CreateMapped(relations.ToMultiMap());
+		return Hierarchy.CreateMapped(relations.ToMap());
 	}
 
 	/// <summary>
 	/// Create a multi-map from the <paramref name="relations"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToMultiMap<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
+	public static IDictionary<TId, ISet<TId>> ToMap<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
 		where TId : notnull
 	{
 		return relations.ToDictionary(r => r.Id, r => r.Targets);
