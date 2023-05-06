@@ -1,4 +1,7 @@
-﻿namespace Loken.Hierarchies.Data.MongoDB;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Conventions;
+
+namespace Loken.Hierarchies.Data.MongoDB;
 
 /// <summary>
 /// Provides easy access to a <see cref="Database"/> to use for
@@ -21,5 +24,18 @@ public class HierarchyMongo
 	{
 		_client.DropDatabase(_databaseName);
 		return this;
+	}
+
+	/// <summary>
+	/// Register conventions necessary for storing <see cref="HierarchyRelation{TId}"/>s with duplicate IDs.
+	/// </summary>
+	public static void RegisterConventions()
+	{
+		ConventionRegistry.Register("Loken_Hierarchies_Conventions", new ConventionPack
+		{
+			new NoIdMemberConvention(),
+			new EnumRepresentationConvention(BsonType.String),
+			new IgnoreExtraElementsConvention(true),
+		}, t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(HierarchyRelation<>));
 	}
 }
