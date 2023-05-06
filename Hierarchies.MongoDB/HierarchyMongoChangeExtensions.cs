@@ -1,31 +1,31 @@
 ﻿namespace Loken.Hierarchies.Data.MongoDB;
 
+/// <summary>
+/// Extensions for managing how a <see cref="Hierarchy{TItem, TId}"/> is stored
+/// as <see cref="HierarchyRelation{TId}"/>s in MongoDB.
+/// </summary>
 public static class HierarchyMongoChangeExtensions
 {
-	public static void InsertRelations<TItem, TId>(this IMongoDatabase database, Hierarchy<TItem, TId> hierarchy, string concept, RelType type = RelType.All)
+	/// <summary>
+	/// Insert relations for each provided <see cref="RelType"/> from the <paramref name="hierarchy"/>
+	/// and the <paramref name="concept"/> it represents.
+	/// </summary>
+	public static void InsertRelations<TItem, TId>(this IMongoCollection<HierarchyRelation<TId>> collection, Hierarchy<TItem, TId> hierarchy, string concept, RelType types = RelType.All)
 		where TItem : notnull
 		where TId : notnull
 	{
-		if (type.HasFlag(RelType.Children))
-			database.ChildCollection<TId>().InsertMany(hierarchy.ToChildRelations(concept));
-
-		if (type.HasFlag(RelType.Descendants))
-			database.DescendantCollection<TId>().InsertMany(hierarchy.ToDescendantRelations(concept));
-
-		if (type.HasFlag(RelType.Ancestors))
-			database.AncestorCollection<TId>().InsertMany(hierarchy.ToAncestorRelations(concept));
+		foreach (var type in Rel.GetSpecific(types))
+			collection.InsertMany(hierarchy.ToRelations(concept, type));
 	}
 
-	public static void ClearRelations<TId>(this IMongoDatabase database, string concept, RelType type = RelType.All)
+	/// <summary>
+	/// Delete relations for each provided <see cref="RelType"/> in the <paramref name="concept"/>.
+	/// </summary>
+	public static void ClearRelations<TId>(this IMongoCollection<HierarchyRelation<TId>> collection, string concept, RelType types = RelType.All)
 		where TId : notnull
 	{
-		if (type.HasFlag(RelType.Children))
-			database.ChildCollection<TId>().DeleteMany(rel => rel.Concept == concept);
+		foreach (var type in Rel.GetSpecific(types))
+			collection.DeleteMany(rel => rel.Concept == concept && rel.Type == type);
 
-		if (type.HasFlag(RelType.Descendants))
-			database.DescendantCollection<TId>().DeleteMany(rel => rel.Concept == concept);
-
-		if (type.HasFlag(RelType.Ancestors))
-			database.AncestorCollection<TId>().DeleteMany(rel => rel.Concept == concept);
 	}
 }

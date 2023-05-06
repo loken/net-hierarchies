@@ -1,22 +1,16 @@
 ﻿namespace Loken.Hierarchies.Data.MongoDB;
 
+/// <summary>
+/// Extensions for accessing mongo collections for <see cref="HierarchyRelation{TId}"/>s.
+/// </summary>
 public static class HierarchyMongoCollectionExtensions
 {
-	public static IMongoCollection<HierarchyRelation<TId>> ChildCollection<TId>(this IMongoDatabase database)
-	where TId : notnull
-	{
-		return database.GetCollection<HierarchyRelation<TId>>(HierarchyTable.Children<TId>());
-	}
-
-	public static IMongoCollection<HierarchyRelation<TId>> DescendantCollection<TId>(this IMongoDatabase database)
+	/// <summary>
+	/// Get the <see cref="IMongoCollection{TDocument}"/> for relations of a certain type of <typeparamref name="TId"/>.
+	/// </summary>
+	public static IMongoCollection<HierarchyRelation<TId>> GetHierarchies<TId>(this IMongoDatabase database)
 		where TId : notnull
 	{
-		return database.GetCollection<HierarchyRelation<TId>>(HierarchyTable.Descendants<TId>());
-	}
-
-	public static IMongoCollection<HierarchyRelation<TId>> AncestorCollection<TId>(this IMongoDatabase database)
-		where TId : notnull
-	{
-		return database.GetCollection<HierarchyRelation<TId>>(HierarchyTable.Ancestors<TId>());
+		return database.GetCollection<HierarchyRelation<TId>>(HierarchyName.For<TId>());
 	}
 }
