@@ -15,12 +15,18 @@ public class HierarchyRelation<TId>
 	/// Used for discriminating which <see cref="Hierarchy{TItem, TId}"/>
 	/// the relation should be synchronized to.
 	/// </summary>
-	public required string Concept { get; set; }
+	public required string Concept { get; init; }
+
+	/// <summary>
+	/// Used for discriminating which <see cref="Hierarchy{TItem, TId}"/>
+	/// the relation should be synchronized to.
+	/// </summary>
+	public required RelType Type { get; init; }
 
 	/// <summary>
 	/// The ID of the node that has a ancestors, children or descendants.
 	/// </summary>
-	public required TId Id { get; set; }
+	public required TId Id { get; init; }
 
 	/// <summary>
 	/// The IDs of the ancestors, children or descendants involved in the relation.

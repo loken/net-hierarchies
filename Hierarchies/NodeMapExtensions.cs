@@ -6,6 +6,42 @@
 public static class NodeMapExtensions
 {
 	/// <summary>
+	/// Create a map of ids to ids of a given <see cref="RelType"/> by traversing the graph of the <paramref name="root"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
+	/// <typeparam name="TId">The type of identity associated with an item.</typeparam>
+	/// <param name="root">The root to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>A multi-map of ids.</returns>
+	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify, RelType type)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return root.ToEnumerable().ToMap(identify, type);
+	}
+
+	/// <summary>
+	/// Create a map of ids to ids of a given <see cref="RelType"/> by traversing the graph of the <paramref name="roots"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
+	/// <typeparam name="TId">The type of identity associated with an item.</typeparam>
+	/// <param name="roots">The roots to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>A multi-map of ids.</returns>
+	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify, RelType type)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return type switch
+		{
+			RelType.Children => roots.ToChildMap(identify),
+			RelType.Descendants => roots.ToDescendantMap(identify),
+			RelType.Ancestors => roots.ToAncestorMap(identify),
+			_ => throw Rel.NotSpecificException(type),
+		};
+	}
+
+	/// <summary>
 	/// Create a map of ids to child-ids by traversing the graph of the <paramref name="root"/>.
 	/// </summary>
 	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
