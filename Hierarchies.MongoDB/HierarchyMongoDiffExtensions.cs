@@ -1,7 +1,13 @@
 ﻿namespace Loken.Hierarchies.Data.MongoDB;
 
+/// <summary>
+/// Extensions for working with <see cref="HierarchyDiff{TId}"/>.
+/// </summary>
 public static class HierarchyMongoDiffExtensions
 {
+	/// <summary>
+	/// Create write models for all changes in the <paramref name="diff"/>.
+	/// </summary>
 	public static IEnumerable<WriteModel<HierarchyRelation<TId>>> ToWriteModels<TId>(this HierarchyDiff<TId> diff)
 		where TId : notnull
 	{

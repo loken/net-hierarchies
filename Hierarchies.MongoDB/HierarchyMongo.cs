@@ -20,6 +20,9 @@ public class HierarchyMongo
 		_databaseName = databaseName;
 	}
 
+	/// <summary>
+	/// Drop the database.
+	/// </summary>
 	public HierarchyMongo Drop()
 	{
 		_client.DropDatabase(_databaseName);
