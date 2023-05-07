@@ -12,14 +12,15 @@ public class HierarchyRelation<TId>
 	where TId : notnull
 {
 	/// <summary>
-	/// Used for discriminating which <see cref="Hierarchy{TItem, TId}"/>
-	/// the relation should be synchronized to.
+	/// Each <see cref="Hierarchy{TItem, TId}"/> represents a unique concept.
+	/// By storing it, we can distinguish which concept a given set of relations applies to.
 	/// </summary>
 	public required string Concept { get; init; }
 
 	/// <summary>
-	/// Used for discriminating which <see cref="Hierarchy{TItem, TId}"/>
-	/// the relation should be synchronized to.
+	/// Each <see cref="Hierarchy{TItem, TId}"/> can be viewed and queried on different
+	/// types of relationships.
+	/// By storing it, we can target a particular relationship type in our queries.
 	/// </summary>
 	public required RelType Type { get; init; }
 
