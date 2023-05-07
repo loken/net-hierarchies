@@ -28,4 +28,22 @@ public static class HierarchyMongoChangeExtensions
 			collection.DeleteMany(rel => rel.Concept == concept && rel.Type == type);
 
 	}
+
+	public static BulkWriteResult<HierarchyRelation<TId>> UpdateRelations<TId, TOld, TNew>(
+		this IMongoCollection<HierarchyRelation<TId>> collection,
+		Hierarchy<TOld, TId> oldHierarchy,
+		Hierarchy<TNew, TId> newHierarchy,
+		string concept,
+		RelType types
+	)
+		where TId : notnull
+		where TOld : notnull
+		where TNew : notnull
+	{
+		var differences = HierarchyChanges.Differences(oldHierarchy, newHierarchy, concept, types);
+
+		var writeModels = differences.SelectMany(diff => diff.ToWriteModels());
+
+		return collection.BulkWrite(writeModels);
+	}
 }
