@@ -13,7 +13,39 @@ public class UpdateTests : IClassFixture<DbFixture>
 	}
 
 	[Fact]
-	public void UpdateRelations_WithChanges_CausesStoredRelationsToMatch()
+	public void UpdateRelations_UsingStoredState()
+	{
+		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
+		var childMap = """
+			A:A1,A2
+			A2:A21
+			B:B1
+			B1:B11,B12,B13
+			""".ParseMultiMap();
+
+		// Create a hierarchy and store it to the database.
+		var hierarchy = Hierarchy.CreateMapped(childMap);
+		collection.InsertRelations(hierarchy, "companies", RelType.Children);
+
+		// Make modifications to the hierarchy.
+		hierarchy
+			.Detach("A")
+			.AttachRoot("C", "D")
+			.Attach("D", "D1")
+			.Detach("B11")
+			.Attach("B1", "B14");
+
+		// Update the database using a difference between the stored relations and the hierarchy.
+		collection.UpdateRelations(hierarchy, "companies", RelType.Children);
+
+		// The relations in the database should now match the relations in our hierarchy.
+		var updatedMap = collection.GetRelations("companies", RelType.Children).ToMap();
+		var expectedMap = hierarchy.ToMap(RelType.Children);
+		Assert.Equivalent(expectedMap, updatedMap);
+	}
+
+	[Fact]
+	public void UpdateRelations_UsingKnownState()
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
 		var childMap = """
