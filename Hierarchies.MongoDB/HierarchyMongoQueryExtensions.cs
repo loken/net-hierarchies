@@ -55,4 +55,11 @@ public static class HierarchyMongoQueryExtensions
 	{
 		return collection.GetRelationTargets(concept, id, RelType.Ancestors);
 	}
+
+	public static Hierarchy<TId> ReadHierarchy<TId>(this IMongoCollection<HierarchyRelation<TId>> collection, string concept)
+		where TId : notnull
+	{
+		var childMap = collection.GetRelations(concept, RelType.Children).ToMap();
+		return Hierarchy.CreateMapped(childMap);
+	}
 }
