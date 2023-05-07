@@ -54,7 +54,7 @@ public class Hierarchy<TItem, TId>
 	/// Must provide non-empty set of <paramref name="roots"/> of a compatible brand
 	/// that aren't already attached to another parent.
 	/// </exception>
-	public Hierarchy<TItem, TId> Attach(params Node<TItem>[] roots)
+	public Hierarchy<TItem, TId> AttachRoot(params Node<TItem>[] roots)
 	{
 		if (!roots.All(root => root.IsRoot))
 			throw new InvalidOperationException("Must all be roots!");

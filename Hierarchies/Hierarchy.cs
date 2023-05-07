@@ -24,7 +24,7 @@ public static class Hierarchy
 		where TId : notnull
 		where TItem : notnull
 	{
-		return new Hierarchy<TItem, TId>(identify).Attach(Node.Assemble(identify, items, childMap).ToArray());
+		return new Hierarchy<TItem, TId>(identify).AttachRoot(Node.Assemble(identify, items, childMap).ToArray());
 	}
 
 	/// <summary>
@@ -69,7 +69,7 @@ public static class Hierarchy
 		where TId : notnull
 	{
 		var roots = Node.Assemble(childMap).ToArray();
-		return (Hierarchy<TId>)new Hierarchy<TId>().Attach(roots);
+		return (Hierarchy<TId>)new Hierarchy<TId>().AttachRoot(roots);
 	}
 
 	/// <summary>
