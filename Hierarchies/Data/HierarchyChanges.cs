@@ -28,37 +28,10 @@ public static class HierarchyChanges
 	{
 		Rel.AssertIsSpecific(type);
 
-		var diff = new HierarchyDiff<TId> { Concept = concept, Type = type };
-
 		var oldMap = oldHierarchy.ToMap(type);
 		var newMap = newHierarchy.ToMap(type);
 
-		foreach (var id in oldMap.Keys.Except(newMap.Keys))
-		{
-			diff.Deleted.Add(id);
-		}
-
-		foreach (var (id, newTargets) in newMap)
-		{
-			if (oldMap.TryGetValue(id, out var oldTargets))
-			{
-				var removed = new HashSet<TId>(oldTargets);
-				removed.ExceptWith(newTargets);
-				if (removed.Count > 0)
-					diff.Removed.Add(id, removed);
-
-				var added = new HashSet<TId>(newTargets);
-				added.ExceptWith(oldTargets);
-				if (added.Count > 0)
-					diff.Added.Add(id, added);
-			}
-			else
-			{
-				diff.Inserted.Add(id, newTargets);
-			}
-		}
-
-		return diff;
+		return Difference(oldMap, newMap, concept, type);
 	}
 
 	/// <summary>
@@ -86,5 +59,54 @@ public static class HierarchyChanges
 
 		foreach (var specific in Rel.GetSpecific(types))
 			yield return Difference(oldHierarchy, newHierarchy, concept, specific);
+	}
+
+	/// <summary>
+	/// Create a difference between two relationship representations of a hierarchy.
+	/// </summary>
+	/// <typeparam name="TId">Type of ID.</typeparam>
+	/// <param name="oldMap">The old representation of the concept.</param>
+	/// <param name="newMap">The new representation of the concept.</param>
+	/// <param name="concept">The concept of the hierarchy.</param>
+	/// <param name="type">The "specific" relationship type for which we want to create a difference.</param>
+	/// <returns>A <see cref="HierarchyDiff{TId}"/> which can be used for creating a batch of database updates.</returns>
+	public static HierarchyDiff<TId> Difference<TId>(
+		IDictionary<TId, ISet<TId>> oldMap,
+		IDictionary<TId, ISet<TId>> newMap,
+		string concept,
+		RelType type
+	)
+		where TId : notnull
+	{
+		Rel.AssertIsSpecific(type);
+
+		var diff = new HierarchyDiff<TId> { Concept = concept, Type = type };
+
+		foreach (var id in oldMap.Keys.Except(newMap.Keys))
+		{
+			diff.Deleted.Add(id);
+		}
+
+		foreach (var (id, newTargets) in newMap)
+		{
+			if (oldMap.TryGetValue(id, out var oldTargets))
+			{
+				var removed = new HashSet<TId>(oldTargets);
+				removed.ExceptWith(newTargets);
+				if (removed.Count > 0)
+					diff.Removed.Add(id, removed);
+
+				var added = new HashSet<TId>(newTargets);
+				added.ExceptWith(oldTargets);
+				if (added.Count > 0)
+					diff.Added.Add(id, added);
+			}
+			else
+			{
+				diff.Inserted.Add(id, newTargets);
+			}
+		}
+
+		return diff;
 	}
 }
