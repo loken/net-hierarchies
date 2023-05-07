@@ -110,7 +110,10 @@ public class Hierarchy<TItem, TId>
 		}
 
 		foreach (var node in nodes)
-			node.DetachSelf();
+		{
+			if (!node.IsRoot)
+				node.DetachSelf();
+		}
 
 		return this;
 	}
