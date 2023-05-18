@@ -3,7 +3,7 @@
 public class GraphTests
 {
 	[Fact]
-	public void Traverse_Simple_YieldsCorrectOrder()
+	public void Traverse_BreadthFirst_YieldsCorrectOrder()
 	{
 		var root = Node.Create(0).Attach(
 			Node.Create(1).Attach(
@@ -14,9 +14,29 @@ public class GraphTests
 				Node.Create(31),
 				Node.Create(32)));
 
-		var nodes = Traverse.Graph(root, node => node.Children);
+		var nodes = Traverse.Graph(root, node => node.Children, type: TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
+		var actual = nodes.AsItems().ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void Traverse_DepthFirst_YieldsCorrectOrder()
+	{
+		var root = Node.Create(0).Attach(
+			Node.Create(1).Attach(
+				Node.Create(11),
+				Node.Create(12).Attach(Node.Create(121))),
+			Node.Create(2),
+			Node.Create(3).Attach(
+				Node.Create(31),
+				Node.Create(32)));
+
+		var nodes = Traverse.Graph(root, node => node.Children, type: TraversalType.DepthFirst);
+
+		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.AsItems().ToArray();
 
 		Assert.Equal(expected, actual);
@@ -43,7 +63,7 @@ public class GraphTests
 			// Skip children of 1 which is 11 and 12.
 			if (node.Parent?.Item == 1)
 				signal.Skip();
-		});
+		}, false);
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
 		var actual = nodes.AsItems().ToArray();
@@ -118,7 +138,7 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_Processes_WithCorrectDepth()
+	public void Traverse_BreadthFirst_ProvidesCorrectDepth()
 	{
 		var hierarchy = Hierarchy.CreateMapped("""
 			A:A1,A2
@@ -134,7 +154,30 @@ public class GraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		});
+		}, type: TraversalType.BreadthFirst);
+
+		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
+		Assert.All(traversed, ((string item, int depth) t) => Assert.Equal(t.item.Length - 1, t.depth));
+	}
+
+	[Fact]
+	public void Traverse_DepthFirst_ProvidesCorrectDepth()
+	{
+		var hierarchy = Hierarchy.CreateMapped("""
+			A:A1,A2
+			A1:A11,A12
+			A2:A21
+			B:B1
+			B1:B12
+			""".ParseMultiMap());
+
+		var traversed = new List<(string item, int depth)>();
+		Traverse.Graph(hierarchy.Roots, (node, signal) =>
+		{
+			signal.Next(node.Children);
+
+			traversed.Add((node.Item, signal.Depth));
+		}, type: TraversalType.DepthFirst);
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, ((string item, int depth) t) => Assert.Equal(t.item.Length - 1, t.depth));

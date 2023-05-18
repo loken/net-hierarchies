@@ -51,11 +51,11 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <see cref="Node{T}"/> with a <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<Node<TItem>> GetDescendantNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<Node<TItem>> GetDescendantNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetNode(id).GetDescendants(includeSelf);
+		return hierarchy.GetNode(id).GetDescendants(includeSelf, type);
 	}
 
 	/// <summary>
@@ -64,11 +64,11 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<TItem> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<TItem> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendantNodes(id, includeSelf).AsItems();
+		return hierarchy.GetDescendantNodes(id, includeSelf, type).AsItems();
 		;
 	}
 
@@ -78,10 +78,10 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <paramref name="id"/>?</param>
-	public static IEnumerable<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendantNodes(id, includeSelf).AsIds(hierarchy.Identify);
+		return hierarchy.GetDescendantNodes(id, includeSelf, type).AsIds(hierarchy.Identify);
 	}
 }

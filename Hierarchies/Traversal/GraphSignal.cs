@@ -17,18 +17,22 @@ public sealed class GraphSignal<TNode>
 	/// </summary>
 	private readonly ISet<int>? Visited;
 
-	private readonly Queue<TNode> Queue = new();
+	private readonly ILinear<TNode> Nodes;
 	private int DepthCount = 0;
 	private bool Skipped;
 
-	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false)
+	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (detectCycles)
 			Visited = new HashSet<int>();
 
+		Nodes = type == TraversalType.BreadthFirst
+			? new LinearQueue<TNode>()
+			: new LinearStack<TNode>();
+
 		foreach (var root in roots)
 		{
-			Queue.Enqueue(root);
+			Nodes.Attach(root);
 			DepthCount++;
 		}
 	}
@@ -55,12 +59,12 @@ public sealed class GraphSignal<TNode>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private bool TryGetNextInternal([MaybeNullWhen(false)] out TNode node)
 	{
-		if (Queue.TryDequeue(out node))
+		if (Nodes.TryDetach(out node))
 		{
 			if (DepthCount-- == 0)
 			{
 				Depth++;
-				DepthCount = Queue.Count;
+				DepthCount = Nodes.Count;
 			}
 
 			Skipped = false;
@@ -108,13 +112,13 @@ public sealed class GraphSignal<TNode>
 	/// Call this when traversal should continue to a sub sequence of child roots.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(params TNode[] nodes) => Queue.Enqueue(nodes);
+	public void Next(params TNode[] nodes) => Nodes.Attach(nodes);
 
 	/// <summary>
 	/// Call this when traversal should continue to a sub sequence of child roots.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(IEnumerable<TNode> nodes) => Queue.Enqueue(nodes);
+	public void Next(IEnumerable<TNode> nodes) => Nodes.Attach(nodes);
 
 	/// <summary>
 	/// Call this when all traversal should end immediately.
@@ -122,5 +126,5 @@ public sealed class GraphSignal<TNode>
 	/// <see cref="Next"/> for that branch.</para>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void End() => Queue.Clear();
+	public void End() => Nodes.Clear();
 }

@@ -13,10 +13,10 @@ public static partial class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		return Graph(root, (n, s) => s.Next(next(n)), detectCycles);
+		return Graph(root, (n, s) => s.Next(next(n)), detectCycles, type);
 	}
 
 	/// <summary>
@@ -30,10 +30,10 @@ public static partial class Traverse
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false)
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		return Graph(root.ToEnumerable(), traverse, detectCycles);
+		return Graph(root.ToEnumerable(), traverse, detectCycles, type);
 	}
 
 	/// <summary>
@@ -44,10 +44,10 @@ public static partial class Traverse
 	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false)
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		return Graph(roots, (n, s) => s.Next(next(n)), detectCycles);
+		return Graph(roots, (n, s) => s.Next(next(n)), detectCycles, type);
 	}
 
 	/// <summary>
@@ -61,10 +61,10 @@ public static partial class Traverse
 	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false)
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		var signal = new GraphSignal<TNode>(roots, detectCycles);
+		var signal = new GraphSignal<TNode>(roots, detectCycles, type);
 
 		while (signal.TryGetNext(out TNode? current))
 		{

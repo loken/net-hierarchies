@@ -14,11 +14,11 @@ public static class NodeTraversalExtensions
 	/// <para>No default value is because the caller should always make an active choice.</para>
 	/// </param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<Node<TItem>> GetDescendants<TItem>(this Node<TItem> node, bool includeSelf)
+	public static IEnumerable<Node<TItem>> GetDescendants<TItem>(this Node<TItem> node, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
 		var roots = includeSelf ? new[] { node } : node.Children;
-		return Traverse.Graph(roots, (n, signal) => signal.Next(n.Children), false);
+		return Traverse.Graph(roots, (n, signal) => signal.Next(n.Children), false, type);
 	}
 
 	/// <summary>
