@@ -18,6 +18,18 @@ public static class Hierarchy
 
 	/// <summary>
 	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
+	/// with relationships created by identifying the parent.
+	/// </summary>
+	public static Hierarchy<TItem, TId> CreateParented<TItem, TId>(Func<TItem, TId> identify, Func<TItem, TId?> identifyParent, IList<TItem> items)
+		where TId : notnull
+		where TItem : notnull
+	{
+		var childMap = items.Select(item => (parent: identifyParent(item), child: identify(item))).ToChildMap();
+		return CreateMapped(identify, items, childMap);
+	}
+
+	/// <summary>
+	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
 	/// with relationships inferred from the <paramref name="childMap"/>.
 	/// </summary>
 	public static Hierarchy<TItem, TId> CreateMapped<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap)

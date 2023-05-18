@@ -8,7 +8,7 @@ public class SequenceTests
 		var expected = Enumerable.Range(0, 5).ToArray();
 		var list = new LinkedList<int>(expected);
 
-		var elements = Traverse.Sequence(list.First!, el => el?.Next);
+		var elements = Traverse.Sequence(list.First!, el => el.Next);
 
 		var actual = elements.Select(el => el.Value).ToArray();
 

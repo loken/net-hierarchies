@@ -21,13 +21,18 @@ public static class RelationMapExtensions
 	/// <summary>
 	/// Create a child-map matching the <paramref name="relations"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToChildMap<TId>(this IEnumerable<(TId parent, TId child)> relations)
+	public static IDictionary<TId, ISet<TId>> ToChildMap<TId>(this IEnumerable<(TId? parent, TId child)> relations)
 		where TId : notnull
 	{
 		var map = new Dictionary<TId, ISet<TId>>();
 
 		foreach (var (parent, child) in relations)
+		{
+			if (parent is null)
+				continue;
+
 			map.LazySet(parent).Add(child);
+		}
 
 		return map;
 	}
