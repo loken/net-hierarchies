@@ -12,9 +12,11 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageProjectUrl>https://github.com/loken/loken-hierarchies-net</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup Condition="$(IsPackable)">
+    <None Include="README.md" Pack="true" PackagePath="\"/>
     <!--Locked: So that we don't add it to each project by accident when updating packages.-->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="[1.1.1]">
       <PrivateAssets>all</PrivateAssets>
