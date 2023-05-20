@@ -24,8 +24,16 @@ public static class Hierarchy
 		where TId : notnull
 		where TItem : notnull
 	{
-		var childMap = items.Select(item => (parent: identifyParent(item), child: identify(item))).ToChildMap();
-		return CreateMapped(identify, items, childMap);
+		var relations = new List<(TId parent, TId child)>();
+
+		foreach (var item in items)
+		{
+			var parent = identifyParent(item);
+			if (parent != null)
+				relations.Add((parent, identify(item)));
+		}
+
+		return CreateRelational(identify, items, relations.ToArray());
 	}
 
 	/// <summary>
