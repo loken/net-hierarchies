@@ -18,7 +18,7 @@ Install the package from nuget.org into your .NET 7 or later project using your 
 dotnet add package Loken.Hierarchies.MongoDB
 ```
 
-Read the documentation for the main [`Loken.Hierarchies`](https://github.com/loken/loken-hierarchies-net/Hierarchies) package to get an understanding of how the core library functions before you continue on.
+Read the documentation for the main [`Loken.Hierarchies`](https://github.com/loken/loken-hierarchies-net/blob/main/Hierarchies/README.md) package to get an understanding of how the core library functions before you continue on.
 
 
 ## Collection of relations

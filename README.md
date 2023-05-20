@@ -10,14 +10,13 @@ The idea is that quite often you have a list of items, usually from a database t
 
 Please take a look at the main package documentation:
 
-- [`Loken.Hierarchies`](https://github.com/loken/loken-hierarchies-net/Hierarchies)
+- [`Loken.Hierarchies`](Hierarchies/README.md)
 
 If you're interested in a satellite package for a particular database, please have a look at its documentation. It won't repeat information described in the main package documentation, so it's advised that you start there.
 
 Documentation for supported satellite packages:
 
-- [`Loken.Hierarchies.MongoDB`](https://github.com/loken/loken-hierarchies-net/Hierarchies.MongoDB)
-
+- [`Loken.Hierarchies.MongoDB`](Hierarchies.MongoDB/README.md)
 
 ## Feedback & Contribution
 
