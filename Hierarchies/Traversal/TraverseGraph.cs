@@ -72,6 +72,8 @@ public static partial class Traverse
 
 			if (signal.ShouldYield())
 				yield return current;
+
+			signal.Cleanup();
 		}
 	}
 }

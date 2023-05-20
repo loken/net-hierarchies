@@ -17,8 +17,30 @@ public sealed class GraphSignal<TNode>
 	/// </summary>
 	private readonly ISet<int>? Visited;
 
+	/// <summary>
+	/// Depth tracking depends on the <see cref="TraversalType"/>.
+	/// </summary>
+	[MemberNotNullWhen(true, nameof(BranchCount))]
+	private bool IsDepthFirst { get; }
+
+	/// <summary>
+	/// Future nodes to process. Will be a stack or queue depending on the <see cref="TraversalType"/>.
+	/// </summary>
 	private readonly ILinear<TNode> Nodes;
+
+	/// <summary>
+	/// For depth tracking with <see cref="TraversalType.DepthFirst"/>.
+	/// </summary>
+	private readonly Stack<int>? BranchCount;
+
+	/// <summary>
+	/// For depth tracking with <see cref="TraversalType.BreadthFirst"/>.
+	/// </summary>
 	private int DepthCount = 0;
+
+	/// <summary>
+	/// Did the user signal to skip the current node?
+	/// </summary>
 	private bool Skipped;
 
 	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
@@ -26,14 +48,22 @@ public sealed class GraphSignal<TNode>
 		if (detectCycles)
 			Visited = new HashSet<int>();
 
-		Nodes = type == TraversalType.BreadthFirst
-			? new LinearQueue<TNode>()
-			: new LinearStack<TNode>();
+		IsDepthFirst = type == TraversalType.DepthFirst;
+
+		Nodes = IsDepthFirst
+			? new LinearStack<TNode>()
+			: new LinearQueue<TNode>();
 
 		foreach (var root in roots)
 		{
 			Nodes.Attach(root);
 			DepthCount++;
+		}
+
+		if (IsDepthFirst)
+		{
+			BranchCount = new();
+			BranchCount.Push(DepthCount);
 		}
 	}
 
@@ -61,10 +91,18 @@ public sealed class GraphSignal<TNode>
 	{
 		if (Nodes.TryDetach(out node))
 		{
-			if (DepthCount-- == 0)
+			if (IsDepthFirst)
 			{
-				Depth++;
-				DepthCount = Nodes.Count;
+				Depth = BranchCount.Count - 1;
+				BranchCount.Push(BranchCount.Pop() - 1);
+			}
+			else
+			{
+				if (DepthCount-- == 0)
+				{
+					Depth++;
+					DepthCount = Nodes.Count;
+				}
 			}
 
 			Skipped = false;
@@ -80,13 +118,20 @@ public sealed class GraphSignal<TNode>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal bool ShouldYield()
 	{
-		if (Skipped)
-			return false;
-		else
+		return !Skipped;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal void Cleanup()
+	{
+		if (IsDepthFirst)
 		{
-			Count++;
-			return true;
+			while (BranchCount.TryPeek(out var count) && count == 0)
+				BranchCount.Pop();
 		}
+
+		if (!Skipped)
+			Count++;
 	}
 
 	/// <summary>
@@ -112,13 +157,22 @@ public sealed class GraphSignal<TNode>
 	/// Call this when traversal should continue to a sub sequence of child roots.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(params TNode[] nodes) => Nodes.Attach(nodes);
+	public void Next(params TNode[] nodes)
+	{
+		if (nodes.Length == 0)
+			return;
+
+		if (IsDepthFirst)
+			BranchCount.Push(nodes.Length);
+
+		Nodes.Attach(nodes);
+	}
 
 	/// <summary>
 	/// Call this when traversal should continue to a sub sequence of child roots.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(IEnumerable<TNode> nodes) => Nodes.Attach(nodes);
+	public void Next(IEnumerable<TNode> nodes) => Next(nodes.ToArray());
 
 	/// <summary>
 	/// Call this when all traversal should end immediately.

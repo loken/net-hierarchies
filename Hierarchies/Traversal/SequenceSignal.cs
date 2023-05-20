@@ -40,13 +40,14 @@ public sealed class SequenceSignal<TEl>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal bool ShouldYield()
 	{
-		if (Skipped)
-			return false;
-		else
-		{
+		return !Skipped;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal void Cleanup()
+	{
+		if (!Skipped)
 			Count++;
-			return true;
-		}
 	}
 
 	/// <summary>

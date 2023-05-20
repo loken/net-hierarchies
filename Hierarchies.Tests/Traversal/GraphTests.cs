@@ -83,13 +83,15 @@ public class GraphTests
 				Node.Create(31),
 				Node.Create(32)));
 
-		var nodes = Traverse.Graph(root, (node, signal) =>
+		Traverse.Graph(root, (node, signal) =>
 		{
+			signal.Next(node.Children);
+
 			// Due to our value scheme the depth is equal to
 			// the number of digits which we can get with a bit of math.
 			var expectedDepth = node.Item == 0 ? 0 : Math.Floor(Math.Log10(node.Item) + 1);
 			Assert.Equal(expectedDepth, signal.Depth);
-		}).ToArray();
+		}).EnumerateAll();
 	}
 
 	[Fact]
@@ -154,7 +156,7 @@ public class GraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.BreadthFirst);
+		}, type: TraversalType.BreadthFirst).EnumerateAll();
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, ((string item, int depth) t) => Assert.Equal(t.item.Length - 1, t.depth));
@@ -177,7 +179,7 @@ public class GraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.DepthFirst);
+		}, type: TraversalType.DepthFirst).EnumerateAll();
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, ((string item, int depth) t) => Assert.Equal(t.item.Length - 1, t.depth));
