@@ -11,7 +11,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <see cref="Node{T}"/> with a <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<Node<TItem>> GetAncestorNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<Node<TItem>> GetAncestorNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -24,7 +24,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<TItem> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<TItem> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -38,7 +38,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <paramref name="id"/>?</param>
-	public static IEnumerable<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf)
+	public static IEnumerable<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -51,7 +51,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <see cref="Node{T}"/> with a <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<Node<TItem>> GetDescendantNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
+	public static IEnumerable<Node<TItem>> GetDescendantNodes<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -64,7 +64,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <typeparamref name="TItem"/> matching the <paramref name="id"/>?</param>
-	public static IEnumerable<TItem> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
+	public static IEnumerable<TItem> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -78,7 +78,7 @@ public static class HierarchyTraversalExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the <typeparamref name="TItem"/> to start from.</param>
 	/// <param name="includeSelf">Include the <paramref name="id"/>?</param>
-	public static IEnumerable<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst)
+	public static IEnumerable<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{

@@ -50,7 +50,7 @@ public class NodeLinkingTests
 		var branchB = Node.Create("B").Attach(Node.Create("b1"), Node.Create("b2").Attach(Node.Create("b21")));
 		var root = Node.Create("root").Attach(branchA, branchB);
 
-		var descendantsOfA = branchA.GetDescendants(false).ToArray();
+		var descendantsOfA = branchA.GetDescendants().ToArray();
 		var other = root.GetDescendants(true).Where(n => !n.Item.StartsWith('a')).ToArray();
 
 		Assert.Equal(4, descendantsOfA.Length);

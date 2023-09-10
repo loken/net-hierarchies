@@ -38,7 +38,7 @@ public static class NodeLinkingExtensions
 	}
 
 	/// <summary>
-	/// Disassembling a node means to cascade detach it.
+	/// Dismantling a node means to cascade detach it.
 	/// We always cascade detach the nodes.
 	/// We may also cascade up the ancestry, in which case the node is detached,
 	/// and then the parent is dismantled, leading to the whole linked structure
@@ -59,7 +59,7 @@ public static class NodeLinkingExtensions
 			parent.Dismantle(true);
 		}
 
-		foreach (var descendant in node.GetDescendants(false))
+		foreach (var descendant in node.GetDescendants())
 			descendant.DetachSelf();
 
 		return node;

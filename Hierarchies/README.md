@@ -152,23 +152,23 @@ These don't give you the option of breaking cycles, but they do give you the opt
 These are the signatures for the `NodeTraversalExtensions`:
 
 ```csharp
-IEnumerable<Node<TItem>> nodes =  node.GetDescendants(bool includeSelf, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<Node<TItem>> nodes = nodes.GetDescendants(bool includeSelf, TraversalType type = TraversalType.BreadthFirst);
+IEnumerable<Node<TItem>> nodes =  node.GetDescendants(bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
+IEnumerable<Node<TItem>> nodes = nodes.GetDescendants(bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
 
-IEnumerable<Node<TItem>> nodes =  node.GetAncestors(bool includeSelf);
-IEnumerable<Node<TItem>> nodes = nodes.GetAncestors(bool includeSelf);
+IEnumerable<Node<TItem>> nodes =  node.GetAncestors(bool includeSelf = false);
+IEnumerable<Node<TItem>> nodes = nodes.GetAncestors(bool includeSelf = false);
 ```
 
 These are the signatures for the `HierarchyTraversalExtensions`:
 
 ```csharp
-IEnumerable<Node<TItem>> nodes = hierarchy.GetDescendantNodes(TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<TItem> items       = hierarchy.GetDescendants(    TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<TId> ids           = hierarchy.GetDescendantIds(  TId id, bool includeSelf, TraversalType type = TraversalType.BreadthFirst);
+IEnumerable<Node<TItem>> nodes = hierarchy.GetDescendantNodes(TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
+IEnumerable<TItem> items       = hierarchy.GetDescendants(    TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
+IEnumerable<TId> ids           = hierarchy.GetDescendantIds(  TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
 
-IEnumerable<Node<TItem>> nodes = hierarchy.GetAncestorNodes(TId id, bool includeSelf);
-IEnumerable<TItem> items       = hierarchy.GetAncestors(    TId id, bool includeSelf);
-IEnumerable<TId> ids           = hierarchy.GetAncestorIds(  TId id, bool includeSelf);
+IEnumerable<Node<TItem>> nodes = hierarchy.GetAncestorNodes(TId id, bool includeSelf = false);
+IEnumerable<TItem> items       = hierarchy.GetAncestors(    TId id, bool includeSelf = false);
+IEnumerable<TId> ids           = hierarchy.GetAncestorIds(  TId id, bool includeSelf = false);
 ```
 
 ### Search

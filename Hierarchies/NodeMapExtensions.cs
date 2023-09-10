@@ -119,7 +119,7 @@ public static class NodeMapExtensions
 
 			var nodeId = identify(node.Item);
 
-			foreach (var ancestor in node.GetAncestors(false))
+			foreach (var ancestor in node.GetAncestors())
 				map.LazySet(identify(ancestor.Item)).Add(nodeId);
 		}).EnumerateAll();
 
@@ -160,7 +160,7 @@ public static class NodeMapExtensions
 			signal.Next(node.Children);
 
 			var nodeId = identify(node.Item);
-			foreach (var ancestor in node.GetAncestors(false))
+			foreach (var ancestor in node.GetAncestors())
 				map.LazySet(nodeId).Add(identify(ancestor.Item));
 		}).EnumerateAll();
 
