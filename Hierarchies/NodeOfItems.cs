@@ -109,7 +109,7 @@ public class Node<TItem>
 
 	/// <summary>
 	/// Adds the provided <paramref name="brand"/> to the node,
-	/// providing an action delegate for removing/clearning the brand.
+	/// providing an action delegate for removing/clearing the brand.
 	/// <para>It is necessary to remove an old brand before you can apply another.</para>
 	/// </summary>
 	/// <param name="brand">The brand should uniquely identify the owner or owning concept.</param>

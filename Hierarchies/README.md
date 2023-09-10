@@ -81,7 +81,7 @@ Of course, double-linking comes at the cost of memory. We assume that you don't 
 #### Branding
 A node can be "branded" so that it cannot be attached to another node with a different brand. A node held by a hierarchy is automatically branded. This means that unless you want to intentionally break things by using reflection to break the branding protection, each node in a hierarchy can only belong to that hierarchy. Because of this we expose the nodes in the hierarchy.
 
-If you want to use this API yourself, know that when you brand a node, you get a de-branding delegate back. Calling this is the only way to de-brand the node, so make sure you keep track of it!
+If you want to use this API yourself, know that when you brand a node, you get a debranding delegate back. Calling this is the only way to debrand the node, so make sure you keep track of it!
 
 ### Relations
 

@@ -38,8 +38,8 @@ public static class NodeLinkingExtensions
 	}
 
 	/// <summary>
-	/// Disassmbling a node means to cascade detach it.
-	/// We always caschade detach the nodes.
+	/// Disassembling a node means to cascade detach it.
+	/// We always cascade detach the nodes.
 	/// We may also cascade up the ancestry, in which case the node is detached,
 	/// and then the parent is dismantled, leading to the whole linked structure
 	/// ending up unlinked.

@@ -94,7 +94,7 @@ public class Hierarchy<TItem, TId>
 	/// Detach the provided <paramref name="nodes"/>.
 	/// </summary>
 	/// <param name="nodes">Nodes to detach.</param>
-	/// <returns>The node itself for method chaining purposes.</returns>
+	/// <returns>The hierarchy itself for method chaining purposes.</returns>
 	/// <exception cref="InvalidOperationException">
 	/// Must provide non-empty set of attached <paramref name="nodes"/>.
 	/// </exception>
