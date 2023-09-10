@@ -83,7 +83,6 @@ public class HierarchyLinkingTests
 	public void NodeDetach_WhileBranded_Throws()
 	{
 		var hc1 = Hierarchy.CreateEmpty<string>();
-		var hc2 = Hierarchy.CreateEmpty<string>();
 
 		var a = Node.Create("A");
 		var a1 = Node.Create("A1");

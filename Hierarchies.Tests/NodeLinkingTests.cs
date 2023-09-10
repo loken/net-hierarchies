@@ -61,6 +61,7 @@ public class NodeLinkingTests
 		// The branch that was dismantled is now a leaf, but not a root as it's still connected to it's parent.
 		Assert.True(branchA.IsLeaf);
 		Assert.False(branchA.IsRoot);
+		Assert.Equal(root, branchA.Parent);
 		Assert.Equal(root, branchB.Parent);
 
 		// The descendants of the branch however are no longer linked.
