@@ -6,7 +6,9 @@ on:
     branches:
       - main
       - 'releases?/**'
+      - 'hotfix/**'
       - 'features?/**'
+      - 'tasks?/**'
       - 'pr/**'
 
 jobs:
@@ -41,6 +43,7 @@ jobs:
           dotnet nuget add source -n github    -u loken   -p ${{ secrets.NUGET_GH_TOKEN }} --store-password-in-clear-text "https://nuget.pkg.github.com/loken/index.json"
 
       - name: Versioning
+        id: gitversion
         uses: gittools/actions/gitversion/execute@v0
         with:
           useConfigFile: true
@@ -59,9 +62,9 @@ jobs:
         run: dotnet pack --configuration Release --no-build -o ./output/nuget
 
       - name: 'Nuget: Push to GH Packages'
-        if: ${{ env.GitVersion_PreReleaseLabel != '' }}
+        if: ${{ steps.gitversion.outputs.preReleaseLabel != '' }}
         run: dotnet nuget push ./output/nuget/*.nupkg --source "github" --api-key ${{ secrets.NUGET_GH_TOKEN }}
 
       - name: 'Nuget: Push release to nuget.org'
-        if: ${{ env.GitVersion_PreReleaseLabel == '' }}
+        if: ${{ steps.gitversion.outputs.preReleaseLabel == '' }}
         run: dotnet nuget push ./output/nuget/*.nupkg --source "nuget.org" --api-key ${{ secrets.NUGET_TOKEN }}
