@@ -10,7 +10,7 @@
     <DebugType>embedded</DebugType>
     <IncludeSymbols>false</IncludeSymbols>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <PackageProjectUrl>https://github.com/loken/loken-hierarchies-net</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/loken/net-hierarchies</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
