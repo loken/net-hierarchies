@@ -27,12 +27,7 @@ public static class RelationMapExtensions
 		var map = new Dictionary<TId, ISet<TId>>();
 
 		foreach (var (parent, child) in relations)
-		{
-			if (parent is null)
-				continue;
-
 			map.LazySet(parent).Add(child);
-		}
 
 		return map;
 	}
