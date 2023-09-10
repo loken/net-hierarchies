@@ -54,11 +54,7 @@ public sealed class GraphSignal<TNode>
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		foreach (var root in roots)
-		{
-			Nodes.Attach(root);
-			DepthCount++;
-		}
+		DepthCount = Nodes.Attach(roots);
 
 		if (IsDepthFirst)
 		{
@@ -159,20 +155,20 @@ public sealed class GraphSignal<TNode>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(params TNode[] nodes)
 	{
-		if (nodes.Length == 0)
-			return;
-
-		if (IsDepthFirst)
-			BranchCount.Push(nodes.Length);
-
-		Nodes.Attach(nodes);
+		Next(nodes.AsEnumerable());
 	}
 
 	/// <summary>
 	/// Call this when traversal should continue to a sub sequence of child roots.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(IEnumerable<TNode> nodes) => Next(nodes.ToArray());
+	public void Next(IEnumerable<TNode> nodes)
+	{
+		var count = Nodes.Attach(nodes);
+
+		if (IsDepthFirst && count > 0)
+			BranchCount.Push(count);
+	}
 
 	/// <summary>
 	/// Call this when all traversal should end immediately.
