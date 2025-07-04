@@ -12,9 +12,9 @@ public class NodeAssemblyTests
 			B1:B12
 			""";
 
-		var roots = Node.Assemble(childMap.ParseMultiMap());
+		var roots = Node.Assemble(MultiMap.Parse<string>(childMap));
 
-		var output = roots.ToChildMap(id => id).RenderMultiMap();
+		var output = roots.ToChildMap(id => id).Render();
 
 		Assert.Equal(childMap, output);
 	}
@@ -31,9 +31,9 @@ public class NodeAssemblyTests
 
 		var items = "A,B,A1,A2,B1,A11,A12,B12".Split(',').Select(s => new Item<string>(s)).ToArray();
 
-		var roots = Node.Assemble(item => item.Id, items, childMap.ParseMultiMap());
+		var roots = Node.Assemble(item => item.Id, items, MultiMap.Parse<string>(childMap));
 
-		var output = roots.ToChildMap(item => item.Id).RenderMultiMap();
+		var output = roots.ToChildMap(item => item.Id).Render();
 
 		Assert.Equal(childMap, output);
 	}

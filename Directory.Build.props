@@ -29,4 +29,21 @@
     <InternalsVisibleTo Condition="!$(IsTestProject)" Include="$(AssemblyName).Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Loken.Hierarchies" />
+    <Using Include="Loken.Hierarchies.Data" />
+    <Using Include="Loken.Hierarchies.Traversal" />
+    <Using Include="Loken.System" />
+    <Using Include="Loken.System.Collections" />
+    <Using Include="Loken.System.ComponentModel" />
+    <Using Include="Loken.Utilities" />
+    <Using Include="Loken.Utilities.Collections" />
+    <Using Include="Loken.Utilities.ComponentModel" />
+    <Using Include="Loken.Utilities.IO" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(IsTestProject)">
+    <Using Include="Xunit" />
+  </ItemGroup>
+
 </Project>

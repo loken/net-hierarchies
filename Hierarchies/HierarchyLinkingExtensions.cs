@@ -20,7 +20,7 @@ public static class HierarchyLinkingExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		return hierarchy.AttachRoot(roots.ToArray());
+		return hierarchy.AttachRoot([.. roots]);
 	}
 
 	/// <summary>
@@ -39,7 +39,7 @@ public static class HierarchyLinkingExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		return hierarchy.Attach(parentId, children.ToArray());
+		return hierarchy.Attach(parentId, [.. children]);
 	}
 
 	/// <summary>
@@ -126,7 +126,7 @@ public static class HierarchyLinkingExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		return hierarchy.Detach(nodes.ToArray());
+		return hierarchy.Detach([.. nodes]);
 	}
 
 

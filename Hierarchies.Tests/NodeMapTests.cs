@@ -21,7 +21,7 @@ public class NodeMapTests
 			12:121
 			""";
 
-		var actual = Root.ToChildMap(id => id).RenderMultiMap();
+		var actual = Root.ToChildMap(id => id).Render();
 
 		Assert.Equal(expected, actual);
 	}
@@ -36,7 +36,7 @@ public class NodeMapTests
 			12:121
 			""";
 
-		var actual = Root.ToDescendantMap(id => id).RenderMultiMap();
+		var actual = Root.ToDescendantMap(id => id).Render();
 
 		Assert.Equal(expected, actual);
 	}
@@ -55,7 +55,7 @@ public class NodeMapTests
 			121:12,1,0
 			""";
 
-		var actual = Root.ToAncestorMap(id => id).RenderMultiMap();
+		var actual = Root.ToAncestorMap(id => id).Render();
 
 		Assert.Equal(expected, actual);
 	}

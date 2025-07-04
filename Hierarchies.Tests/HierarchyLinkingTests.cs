@@ -53,7 +53,7 @@ public class HierarchyLinkingTests
 		var hc = Hierarchy.CreateEmpty<string>();
 		hc.AttachRoot(node);
 
-		Assert.Equal(1, hc.Roots.Count);
+		Assert.Single(hc.Roots);
 		Assert.Equivalent(new[] { "A" }, hc.Roots.Select(r => r.Item).ToArray());
 	}
 

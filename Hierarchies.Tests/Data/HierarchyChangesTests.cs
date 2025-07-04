@@ -5,12 +5,12 @@ public class HierarchyChangesTests
 	[Fact]
 	public void Difference()
 	{
-		var map = """
-		A:A1,A2
-		A2:A21
-		B:B1
-		B1:B11,B12,B13
-		""".ParseMultiMap();
+		var map = MultiMap.Parse<string>("""
+			A:A1,A2
+			A2:A21
+			B:B1
+			B1:B11,B12,B13
+			""");
 
 		var oldHierarchy = Hierarchy.CreateMapped(map);
 		var newHierarchy = Hierarchy.CreateMapped(map);
@@ -30,11 +30,11 @@ public class HierarchyChangesTests
 			// Detaching A also deletes its attached children.
 			deleted = "A,A2".SplitBy(',').ToHashSet(),
 			// We've inserted two roots, one of which has a child.
-			inserted = "C~D:D1".ParseMultiMap(sep),
+			inserted = MultiMap.Parse<string>("C~D:D1", sep),
 			// We've removed a child.
-			removed = "B1:B11".ParseMultiMap(sep),
+			removed = MultiMap.Parse<string>("B1:B11", sep),
 			// We've added a child.
-			added = "B1:B14".ParseMultiMap(sep),
+			added = MultiMap.Parse<string>("B1:B14", sep),
 		};
 
 		Assert.Equivalent(expected.deleted, diff.Deleted);

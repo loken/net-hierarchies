@@ -33,18 +33,18 @@ public static class Hierarchy
 				relations.Add((parent, identify(item)));
 		}
 
-		return CreateRelational(identify, items, relations.ToArray());
+		return CreateRelational(identify, items, [.. relations]);
 	}
 
 	/// <summary>
 	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
 	/// with relationships inferred from the <paramref name="childMap"/>.
 	/// </summary>
-	public static Hierarchy<TItem, TId> CreateMapped<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap)
+	public static Hierarchy<TItem, TId> CreateMapped<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, MultiMap<TId> childMap)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return new Hierarchy<TItem, TId>(identify).AttachRoot(Node.Assemble(identify, items, childMap).ToArray());
+		return new Hierarchy<TItem, TId>(identify).AttachRoot(Node.Assemble(identify, items, childMap));
 	}
 
 	/// <summary>
@@ -85,10 +85,10 @@ public static class Hierarchy
 	/// <summary>
 	/// Create a <see cref="Hierarchy{TId}"/> with nodes and relationships inferred from the <paramref name="childMap"/>.
 	/// </summary>
-	public static Hierarchy<TId> CreateMapped<TId>(IDictionary<TId, ISet<TId>> childMap)
+	public static Hierarchy<TId> CreateMapped<TId>(MultiMap<TId> childMap)
 		where TId : notnull
 	{
-		var roots = Node.Assemble(childMap).ToArray();
+		var roots = Node.Assemble(childMap);
 		return (Hierarchy<TId>)new Hierarchy<TId>().AttachRoot(roots);
 	}
 

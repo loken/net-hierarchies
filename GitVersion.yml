@@ -1,1 +1,5 @@
-mode: ContinuousDeployment
+mode: Mainline
+commit-message-incrementing: Enabled
+branches:
+  feature:
+    regex: ^features?[/-]|^tasks?[/-]

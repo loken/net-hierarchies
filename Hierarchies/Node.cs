@@ -30,7 +30,7 @@ public static class Node
 	public static Node<TItem>[] CreateMany<TItem>(params TItem[] items)
 		where TItem : notnull
 	{
-		return CreateMany(items.AsEnumerable()).ToArray();
+		return [.. CreateMany(items.AsEnumerable())];
 	}
 
 	/// <summary>
@@ -42,7 +42,7 @@ public static class Node
 	/// <param name="items">The items to wrap in nodes.</param>
 	/// <param name="childMap">The map describing the relations.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TItem>> Assemble<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, IDictionary<TId, ISet<TId>> childMap)
+	public static ICollection<Node<TItem>> Assemble<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, MultiMap<TId> childMap)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -81,7 +81,7 @@ public static class Node
 	/// <typeparam name="TId">The type of IDs.</typeparam>
 	/// <param name="childMap">The map describing the relations.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TId>> Assemble<TId>(IDictionary<TId, ISet<TId>> childMap)
+	public static ICollection<Node<TId>> Assemble<TId>(MultiMap<TId> childMap)
 		where TId : notnull
 	{
 		var nodes = new Dictionary<TId, Node<TId>>();

@@ -53,12 +53,12 @@ public class HierarchyCreationTests
 	[Fact]
 	public void CreateMapped_ReturnsCorrectRoots()
 	{
-		var childMap = """
-			A:A1,A2
-			A1:A11,A12
-			B:B1
-			B1:B12
-			""".ParseMultiMap();
+		var childMap = MultiMap.Parse<string>("""
+		A:A1,A2
+		A1:A11,A12
+		B:B1
+		B1:B12
+		""");
 
 		var hc = Hierarchy.CreateMapped(childMap);
 
@@ -69,12 +69,14 @@ public class HierarchyCreationTests
 	[Fact]
 	public void CreateMatching_ReturnsTheSameStructure()
 	{
-		var idHierarchy = Hierarchy.CreateMapped("""
-			A:A1,A2
-			A2:A21
-			B:B1
-			B1:B11,B12,B13
-			""".ParseMultiMap());
+		var childMap = MultiMap.Parse<string>("""
+		A:A1,A2
+		A2:A21
+		B:B1
+		B1:B11,B12,B13
+		""");
+
+		var idHierarchy = Hierarchy.CreateMapped(childMap);
 
 		var items = new[]
 		{
@@ -90,8 +92,8 @@ public class HierarchyCreationTests
 		};
 		var matchingHierarchy = Hierarchy.CreateMatching(item => item.Id, items, idHierarchy);
 
-		var idStructure = idHierarchy.ToChildMap().RenderMultiMap();
-		var matchingStructure = matchingHierarchy.ToChildMap().RenderMultiMap();
+		var idStructure = idHierarchy.ToChildMap().Render();
+		var matchingStructure = matchingHierarchy.ToChildMap().Render();
 		Assert.Equal(idStructure, matchingStructure);
 	}
 }

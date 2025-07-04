@@ -8,7 +8,7 @@ public static class RelationMapExtensions
 	/// <summary>
 	/// Create a sequence of relations matching the <paramref name="childMap"/>.
 	/// </summary>
-	public static IEnumerable<(TId parent, TId child)> ToRelations<TId>(this IDictionary<TId, ISet<TId>> childMap)
+	public static IEnumerable<(TId parent, TId child)> ToRelations<TId>(this MultiMap<TId> childMap)
 		where TId : notnull
 	{
 		foreach (var (parent, children) in childMap)
@@ -21,10 +21,10 @@ public static class RelationMapExtensions
 	/// <summary>
 	/// Create a child-map matching the <paramref name="relations"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToChildMap<TId>(this IEnumerable<(TId parent, TId child)> relations)
+	public static MultiMap<TId> ToChildMap<TId>(this IEnumerable<(TId parent, TId child)> relations)
 		where TId : notnull
 	{
-		var map = new Dictionary<TId, ISet<TId>>();
+		var map = new MultiMap<TId>();
 
 		foreach (var (parent, child) in relations)
 			map.LazySet(parent).Add(child);

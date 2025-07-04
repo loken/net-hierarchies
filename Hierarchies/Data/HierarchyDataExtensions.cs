@@ -14,16 +14,26 @@ public static class HierarchyDataExtensions
 	/// <summary>
 	/// Create a multi-map from the <paramref name="relations"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToMap<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
+	public static MultiMap<TId> ToMap<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
 		where TId : notnull
 	{
-		return relations.ToDictionary(r => r.Id, r => r.Targets);
+		var map = new MultiMap<TId>();
+
+		foreach (var relation in relations)
+		{
+			if (relation.Targets == null || !relation.Targets.Any())
+				map.Add(relation.Id);
+			else
+				map.Add(relation.Id, relation.Targets);
+		}
+
+		return map;
 	}
 
 	/// <summary>
 	/// Create <see cref="HierarchyRelation{TId}"/>s from the <paramref name="multiMap"/> and <paramref name="concept"/>.
 	/// </summary>
-	public static IEnumerable<HierarchyRelation<TId>> ToRelations<TId>(this IDictionary<TId, ISet<TId>> multiMap, string concept, RelType type)
+	public static IEnumerable<HierarchyRelation<TId>> ToRelations<TId>(this MultiMap<TId> multiMap, string concept, RelType type)
 		where TId : notnull
 	{
 		return multiMap.Select(x => new HierarchyRelation<TId>

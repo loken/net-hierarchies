@@ -142,13 +142,14 @@ public class GraphTests
 	[Fact]
 	public void Traverse_BreadthFirst_ProvidesCorrectDepth()
 	{
-		var hierarchy = Hierarchy.CreateMapped("""
-			A:A1,A2
-			A1:A11,A12
-			A2:A21
-			B:B1
-			B1:B12
-			""".ParseMultiMap());
+		var childMap = MultiMap.Parse<string>("""
+		A:A1,A2
+		A1:A11,A12
+		A2:A21
+		B:B1
+		B1:B12
+		""");
+		var hierarchy = Hierarchy.CreateMapped(childMap);
 
 		var traversed = new List<(string item, int depth)>();
 		Traverse.Graph(hierarchy.Roots, (node, signal) =>
@@ -165,13 +166,14 @@ public class GraphTests
 	[Fact]
 	public void Traverse_DepthFirst_ProvidesCorrectDepth()
 	{
-		var hierarchy = Hierarchy.CreateMapped("""
+		var childMap = MultiMap.Parse<string>("""
 			A:A1,A2
 			A1:A11,A12
 			A2:A21
 			B:B1
 			B1:B12
-			""".ParseMultiMap());
+			""");
+		var hierarchy = Hierarchy.CreateMapped(childMap);
 
 		var traversed = new List<(string item, int depth)>();
 		Traverse.Graph(hierarchy.Roots, (node, signal) =>

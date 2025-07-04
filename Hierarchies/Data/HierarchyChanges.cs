@@ -71,8 +71,8 @@ public static class HierarchyChanges
 	/// <param name="type">The "specific" relationship type for which we want to create a difference.</param>
 	/// <returns>A <see cref="HierarchyDiff{TId}"/> which can be used for creating a batch of database updates.</returns>
 	public static HierarchyDiff<TId> Difference<TId>(
-		IDictionary<TId, ISet<TId>> oldMap,
-		IDictionary<TId, ISet<TId>> newMap,
+		MultiMap<TId> oldMap,
+		MultiMap<TId> newMap,
 		string concept,
 		RelType type
 	)

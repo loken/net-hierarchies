@@ -19,7 +19,7 @@ public static class NodeLinkingExtensions
 	public static Node<TItem> Attach<TItem>(this Node<TItem> parent, IEnumerable<Node<TItem>> children)
 		where TItem : notnull
 	{
-		return parent.Attach(children.ToArray());
+		return parent.Attach([.. children]);
 	}
 
 	/// <summary>
@@ -34,7 +34,7 @@ public static class NodeLinkingExtensions
 	public static Node<TItem> Detach<TItem>(this Node<TItem> parent, IEnumerable<Node<TItem>> children)
 		where TItem : notnull
 	{
-		return parent.Detach(children.ToArray());
+		return parent.Detach([.. children]);
 	}
 
 	/// <summary>

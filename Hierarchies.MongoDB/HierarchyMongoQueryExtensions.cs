@@ -8,7 +8,7 @@ public static class HierarchyMongoQueryExtensions
 	/// <summary>
 	/// Get relations for a <paramref name="concept"/> and one or more <paramref name="types"/>.
 	/// </summary>
-	public static IEnumerable<HierarchyRelation<TId>> GetRelations<TId>(this IMongoCollection<HierarchyRelation<TId>> collection, string concept, RelType types)
+	public static IList<HierarchyRelation<TId>> GetRelations<TId>(this IMongoCollection<HierarchyRelation<TId>> collection, string concept, RelType types)
 		where TId : notnull
 	{
 		Rel.AssertHasSpecific(types);
@@ -16,7 +16,7 @@ public static class HierarchyMongoQueryExtensions
 		var specific = Rel.GetSpecific(types).ToArray();
 		return collection
 			.Find(r => r.Concept == concept && specific.Contains(r.Type))
-			.ToEnumerable();
+			.ToList();
 	}
 
 	/// <summary>
