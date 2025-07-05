@@ -3,7 +3,7 @@
 public class SequenceTests
 {
 	[Fact]
-	public void Sequence_Simple_YieldsValuesInOrder()
+	public void SequenceNext_YieldsInOrder()
 	{
 		var expected = Enumerable.Range(0, 5).ToArray();
 		var list = new LinkedList<int>(expected);
@@ -16,7 +16,7 @@ public class SequenceTests
 	}
 
 	[Fact]
-	public void Sequence_WithSkip_YieldsCorrectValues()
+	public void SequenceSignal_WithSkip_YieldsCorrectValues()
 	{
 		var list = new LinkedList<int>(Enumerable.Range(1, 4));
 
@@ -41,12 +41,12 @@ public class SequenceTests
 	}
 
 	[Fact]
-	public void Sequence_WithSkip_ReportsCorrectIndexAndCount()
+	public void SequenceSignal_WithSkip_ProvidesCorrectIndexAndCount()
 	{
 		// We set it up so that index and value matches
 		// and so that we exclude odd values from the result.
 		var expectedCounts = new[] { 0, 1, 1, 2, 2 };
-		var list = new LinkedList<int>(new[] { 0, 1, 2, 3, 4 });
+		var list = new LinkedList<int>([0, 1, 2, 3, 4]);
 
 		var elements = Traverse.Sequence(list.First!, (el, signal) =>
 		{

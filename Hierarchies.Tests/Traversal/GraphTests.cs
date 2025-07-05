@@ -2,19 +2,25 @@
 
 public class GraphTests
 {
-	[Fact]
-	public void Traverse_BreadthFirst_YieldsCorrectOrder()
-	{
-		var root = Node.Create(0).Attach(
+	protected static Node<int> IntRoot { get; } =
+		Node.Create(0).Attach(
 			Node.Create(1).Attach(
 				Node.Create(11),
 				Node.Create(12).Attach(Node.Create(121))),
 			Node.Create(2),
-			Node.Create(3).Attach(
-				Node.Create(31),
-				Node.Create(32)));
+			Node.Create(3).Attach(Node.CreateMany(31, 32)));
 
-		var nodes = Traverse.Graph(root, node => node.Children, type: TraversalType.BreadthFirst);
+	protected static Node<string>[] StrRoots { get; } = [
+		Node.Create("A").Attach(
+			Node.Create("A1").Attach(Node.CreateMany("A11", "A12")),
+			Node.Create("A2").Attach(Node.Create("A21"))),
+		Node.Create("B").Attach(Node.Create("B1").Attach(Node.Create("B12"))),
+	];
+
+	[Fact]
+	public void TraverseNext_BreadthFirst_YieldsCorrectOrder()
+	{
+		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.AsItems().ToArray();
@@ -23,18 +29,9 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_DepthFirst_YieldsCorrectOrder()
+	public void TraverseNext_DepthFirst_YieldsCorrectOrder()
 	{
-		var root = Node.Create(0).Attach(
-			Node.Create(1).Attach(
-				Node.Create(11),
-				Node.Create(12).Attach(Node.Create(121))),
-			Node.Create(2),
-			Node.Create(3).Attach(
-				Node.Create(31),
-				Node.Create(32)));
-
-		var nodes = Traverse.Graph(root, node => node.Children, type: TraversalType.DepthFirst);
+		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.AsItems().ToArray();
@@ -43,18 +40,37 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_WithSkipAndExclusion_YieldsCorrectOrder()
+	public void TraverseSignal_BreadthFirst_YieldsCorrectOrder()
 	{
-		var root = Node.Create(0).Attach(
-			Node.Create(1).Attach(
-				Node.Create(11),
-				Node.Create(12).Attach(Node.Create(121))),
-			Node.Create(2),
-			Node.Create(3).Attach(
-				Node.Create(31),
-				Node.Create(32)));
+		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
+		{
+			signal.Next(node.Children);
+		}, type: TraversalType.BreadthFirst);
 
-		var nodes = Traverse.Graph(root, (node, signal) =>
+		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
+		var actual = nodes.AsItems().ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_DepthFirst_YieldsCorrectOrder()
+	{
+		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
+		{
+			signal.Next(node.Children);
+		}, type: TraversalType.DepthFirst);
+
+		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
+		var actual = nodes.AsItems().ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_WithSkip_YieldsCorrectOrder()
+	{
+		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
 		{
 			// Exclude children of 3 which is 31 and 32.
 			if (node.Item != 3)
@@ -72,39 +88,11 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_Signal_ProvidesCorrectDepth()
+	public void TraverseSignal_WithSkipAndEnd_YieldsWantedNode()
 	{
-		var root = Node.Create(0).Attach(
-			Node.Create(1).Attach(
-				Node.Create(11),
-				Node.Create(12).Attach(Node.Create(121))),
-			Node.Create(2),
-			Node.Create(3).Attach(
-				Node.Create(31),
-				Node.Create(32)));
-
-		Traverse.Graph(root, (node, signal) =>
-		{
-			signal.Next(node.Children);
-
-			// Due to our value scheme the depth is equal to
-			// the number of digits which we can get with a bit of math.
-			var expectedDepth = node.Item == 0 ? 0 : Math.Floor(Math.Log10(node.Item) + 1);
-			Assert.Equal(expectedDepth, signal.Depth);
-		}).EnumerateAll();
-	}
-
-	[Fact]
-	public void Traverse_SkipAndEnd_FindNode()
-	{
-		var root = Node.Create(0).Attach(
-			Node.Create(1).Attach(
-				Node.Create(11),
-				Node.Create(12).Attach(Node.Create(121))));
-
 		// Let's implement a search for a single node.
 		var expected = 12;
-		var actual = Traverse.Graph(root, (node, signal) =>
+		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
 		{
 			signal.Next(node.Children);
 
@@ -114,13 +102,15 @@ public class GraphTests
 				signal.End();
 			else
 				signal.Skip();
-		}).AsItems().Single();
+		});
+
+		var actual = nodes.AsItems().SingleOrDefaultMany();
 
 		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
-	public void Traverse_Circular_BreaksOnVisited()
+	public void TraverseNext_OnCircularGraph_BreaksOnVisited()
 	{
 		var last = Node.Create(4);
 		var first = Node.Create(1).Attach(
@@ -140,19 +130,30 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_BreadthFirst_ProvidesCorrectDepth()
+	public void TraverseSignal_OnCircularGraph_BreaksOnVisited()
 	{
-		var childMap = MultiMap.Parse<string>("""
-		A:A1,A2
-		A1:A11,A12
-		A2:A21
-		B:B1
-		B1:B12
-		""");
-		var hierarchy = Hierarchy.CreateMapped(childMap);
+		var last = Node.Create(4);
+		var first = Node.Create(1).Attach(
+			Node.Create(2).Attach(
+				Node.Create(3).Attach(
+					last)));
 
+		// Make it circular!
+		last.Attach(first);
+
+		var nodes = Traverse.Graph(first, (node, signal) => signal.Next(node.Children), true);
+
+		var expected = new[] { 1, 2, 3, 4 };
+		var actual = nodes.AsItems().ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_BreadthFirst_ProvidesCorrectDepth()
+	{
 		var traversed = new List<(string item, int depth)>();
-		Traverse.Graph(hierarchy.Roots, (node, signal) =>
+		Traverse.Graph(StrRoots, (node, signal) =>
 		{
 			signal.Next(node.Children);
 
@@ -164,19 +165,10 @@ public class GraphTests
 	}
 
 	[Fact]
-	public void Traverse_DepthFirst_ProvidesCorrectDepth()
+	public void TraverseSignal_DepthFirst_ProvidesCorrectDepth()
 	{
-		var childMap = MultiMap.Parse<string>("""
-			A:A1,A2
-			A1:A11,A12
-			A2:A21
-			B:B1
-			B1:B12
-			""");
-		var hierarchy = Hierarchy.CreateMapped(childMap);
-
 		var traversed = new List<(string item, int depth)>();
-		Traverse.Graph(hierarchy.Roots, (node, signal) =>
+		Traverse.Graph(StrRoots, (node, signal) =>
 		{
 			signal.Next(node.Children);
 
