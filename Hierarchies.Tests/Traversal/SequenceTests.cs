@@ -45,10 +45,11 @@ public class SequenceTests
 	{
 		// We set it up so that index and value matches
 		// and so that we exclude odd values from the result.
-		var expectedCounts = new[] { 0, 1, 1, 2, 2 };
 		var list = new LinkedList<int>([0, 1, 2, 3, 4]);
+		var expected = new[] { 0, 2, 4 };
+		var expectedCounts = new[] { 0, 1, 1, 2, 2 };
 
-		var elements = Traverse.Sequence(list.First!, (el, signal) =>
+		var actual = Traverse.Sequence(list.First, (el, signal) =>
 		{
 			var expectedCount = expectedCounts[signal.Index];
 			Assert.Equal(expectedCount, signal.Count);
@@ -58,6 +59,75 @@ public class SequenceTests
 				signal.Skip();
 
 			signal.Next(el.Next);
-		}).ToArray();
+		}).Select(el => el.Value).ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void SequenceNext_WithEmptySequence_YieldsNothing()
+	{
+		var elements = Traverse.Sequence<LinkedListNode<int>>(null, el => el.Next);
+
+		var actual = elements.ToArray();
+
+		Assert.Empty(actual);
+	}
+
+	[Fact]
+	public void SequenceNext_WithSingleElement_YieldsOneItem()
+	{
+		var list = new LinkedList<int>([42]);
+
+		var elements = Traverse.Sequence(list.First, el => el.Next);
+
+		var expected = new[] { 42 };
+		var actual = elements.Select(el => el.Value).ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void SequenceSignal_WithEarlyTermination_YieldsWantedElement()
+	{
+		// Let's implement a search for a single element by not providing next elements after we find it.
+		var list = new LinkedList<int>(Enumerable.Range(0, 10));
+
+		var elements = Traverse.Sequence(list.First, (el, signal) =>
+		{
+			// We want to stop traversal once we find the element we want
+			// and to skip every other element.
+			if (el.Value == 3)
+			{
+				// Don't provide next element to stop traversal
+				return;
+			}
+			else
+			{
+				signal.Skip();
+			}
+
+			// Signal the next element unless we're done.
+			signal.Next(el.Next);
+		});
+
+		var expected = new[] { 3 };
+		var actual = elements.Select(el => el.Value).ToArray();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void SequenceSignal_WithNullFirst_YieldsNothing()
+	{
+		var elements = Traverse.Sequence<LinkedListNode<int>>(null, (el, signal) =>
+		{
+			// This should never be called
+			Assert.Fail("Signal function should not be called with null first element");
+		});
+
+		var actual = elements.ToArray();
+
+		Assert.Empty(actual);
 	}
 }
