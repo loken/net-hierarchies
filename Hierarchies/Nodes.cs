@@ -4,7 +4,7 @@
 /// Factory class for <see cref="Node{TItem}"/> which allow us to infer
 /// the type parameter from the arguments.
 /// </summary>
-public static class Node
+public static class Nodes
 {
 	/// <summary>
 	/// Create a <see cref="Node{TItem}"/> from the <paramref name="item"/>.

@@ -2,14 +2,14 @@
 
 public class NodeMapTests
 {
-	private static readonly Node<int> Root = Node.Create(0).Attach(
-		Node.Create(1).Attach(
-			Node.Create(11),
-			Node.Create(12).Attach(Node.Create(121))),
-		Node.Create(2),
-		Node.Create(3).Attach(
-			Node.Create(31),
-			Node.Create(32)));
+	private static readonly Node<int> Root = Nodes.Create(0).Attach(
+		Nodes.Create(1).Attach(
+			Nodes.Create(11),
+			Nodes.Create(12).Attach(Nodes.Create(121))),
+		Nodes.Create(2),
+		Nodes.Create(3).Attach(
+			Nodes.Create(31),
+			Nodes.Create(32)));
 
 	[Fact]
 	public void ToChildMap()

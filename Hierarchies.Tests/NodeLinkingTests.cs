@@ -5,8 +5,8 @@ public class NodeLinkingTests
 	[Fact]
 	public void Attach_LinksBothWays()
 	{
-		Node<string> root = Node.Create("root");
-		Node<string> child = Node.Create("child");
+		Node<string> root = Nodes.Create("root");
+		Node<string> child = Nodes.Create("child");
 
 		root.Attach(child);
 
@@ -20,8 +20,8 @@ public class NodeLinkingTests
 	[Fact]
 	public void Detach_UnlinksBothWays()
 	{
-		Node<string> root = Node.Create("root");
-		Node<string> child = Node.Create("child");
+		Node<string> root = Nodes.Create("root");
+		Node<string> child = Nodes.Create("child");
 		root.Attach(child);
 
 		root.Detach(child);
@@ -33,8 +33,8 @@ public class NodeLinkingTests
 	[Fact]
 	public void DetachSelf_UnlinksBothWays()
 	{
-		Node<string> root = Node.Create("root");
-		Node<string> child = Node.Create("child");
+		Node<string> root = Nodes.Create("root");
+		Node<string> child = Nodes.Create("child");
 		root.Attach(child);
 
 		child.DetachSelf();
@@ -46,9 +46,9 @@ public class NodeLinkingTests
 	[Fact]
 	public void Dismantle_ExcludeAncestry_UnlinksEverything()
 	{
-		var branchA = Node.Create("A").Attach(Node.Create("a1"), Node.Create("a2"), Node.Create("a3").Attach(Node.Create("a31")));
-		var branchB = Node.Create("B").Attach(Node.Create("b1"), Node.Create("b2").Attach(Node.Create("b21")));
-		var root = Node.Create("root").Attach(branchA, branchB);
+		var branchA = Nodes.Create("A").Attach(Nodes.Create("a1"), Nodes.Create("a2"), Nodes.Create("a3").Attach(Nodes.Create("a31")));
+		var branchB = Nodes.Create("B").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
+		var root = Nodes.Create("root").Attach(branchA, branchB);
 
 		var descendantsOfA = branchA.GetDescendants().ToArray();
 		var other = root.GetDescendants(true).Where(n => !n.Item.StartsWith('a')).ToArray();
@@ -74,9 +74,9 @@ public class NodeLinkingTests
 	[Fact]
 	public void Dismantle_IncludeAncestry_UnlinksEverything()
 	{
-		var branchA = Node.Create("a").Attach(Node.Create("a1"), Node.Create("a2"), Node.Create("a3").Attach(Node.Create("a31")));
-		var branchB = Node.Create("b").Attach(Node.Create("b1"), Node.Create("b2").Attach(Node.Create("b21")));
-		var root = Node.Create("root").Attach(branchA, branchB);
+		var branchA = Nodes.Create("a").Attach(Nodes.Create("a1"), Nodes.Create("a2"), Nodes.Create("a3").Attach(Nodes.Create("a31")));
+		var branchB = Nodes.Create("b").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
+		var root = Nodes.Create("root").Attach(branchA, branchB);
 
 		var nodes = root.GetDescendants(true).ToArray();
 

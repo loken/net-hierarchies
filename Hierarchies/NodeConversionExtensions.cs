@@ -24,7 +24,7 @@ public static class NodeConversionExtensions
 	public static IEnumerable<Node<TItem>> AsNodes<TItem>(this IEnumerable<TItem> items)
 		where TItem : notnull
 	{
-		return Node.CreateMany(items);
+		return Nodes.CreateMany(items);
 	}
 
 	/// <summary>

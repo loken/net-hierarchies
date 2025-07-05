@@ -18,7 +18,7 @@ public class NodeJsonSerializationTests
 		}
 		""";
 
-		var root = Node.Create("root").Attach(Node.Create("a"));
+		var root = Nodes.Create("root").Attach(Nodes.Create("a"));
 		var nodes = root.GetDescendants(true).ToArray();
 
 		var actualJson = JsonConvert.SerializeObject(root, Formatting.Indented);

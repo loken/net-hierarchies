@@ -5,8 +5,8 @@ public class NodeBrandingTests
 	[Fact]
 	public void Attach_UnbrandedAndBranded_Throws()
 	{
-		var a = Node.Create("A");
-		var b = Node.Create("B");
+		var a = Nodes.Create("A");
+		var b = Nodes.Create("B");
 
 		a.Brand("some-brand");
 
@@ -17,8 +17,8 @@ public class NodeBrandingTests
 	[Fact]
 	public void Attach_DifferentBrands_Throws()
 	{
-		var a = Node.Create("A");
-		var b = Node.Create("B");
+		var a = Nodes.Create("A");
+		var b = Nodes.Create("B");
 
 		a.Brand("some-brand");
 		b.Brand("other-brand");
@@ -30,8 +30,8 @@ public class NodeBrandingTests
 	[Fact]
 	public void Detach_Branded_Throws()
 	{
-		var a = Node.Create("A");
-		var b = Node.Create("B");
+		var a = Nodes.Create("A");
+		var b = Nodes.Create("B");
 
 		a.Brand("some-brand");
 		b.Brand("some-brand");
@@ -44,8 +44,8 @@ public class NodeBrandingTests
 	[Fact]
 	public void DetachDelegate_Branded_Works()
 	{
-		var a = Node.Create("A");
-		var b = Node.Create("B");
+		var a = Nodes.Create("A");
+		var b = Nodes.Create("B");
 
 		var debrandA = a.Brand("some-brand");
 		var debrandB = b.Brand("some-brand");

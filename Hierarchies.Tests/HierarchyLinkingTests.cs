@@ -7,13 +7,13 @@ public class HierarchyLinkingTests
 	{
 		var hc = Hierarchy.CreateEmpty<string>();
 
-		hc.AttachRoot(Node.Create("A"));
-		hc.Attach("A", Node.Create("A1"));
-		hc.Attach("A", Node.Create("A2"));
-		hc.Attach("A2", Node.Create("A21"));
-		hc.AttachRoot(Node.Create("B"));
-		hc.Attach("B", Node.Create("B1"));
-		hc.Attach("B1", Node.Create("B11"));
+		hc.AttachRoot(Nodes.Create("A"));
+		hc.Attach("A", Nodes.Create("A1"));
+		hc.Attach("A", Nodes.Create("A2"));
+		hc.Attach("A2", Nodes.Create("A21"));
+		hc.AttachRoot(Nodes.Create("B"));
+		hc.Attach("B", Nodes.Create("B1"));
+		hc.Attach("B1", Nodes.Create("B11"));
 
 		Assert.Equal(2, hc.Roots.Count);
 		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
@@ -47,8 +47,8 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void Attach_PreBuiltRoot_Works()
 	{
-		var node = Node.Create("A");
-		node.Attach(Node.CreateMany("A1", "A2"));
+		var node = Nodes.Create("A");
+		node.Attach(Nodes.CreateMany("A1", "A2"));
 
 		var hc = Hierarchy.CreateEmpty<string>();
 		hc.AttachRoot(node);
@@ -63,9 +63,9 @@ public class HierarchyLinkingTests
 		var hc1 = Hierarchy.CreateEmpty<string>();
 		var hc2 = Hierarchy.CreateEmpty<string>();
 
-		var a = Node.Create("A");
-		var a1 = Node.Create("A1");
-		var a2 = Node.Create("A2");
+		var a = Nodes.Create("A");
+		var a1 = Nodes.Create("A1");
+		var a2 = Nodes.Create("A2");
 		a.Attach(a1, a2);
 
 		hc1.AttachRoot(a);
@@ -84,9 +84,9 @@ public class HierarchyLinkingTests
 	{
 		var hc1 = Hierarchy.CreateEmpty<string>();
 
-		var a = Node.Create("A");
-		var a1 = Node.Create("A1");
-		var a2 = Node.Create("A2");
+		var a = Nodes.Create("A");
+		var a1 = Nodes.Create("A1");
+		var a2 = Nodes.Create("A2");
 		a.Attach(a1, a2);
 
 		hc1.AttachRoot(a);
@@ -102,9 +102,9 @@ public class HierarchyLinkingTests
 		var hc1 = Hierarchy.CreateEmpty<string>();
 		var hc2 = Hierarchy.CreateEmpty<string>();
 
-		var a = Node.Create("A");
-		var a1 = Node.Create("A1");
-		var a2 = Node.Create("A2");
+		var a = Nodes.Create("A");
+		var a1 = Nodes.Create("A1");
+		var a2 = Nodes.Create("A2");
 		a.Attach(a1, a2);
 
 		hc1.AttachRoot(a);

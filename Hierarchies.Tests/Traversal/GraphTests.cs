@@ -3,18 +3,18 @@
 public class GraphTests
 {
 	protected static Node<int> IntRoot { get; } =
-		Node.Create(0).Attach(
-			Node.Create(1).Attach(
-				Node.Create(11),
-				Node.Create(12).Attach(Node.Create(121))),
-			Node.Create(2),
-			Node.Create(3).Attach(Node.CreateMany(31, 32)));
+		Nodes.Create(0).Attach(
+			Nodes.Create(1).Attach(
+				Nodes.Create(11),
+				Nodes.Create(12).Attach(Nodes.Create(121))),
+			Nodes.Create(2),
+			Nodes.Create(3).Attach(Nodes.CreateMany(31, 32)));
 
 	protected static Node<string>[] StrRoots { get; } = [
-		Node.Create("A").Attach(
-			Node.Create("A1").Attach(Node.CreateMany("A11", "A12")),
-			Node.Create("A2").Attach(Node.Create("A21"))),
-		Node.Create("B").Attach(Node.Create("B1").Attach(Node.Create("B12"))),
+		Nodes.Create("A").Attach(
+			Nodes.Create("A1").Attach(Nodes.CreateMany("A11", "A12")),
+			Nodes.Create("A2").Attach(Nodes.Create("A21"))),
+		Nodes.Create("B").Attach(Nodes.Create("B1").Attach(Nodes.Create("B12"))),
 	];
 
 	[Fact]
@@ -112,10 +112,10 @@ public class GraphTests
 	[Fact]
 	public void TraverseNext_OnCircularGraph_BreaksOnVisited()
 	{
-		var last = Node.Create(4);
-		var first = Node.Create(1).Attach(
-			Node.Create(2).Attach(
-				Node.Create(3).Attach(
+		var last = Nodes.Create(4);
+		var first = Nodes.Create(1).Attach(
+			Nodes.Create(2).Attach(
+				Nodes.Create(3).Attach(
 					last)));
 
 		// Make it circular!
@@ -132,10 +132,10 @@ public class GraphTests
 	[Fact]
 	public void TraverseSignal_OnCircularGraph_BreaksOnVisited()
 	{
-		var last = Node.Create(4);
-		var first = Node.Create(1).Attach(
-			Node.Create(2).Attach(
-				Node.Create(3).Attach(
+		var last = Nodes.Create(4);
+		var first = Nodes.Create(1).Attach(
+			Nodes.Create(2).Attach(
+				Nodes.Create(3).Attach(
 					last)));
 
 		// Make it circular!
