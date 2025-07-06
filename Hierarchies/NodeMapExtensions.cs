@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies;
+﻿using System.Dynamic;
+
+namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extension methods for turning <see cref="Node{TItem}"/> roots into various kinds of relational multi-maps.
@@ -68,26 +70,33 @@ public static class NodeMapExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new MultiMap<TId>();
+		var childMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
-
-			var nodeId = identify(node.Item);
-			if (node.IsLeaf)
+			var nodeId = identify(root.Item);
+			if (root.IsInternal)
 			{
-				if (signal.Depth == 0)
-					map.Add(nodeId);
+				var childIds = root.Children.AsIds(identify);
+				childMap.Add(nodeId, childIds);
 			}
 			else
 			{
-				var childIds = node.Children.AsIds(identify);
-				map.Add(nodeId, childIds);
+				childMap.Add(nodeId);
 			}
-		}).EnumerateAll();
+		}
 
-		return map;
+		var nodes = Traverse.Graph(roots, node => node.Children.Where(n => n.IsInternal)).ToArray();
+
+		foreach (var node in nodes)
+		{
+			var childNodes = node.Children;
+			var nodeId = identify(node.Item);
+			var childIds = childNodes.AsIds(identify);
+			childMap.Add(nodeId, childIds);
+		}
+
+		return childMap;
 	}
 
 	/// <summary>
@@ -117,19 +126,34 @@ public static class NodeMapExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new MultiMap<TId>();
+		var descendantMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		var store = new Queue<(Node<TItem> node, ISet<TId>[] ancestors)>();
+		store.Enqueue(roots.Select(r => (r, Array.Empty<ISet<TId>>())));
+
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
+			var rootId = identify(root.Item);
+			descendantMap.Add(rootId);
+		}
 
+		while (store.Count > 0)
+		{
+			var (node, ancestors) = store.Dequeue();
 			var nodeId = identify(node.Item);
 
-			foreach (var ancestor in node.GetAncestors())
-				map.Add(identify(ancestor.Item), nodeId);
-		}).EnumerateAll();
+			foreach (var ancestor in ancestors)
+				ancestor.Add(nodeId);
 
-		return map;
+			if (node.IsInternal)
+			{
+				var nodeDescendants = descendantMap.LazySet(nodeId);
+				ISet<TId>[] childAncestors = [.. ancestors, nodeDescendants];
+				store.Enqueue(node.Children.Select(child => (child, childAncestors)));
+			}
+		}
+
+		return descendantMap;
 	}
 
 	/// <summary>
@@ -159,17 +183,32 @@ public static class NodeMapExtensions
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new MultiMap<TId>();
+		var ancestorMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		var store = new Queue<(Node<TItem> node, TId[]? ancestors)>();
+		store.Enqueue(roots.Select(r => (r, null as TId[])));
+
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
+			if (root.IsLeaf)
+				ancestorMap.Add(identify(root.Item));
+		}
 
+		while (store.Count > 0)
+		{
+			var (node, ancestors) = store.Dequeue();
 			var nodeId = identify(node.Item);
-			foreach (var ancestor in node.GetAncestors())
-				map.Add(nodeId, identify(ancestor.Item));
-		}).EnumerateAll();
 
-		return map;
+			if (ancestors is not null)
+				ancestorMap.Add(nodeId, ancestors);
+
+			if (node.IsInternal)
+			{
+				TId[] childAncestors = ancestors is not null ? [nodeId, .. ancestors] : [nodeId];
+				store!.Enqueue(node.Children.Select(child => (child, childAncestors)));
+			}
+		}
+
+		return ancestorMap;
 	}
 }

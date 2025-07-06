@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Loken.Hierarchies;
 
 /// <summary>
@@ -8,39 +10,39 @@ namespace Loken.Hierarchies;
 /// <remarks>
 /// A <see cref="Relation{TId}"/> is a class so that it can be more easily stored in a database.
 /// Some databases don't accept structs.
+/// When <see cref="ParentOnly"/> is true, this represents a one-sided relation (isolated node).
 /// </remarks>
 public class Relation<TId>
 	where TId : notnull
 {
+	public Relation(TId parent)
+	{
+		Parent = parent;
+		Child = default;
+		ParentOnly = true;
+	}
+
+	public Relation(TId parent, TId child)
+	{
+		Parent = parent;
+		Child = child;
+		ParentOnly = false;
+	}
+
 	/// <summary>
 	/// The identifier of the parent.
 	/// </summary>
-	public required TId Parent { get; init; }
+	public TId Parent { get; }
 
 	/// <summary>
 	/// The identifier of the child.
+	/// When null, this represents a one-sided relation (isolated node).
 	/// </summary>
-	public required TId Child { get; init; }
+	public TId? Child { get; }
 
 	/// <summary>
-	/// The implicit tuple-to-relation operator allow us to tersely instantiate relations.
+	/// Gets a value indicating whether this relation is one-sided (isolated node).
 	/// </summary>
-	public static implicit operator Relation<TId>((TId parent, TId child) tuple)
-	{
-		return new Relation<TId>
-		{
-			Parent = tuple.parent,
-			Child = tuple.child
-		};
-	}
-
-	/// <summary>
-	/// The implicit relation-to-tuple operator allow us to tersely unwrap a relation
-	/// into a memory efficient tuple, which is a struct, unlike the <see cref="Relation{TId}"/>.
-	/// </summary>
-	/// <param name="relation"></param>
-	public static implicit operator (TId parent, TId child)(Relation<TId> relation)
-	{
-		return (relation.Parent, relation.Child);
-	}
+	[MemberNotNullWhen(false, nameof(Child))]
+	public bool ParentOnly { get; }
 }

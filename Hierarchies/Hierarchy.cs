@@ -24,13 +24,13 @@ public static class Hierarchy
 		where TId : notnull
 		where TItem : notnull
 	{
-		var relations = new List<(TId parent, TId child)>();
+		var relations = new List<Relation<TId>>();
 
 		foreach (var item in items)
 		{
 			var parent = identifyParent(item);
 			if (parent != null)
-				relations.Add((parent, identify(item)));
+				relations.Add(new(parent, identify(item)));
 		}
 
 		return CreateRelational(identify, items, [.. relations]);
@@ -51,7 +51,7 @@ public static class Hierarchy
 	/// Create a <see cref="Hierarchy{TItem, TId}"/> from the <paramref name="items"/>
 	/// with relationships inferred from the <paramref name="relations"/>.
 	/// </summary>
-	public static Hierarchy<TItem, TId> CreateRelational<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, params (TId parent, TId child)[] relations)
+	public static Hierarchy<TItem, TId> CreateRelational<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, params Relation<TId>[] relations)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -95,7 +95,7 @@ public static class Hierarchy
 	/// <summary>
 	/// Create a <see cref="Hierarchy{TId}"/> with nodes and relationships inferred from the <paramref name="relations"/>.
 	/// </summary>
-	public static Hierarchy<TId> CreateRelational<TId>(params (TId parent, TId child)[] relations)
+	public static Hierarchy<TId> CreateRelational<TId>(params Relation<TId>[] relations)
 		where TId : notnull
 	{
 		var childMap = relations.ToChildMap();

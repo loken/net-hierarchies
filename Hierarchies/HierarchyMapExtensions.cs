@@ -8,7 +8,7 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a sequence of relations matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IEnumerable<(TId parent, TId child)> ToRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
 	{

@@ -5,14 +5,14 @@ public class HierarchyCreationTests
 	[Fact]
 	public void CreateRelational_Ids_ReturnsCorrectRoots()
 	{
-		var hc = Hierarchy.CreateRelational(
-			("A", "A1"),
-			("A", "A2"),
-			("A2", "A21"),
-			("B", "B1"),
-			("B1", "B11"),
-			("B1", "B12"),
-			("B1", "B13"));
+		var hc = Hierarchy.CreateRelational<string>(
+			new("A", "A1"),
+			new("A", "A2"),
+			new("A2", "A21"),
+			new("B", "B1"),
+			new("B1", "B11"),
+			new("B1", "B12"),
+			new("B1", "B13"));
 
 		Assert.Equal(2, hc.Roots.Count);
 		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
@@ -23,8 +23,7 @@ public class HierarchyCreationTests
 	{
 		var hc = Hierarchy.CreateRelational(
 			item => item.Id,
-			new[]
-			{
+			[
 				new Item<string>("A"),
 				new Item<string>("A1"),
 				new Item<string>("A2"),
@@ -34,17 +33,16 @@ public class HierarchyCreationTests
 				new Item<string>("B11"),
 				new Item<string>("B12"),
 				new Item<string>("B13"),
-			},
-			new[]
-			{
-				("A", "A1"),
-				("A", "A2"),
-				("A2", "A21"),
-				("B", "B1"),
-				("B1", "B11"),
-				("B1", "B12"),
-				("B1", "B13")
-			});
+			],
+			[
+				new("A", "A1"),
+				new("A", "A2"),
+				new("A2", "A21"),
+				new("B", "B1"),
+				new("B1", "B11"),
+				new("B1", "B12"),
+				new("B1", "B13")
+			]);
 
 		Assert.Equal(2, hc.Roots.Count);
 		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item.Id).ToArray());
