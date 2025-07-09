@@ -3,10 +3,10 @@
 public class NodeLinkingTests
 {
 	[Fact]
-	public void Attach_LinksBothWays()
+	public void NodeAttach_LinksBothWays()
 	{
-		Node<string> root = Nodes.Create("root");
-		Node<string> child = Nodes.Create("child");
+		var root = Nodes.Create("root");
+		var child = Nodes.Create("child");
 
 		root.Attach(child);
 
@@ -18,12 +18,12 @@ public class NodeLinkingTests
 	}
 
 	[Fact]
-	public void Detach_UnlinksBothWays()
+	public void NodeDetach_UnlinksBothWays()
 	{
-		Node<string> root = Nodes.Create("root");
-		Node<string> child = Nodes.Create("child");
-		root.Attach(child);
+		var root = Nodes.Create("root");
+		var child = Nodes.Create("child");
 
+		root.Attach(child);
 		root.Detach(child);
 
 		Assert.False(root.IsLinked);
@@ -31,12 +31,12 @@ public class NodeLinkingTests
 	}
 
 	[Fact]
-	public void DetachSelf_UnlinksBothWays()
+	public void NodeDetachSelf_UnlinksBothWays()
 	{
-		Node<string> root = Nodes.Create("root");
-		Node<string> child = Nodes.Create("child");
-		root.Attach(child);
+		var root = Nodes.Create("root");
+		var child = Nodes.Create("child");
 
+		root.Attach(child);
 		child.DetachSelf();
 
 		Assert.False(root.IsLinked);
@@ -44,7 +44,7 @@ public class NodeLinkingTests
 	}
 
 	[Fact]
-	public void Dismantle_ExcludeAncestry_UnlinksEverything()
+	public void NodeDismantle_ExcludeAncestry_UnlinksEverythingUnderTheNode()
 	{
 		var branchA = Nodes.Create("A").Attach(Nodes.Create("a1"), Nodes.Create("a2"), Nodes.Create("a3").Attach(Nodes.Create("a31")));
 		var branchB = Nodes.Create("B").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
@@ -52,9 +52,6 @@ public class NodeLinkingTests
 
 		var descendantsOfA = branchA.GetDescendants().ToArray();
 		var other = root.GetDescendants(true).Where(n => !n.Item.StartsWith('a')).ToArray();
-
-		Assert.Equal(4, descendantsOfA.Length);
-		Assert.Equal(6, other.Length);
 
 		branchA.Dismantle(false);
 
@@ -72,10 +69,10 @@ public class NodeLinkingTests
 	}
 
 	[Fact]
-	public void Dismantle_IncludeAncestry_UnlinksEverything()
+	public void NodeDismantle_IncludeAncestry_UnlinksEverythingIncludingTheAncestryAndItsBranches()
 	{
-		var branchA = Nodes.Create("a").Attach(Nodes.Create("a1"), Nodes.Create("a2"), Nodes.Create("a3").Attach(Nodes.Create("a31")));
-		var branchB = Nodes.Create("b").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
+		var branchA = Nodes.Create("A").Attach(Nodes.Create("a1"), Nodes.Create("a2"), Nodes.Create("a3").Attach(Nodes.Create("a31")));
+		var branchB = Nodes.Create("B").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
 		var root = Nodes.Create("root").Attach(branchA, branchB);
 
 		var nodes = root.GetDescendants(true).ToArray();

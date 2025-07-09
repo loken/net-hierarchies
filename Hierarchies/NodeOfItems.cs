@@ -114,9 +114,13 @@ public class Node<TItem>
 	/// </summary>
 	/// <param name="brand">The brand should uniquely identify the owner or owning concept.</param>
 	/// <returns>An action that can be called in order to debrand the node.</returns>
+	/// <exception cref="ArgumentNullException">The brand cannot be null.</exception>
 	/// <exception cref="InvalidOperationException">Must clear brand using delegate before you can rebrand a node.</exception>
 	public Action Brand(object brand)
 	{
+		if (brand is null)
+			throw new ArgumentNullException(nameof(brand), "The brand cannot be null.");
+
 		if (_brand is not null)
 			throw new InvalidOperationException("Must clear brand using delegate before you can rebrand a node.");
 
