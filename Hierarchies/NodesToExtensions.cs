@@ -222,53 +222,36 @@ public static class NodesToExtensions
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
 	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
-		IEnumerable<Node<TItem>> roots,
+		this IEnumerable<Node<TItem>> roots,
 		Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
 		var relations = new List<Relation<TId>>();
-		var processed = new HashSet<Node<TItem>>();
 
-		void TraverseNode(Node<TItem> node)
+		Traverse.Graph(roots, node =>
 		{
-			if (processed.Contains(node))
-				return;
+			var isRoot = node.IsRoot;
+			var isLeaf = node.IsLeaf;
+			if (isLeaf && isRoot)
+			{
+				var rootId = identify(node.Item);
+				relations.Add(new(rootId));
 
-			processed.Add(node);
+				return [];
+			}
+
+			if (isLeaf)
+				return [];
 
 			var nodeId = identify(node.Item);
-			var children = node.Children.ToArray();
+			var children = node.Children;
+			var childIds = children.AsIds(identify);
+			foreach (var childId in childIds)
+				relations.Add(new(nodeId, childId));
 
-			if (children.Length == 0)
-			{
-				// Leaf node
-				if (node.IsRoot)
-				{
-					// Isolated root node (no parent, no children)
-					relations.Add(new Relation<TId>(nodeId));
-				}
-				return;
-			}
-
-			// Internal node - add parent-child relations
-			foreach (var child in children)
-			{
-				var childId = identify(child.Item);
-				relations.Add(new Relation<TId>(nodeId, childId));
-			}
-
-			// Recursively traverse children
-			foreach (var child in children)
-			{
-				TraverseNode(child);
-			}
-		}
-
-		foreach (var root in roots)
-		{
-			TraverseNode(root);
-		}
+			return children.Where(child => child.IsInternal);
+		}).EnumerateAll();
 
 		return relations;
 	}
@@ -282,7 +265,7 @@ public static class NodesToExtensions
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
 	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
-		Node<TItem> root,
+		this Node<TItem> root,
 		Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
