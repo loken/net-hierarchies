@@ -5,6 +5,15 @@ using System.Text.Json.Serialization;
 namespace Loken.Hierarchies;
 
 /// <summary>
+/// Predicate for matching nodes.
+/// </summary>
+/// <typeparam name="TItem">The type of item in the node.</typeparam>
+/// <param name="node">The node to test.</param>
+/// <returns>True if the node matches, false otherwise.</returns>
+public delegate bool NodePredicate<TItem>(Node<TItem> node)
+	where TItem : notnull;
+
+/// <summary>
 /// Wrapper for a <see cref="Item"/> participating in a double-linked graph.
 /// <para>
 /// By using a wrapper rather than require specific properties on the type parameter

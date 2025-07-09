@@ -1,19 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Loken.Hierarchies</AssemblyName>
     <RootNamespace>Loken.Hierarchies</RootNamespace>
-
     <Title>Hierarchies.NET</Title>
     <Description>.NET library for working with hierarchies of identifiers and identifiable objects.</Description>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Loken.Extensions.System" Version="0.5.0" />
     <PackageReference Include="Loken.Utilities" Version="0.5.0" />
   </ItemGroup>
-
 </Project>
