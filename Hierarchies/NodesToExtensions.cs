@@ -77,7 +77,7 @@ public static class NodesToExtensions
 			var nodeId = identify(root.Item);
 			if (root.IsInternal)
 			{
-				var childIds = root.Children.AsIds(identify);
+				var childIds = root.Children.ToIds(identify);
 				childMap.Add(nodeId, childIds);
 			}
 			else
@@ -92,7 +92,7 @@ public static class NodesToExtensions
 		{
 			var childNodes = node.Children;
 			var nodeId = identify(node.Item);
-			var childIds = childNodes.AsIds(identify);
+			var childIds = childNodes.ToIds(identify);
 			childMap.Add(nodeId, childIds);
 		}
 
@@ -246,7 +246,7 @@ public static class NodesToExtensions
 
 			var nodeId = identify(node.Item);
 			var children = node.Children;
-			var childIds = children.AsIds(identify);
+			var childIds = children.ToIds(identify);
 			foreach (var childId in childIds)
 				relations.Add(new(nodeId, childId));
 

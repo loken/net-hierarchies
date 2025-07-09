@@ -28,7 +28,7 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetAncestorNodes(id, includeSelf).AsItems();
+		return hierarchy.GetAncestorNodes(id, includeSelf).ToItems();
 		;
 	}
 
@@ -42,7 +42,7 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetAncestorNodes(id, includeSelf).AsIds(hierarchy.Identify);
+		return hierarchy.GetAncestorNodes(id, includeSelf).ToIds(hierarchy.Identify);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendantNodes(id, includeSelf, type).AsItems();
+		return hierarchy.GetDescendantNodes(id, includeSelf, type).ToItems();
 		;
 	}
 
@@ -82,6 +82,6 @@ public static class HierarchyTraversalExtensions
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendantNodes(id, includeSelf, type).AsIds(hierarchy.Identify);
+		return hierarchy.GetDescendantNodes(id, includeSelf, type).ToIds(hierarchy.Identify);
 	}
 }

@@ -18,7 +18,7 @@ public class NodeAssemblyTests
 	{
 		var roots = Nodes.AssembleIds(InputMap);
 
-		Assert.Equal(InputRoots, roots.AsItems());
+		Assert.Equal(InputRoots, roots.ToItems());
 
 		var output = roots.ToChildMap(id => id).Render();
 
@@ -32,7 +32,7 @@ public class NodeAssemblyTests
 
 		var roots = Nodes.AssembleItems(item => item.Id, items, InputMap);
 
-		Assert.Equal(InputRoots, roots.AsIds(item => item.Id));
+		Assert.Equal(InputRoots, roots.ToIds(item => item.Id));
 
 		var output = roots.ToChildMap(item => item.Id).Render();
 
@@ -46,7 +46,7 @@ public class NodeAssemblyTests
 
 		var roots = Nodes.AssembleItems(item => item.Id, items, InputMap);
 ;
-		Assert.Equal(InputRoots, roots.AsIds(item => item.Id));
+		Assert.Equal(InputRoots, roots.ToIds(item => item.Id));
 
 		var output = roots.ToChildMap(item => item.Id).Render();
 
@@ -108,7 +108,7 @@ public class NodeAssemblyTests
 
 		var roots = Nodes.AssembleItemsWithChildren(itemsWithChildren, item => item.Children);
 
-		Assert.Equal(InputRoots, roots.AsIds(item => item.Id));
+		Assert.Equal(InputRoots, roots.ToIds(item => item.Id));
 
 		var actual = roots.ToChildMap(item => item.Id).Render();
 

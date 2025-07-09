@@ -23,7 +23,7 @@ public class GraphTests
 		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -34,7 +34,7 @@ public class GraphTests
 		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -48,7 +48,7 @@ public class GraphTests
 		}, type: TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -62,7 +62,7 @@ public class GraphTests
 		}, type: TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -82,7 +82,7 @@ public class GraphTests
 		}, false);
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -104,7 +104,7 @@ public class GraphTests
 				signal.Skip();
 		});
 
-		var actual = nodes.AsItems().SingleOrDefaultMany();
+		var actual = nodes.ToItems().SingleOrDefaultMany();
 
 		Assert.Equal(expected, actual);
 	}
@@ -124,7 +124,7 @@ public class GraphTests
 		var nodes = Traverse.Graph(first, node => node.Children, true);
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}
@@ -144,7 +144,7 @@ public class GraphTests
 		var nodes = Traverse.Graph(first, (node, signal) => signal.Next(node.Children), true);
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.AsItems().ToArray();
+		var actual = nodes.ToItems().ToArray();
 
 		Assert.Equal(expected, actual);
 	}

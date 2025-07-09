@@ -71,7 +71,7 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> AttachRoot<TId>(this Hierarchy<TId> hierarchy, IEnumerable<TId> roots)
 		where TId : notnull
 	{
-		hierarchy.AttachRoot(roots.AsNodes());
+		hierarchy.AttachRoot(Nodes.CreateMany(roots));
 		return hierarchy;
 	}
 
@@ -108,7 +108,7 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> Attach<TId>(this Hierarchy<TId> hierarchy, TId parent, IEnumerable<TId> children)
 		where TId : notnull
 	{
-		hierarchy.Attach(parent, children.AsNodes());
+		hierarchy.Attach(parent, Nodes.CreateMany(children));
 		return hierarchy;
 	}
 
