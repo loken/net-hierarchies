@@ -57,7 +57,7 @@ public class RelationNodeTests
 			new(12, 121),
 		};
 
-		var actualRoots = relations.ToRootNodes();
+		var actualRoots = relations.ToNodes();
 
 		// Should have 2 roots: the isolated node (-1) and the tree root (0)
 		Assert.Equal(2, actualRoots.Length);
@@ -87,7 +87,7 @@ public class RelationNodeTests
 		// Convert to relations and back
 		var relations = originalChildMap.ToRelations();
 		var relationObjects = relations.Select(r => (Relation<int>)r).ToArray();
-		var roundTripRoots = relationObjects.ToRootNodes();
+		var roundTripRoots = relationObjects.ToNodes();
 		var roundTripChildMap = roundTripRoots.ToChildMap(id => id);
 
 		// Should be identical
@@ -106,7 +106,7 @@ public class RelationNodeTests
 		};
 
 		// Convert to nodes and back to relations
-		var roots = originalRelations.ToRootNodes();
+		var roots = originalRelations.ToNodes();
 		var roundTripRelations = roots.ToChildMap(id => id).ToRelations().ToArray();
 
 		// Should have the same relations (order may differ)

@@ -3,9 +3,9 @@
 namespace Loken.Hierarchies;
 
 /// <summary>
-/// Extension methods for turning <see cref="Node{TItem}"/> roots into various kinds of relational multi-maps.
+/// Extensions for mapping from <see cref="Node{TItem}"/> to other representations.
 /// </summary>
-public static class NodeMapExtensions
+public static class NodesToExtensions
 {
 	/// <summary>
 	/// Create a map of ids to ids of a given <see cref="RelType"/> by traversing the graph of the <paramref name="root"/>.
@@ -210,5 +210,83 @@ public static class NodeMapExtensions
 		}
 
 		return ancestorMap;
+	}
+
+
+	/// <summary>
+	/// Create a sequence of relations by traversing the graph of the <paramref name="roots"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item.</typeparam>
+	/// <typeparam name="TId">The type of IDs.</typeparam>
+	/// <param name="roots">The roots to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
+		IEnumerable<Node<TItem>> roots,
+		Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		var relations = new List<Relation<TId>>();
+		var processed = new HashSet<Node<TItem>>();
+
+		void TraverseNode(Node<TItem> node)
+		{
+			if (processed.Contains(node))
+				return;
+
+			processed.Add(node);
+
+			var nodeId = identify(node.Item);
+			var children = node.Children.ToArray();
+
+			if (children.Length == 0)
+			{
+				// Leaf node
+				if (node.IsRoot)
+				{
+					// Isolated root node (no parent, no children)
+					relations.Add(new Relation<TId>(nodeId));
+				}
+				return;
+			}
+
+			// Internal node - add parent-child relations
+			foreach (var child in children)
+			{
+				var childId = identify(child.Item);
+				relations.Add(new Relation<TId>(nodeId, childId));
+			}
+
+			// Recursively traverse children
+			foreach (var child in children)
+			{
+				TraverseNode(child);
+			}
+		}
+
+		foreach (var root in roots)
+		{
+			TraverseNode(root);
+		}
+
+		return relations;
+	}
+
+	/// <summary>
+	/// Create a sequence of relations by traversing the graph of the <paramref name="root"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item.</typeparam>
+	/// <typeparam name="TId">The type of IDs.</typeparam>
+	/// <param name="root">The root to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
+		Node<TItem> root,
+		Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return ToRelations([root], identify);
 	}
 }

@@ -1,9 +1,9 @@
 ﻿namespace Loken.Hierarchies;
 
 /// <summary>
-/// Extensions for mapping between different representations of relationships in a <see cref="Hierarchy{TItem, TId}"/>.
+/// Extensions for mapping from <see cref="Hierarchy{TItem, TId}"/> to other representations.
 /// </summary>
-public static class HierarchyMapExtensions
+public static class HierarchyToExtensions
 {
 	/// <summary>
 	/// Create a sequence of relations matching the <paramref name="hierarchy"/>.
