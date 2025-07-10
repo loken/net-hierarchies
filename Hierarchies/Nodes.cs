@@ -34,53 +34,43 @@ public static class Nodes
 	}
 
 	/// <summary>
-	/// Assemble nodes of IDs linked as described by the provided <paramref name="childMap"/>.
+	/// Build nodes of IDs linked as described by the provided <paramref name="childMap"/>.
 	/// </summary>
 	/// <typeparam name="TId">The type of IDs.</typeparam>
 	/// <param name="childMap">The map describing the relations.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TId>> AssembleIds<TId>(MultiMap<TId> childMap)
+	public static ICollection<Node<TId>> FromChildMap<TId>(MultiMap<TId> childMap)
 		where TId : notnull
 	{
-		var nodes = new Dictionary<TId, Node<TId>>();
-		var roots = new Dictionary<TId, Node<TId>>();
-
-		foreach (var parentId in childMap.Keys)
-		{
-			var parentNode = Create(parentId);
-			roots.Add(parentId, parentNode);
-			nodes.Add(parentId, parentNode);
-		}
-
-		foreach (var (parentId, childIds) in childMap)
-		{
-			var parentNode = nodes[parentId];
-
-			foreach (var childId in childIds)
-			{
-				var childNode = nodes.Lazy(childId, () => Create(childId));
-				parentNode.Attach(childNode);
-				roots.Remove(childId);
-			}
-		}
-
-		return roots.Values;
+		return childMap.ToNodes();
 	}
 
 	/// <summary>
-	/// Assemble nodes of <paramref name="items"/> linked as described by the provided <paramref name="childMap"/>.
+	/// Build nodes of IDs linked as described by the provided <paramref name="relations"/>.
+	/// </summary>
+	/// <typeparam name="TId">The type of IDs.</typeparam>
+	/// <param name="relations">The relations describing the hierarchy structure.</param>
+	/// <returns>The root nodes.</returns>
+	public static ICollection<Node<TId>> FromRelations<TId>(IEnumerable<Relation<TId>> relations)
+		where TId : notnull
+	{
+		return relations.ToNodes();
+	}
+
+	/// <summary>
+	/// Build nodes of <paramref name="items"/> linked as described by the provided <paramref name="childMap"/>.
 	/// </summary>
 	/// <typeparam name="TItem">The type of item.</typeparam>
 	/// <typeparam name="TId">The type of IDs.</typeparam>
-	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <param name="items">The items to wrap in nodes.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <param name="childMap">The map describing the relations.</param>
 	/// <returns>The root nodes.</returns>
 	/// <exception cref="ArgumentException">
 	/// When a parent or child ID referenced in the <paramref name="childMap"/>
 	/// is not found in the provided <paramref name="items"/>.
 	/// </exception>
-	public static ICollection<Node<TItem>> AssembleItems<TItem, TId>(Func<TItem, TId> identify, IEnumerable<TItem> items, MultiMap<TId> childMap)
+	public static ICollection<Node<TItem>> FromItemsWithChildMap<TItem, TId>(IEnumerable<TItem> items, Func<TItem, TId> identify, MultiMap<TId> childMap)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -117,13 +107,13 @@ public static class Nodes
 	}
 
 	/// <summary>
-	/// Assemble nodes of <paramref name="items"/> linked as described by the provided <paramref name="getChildren"/> delegate.
+	/// Build nodes of <paramref name="roots"/> linked as described by the provided <paramref name="getChildren"/> delegate.
 	/// </summary>
 	/// <typeparam name="TItem">The type of item.</typeparam>
 	/// <param name="roots">The root items to wrap in nodes.</param>
 	/// <param name="getChildren">The delegate for getting the child items from a parent item.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TItem>> AssembleItemsWithChildren<TItem>(
+	public static ICollection<Node<TItem>> FromItemsWithChildren<TItem>(
 		IEnumerable<TItem> roots,
 		Func<TItem, IEnumerable<TItem>?> getChildren)
 		where TItem : notnull
@@ -148,13 +138,13 @@ public static class Nodes
 	}
 
 	/// <summary>
-	/// Assemble nodes of <paramref name="leaves"/> linked as described by the provided <paramref name="getParent"/> delegate.
+	/// Build nodes of <paramref name="leaves"/> linked as described by the provided <paramref name="getParent"/> delegate.
 	/// </summary>
 	/// <typeparam name="TItem">The type of item.</typeparam>
 	/// <param name="leaves">The leaf items to wrap in nodes.</param>
 	/// <param name="getParent">The delegate for getting the parent of an item.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TItem>> AssembleItemsWithParents<TItem>(
+	public static ICollection<Node<TItem>> FromItemsWithParents<TItem>(
 		IEnumerable<TItem> leaves,
 		Func<TItem, TItem?> getParent)
 		where TItem : notnull

@@ -44,7 +44,7 @@ public static class Hierarchy
 		where TId : notnull
 		where TItem : notnull
 	{
-		return new Hierarchy<TItem, TId>(identify).AttachRoot(Nodes.AssembleItems(identify, items, childMap));
+		return new Hierarchy<TItem, TId>(identify).AttachRoot(Nodes.FromItemsWithChildMap(items, identify, childMap));
 	}
 
 	/// <summary>
@@ -88,7 +88,7 @@ public static class Hierarchy
 	public static Hierarchy<TId> CreateMapped<TId>(MultiMap<TId> childMap)
 		where TId : notnull
 	{
-		var roots = Nodes.AssembleIds(childMap);
+		var roots = Nodes.FromChildMap(childMap);
 		return (Hierarchy<TId>)new Hierarchy<TId>().AttachRoot(roots);
 	}
 
