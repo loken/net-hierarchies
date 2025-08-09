@@ -15,7 +15,16 @@ public static partial class Traverse
 	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, NextElement<TEl> next)
 		where TEl : notnull
 	{
-		return Sequence(element, (el, signal) => signal.Next(next(el)));
+		// Specialized fast path: avoid lambda allocation and Signal machinery.
+		if (element is null)
+			yield break;
+
+		var current = element;
+		while (current is not null)
+		{
+			yield return current;
+			current = next(current);
+		}
 	}
 
 	/// <summary>

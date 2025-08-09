@@ -16,7 +16,36 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		return Graph(root, (n, s) => s.Next(next(n)), detectCycles, type);
+		if (root is null)
+			yield break;
+
+		HashSet<TNode>? visited = detectCycles ? new HashSet<TNode>() : null;
+		ILinear<TNode> store = type == TraversalType.DepthFirst
+			? new LinearStack<TNode>()
+			: new LinearQueue<TNode>();
+
+		// Single-root fast path; avoid IEnumerable machinery.
+		store.Attach(root);
+
+		while (store.TryDetach(out var node))
+		{
+			if (visited is null || visited.Add(node))
+			{
+				yield return node;
+
+				var children = next(node);
+				if (children is not null)
+				{
+					// Prefer concrete types to avoid enumerator overhead where possible.
+					if (children is TNode[] childArray)
+						store.Attach(childArray);
+					else if (children is List<TNode> childList)
+						store.Attach(childList);
+					else
+						store.Attach(children);
+				}
+			}
+		}
 	}
 
 	/// <summary>
@@ -47,7 +76,37 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		return Graph(roots, (n, s) => s.Next(next(n)), detectCycles, type);
+		HashSet<TNode>? visited = detectCycles ? new HashSet<TNode>() : null;
+		ILinear<TNode> store = type == TraversalType.DepthFirst
+			? new LinearStack<TNode>()
+			: new LinearQueue<TNode>();
+
+		// Prefer concrete types to avoid enumerator overhead when seeding roots.
+		if (roots is TNode[] arr)
+			store.Attach(arr);
+		else if (roots is List<TNode> list)
+			store.Attach(list);
+		else
+			store.Attach(roots);
+
+		while (store.TryDetach(out var node))
+		{
+			if (visited is null || visited.Add(node))
+			{
+				yield return node;
+
+				var children = next(node);
+				if (children is not null)
+				{
+					if (children is TNode[] childArray)
+						store.Attach(childArray);
+					else if (children is List<TNode> childList)
+						store.Attach(childList);
+					else
+						store.Attach(children);
+				}
+			}
+		}
 	}
 
 	/// <summary>

@@ -11,16 +11,16 @@ public sealed class GraphSignal<TNode>
 	where TNode : notnull
 {
 	/// <summary>
-	/// We use a set of hash codes instead of a set of roots for detecting cycles.
-	/// This way we consume less memory. If we were to keep the roots in the visited set
-	/// the GC could not clean up any enumerated roots until we are done traversing the graph.
+	/// Visited set for detecting cycles.
+	/// Stores nodes directly to avoid false positives from hash collisions
+	/// and to align with TS implementation semantics.
 	/// </summary>
-	private readonly ISet<int>? Visited;
+	private readonly ISet<TNode>? Visited;
 
 	/// <summary>
 	/// Depth tracking depends on the <see cref="TraversalType"/>.
 	/// </summary>
-	[MemberNotNullWhen(true, nameof(BranchCount))]
+	[MemberNotNullWhen(true, nameof(BranchCounts))]
 	private bool IsDepthFirst { get; }
 
 	/// <summary>
@@ -30,8 +30,15 @@ public sealed class GraphSignal<TNode>
 
 	/// <summary>
 	/// For depth tracking with <see cref="TraversalType.DepthFirst"/>.
+	/// Lightweight array-backed stack to avoid Stack<T> Push/Pop/TryPeek overhead in the hot path.
+	/// Rationale:
+	/// - Stack<T> is optimized, but each Push/Pop/TryPeek introduces a call boundary and range/version checks.
+	/// - In the signal traversal we do this per visited node; replacing with index ops reduces branches and indirections.
+	/// - We keep the same semantics: Depth is the current top index; counts track pending siblings per depth.
+	/// - Also avoids one managed object (Stack<T>) and its internal indirections.
 	/// </summary>
-	private readonly Stack<int>? BranchCount;
+	private int[]? BranchCounts;
+	private int BranchTop = -1;
 
 	/// <summary>
 	/// For depth tracking with <see cref="TraversalType.BreadthFirst"/>.
@@ -46,7 +53,7 @@ public sealed class GraphSignal<TNode>
 	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (detectCycles)
-			Visited = new HashSet<int>();
+			Visited = new HashSet<TNode>();
 
 		IsDepthFirst = type == TraversalType.DepthFirst;
 
@@ -57,10 +64,7 @@ public sealed class GraphSignal<TNode>
 		DepthCount = Nodes.Attach(roots);
 
 		if (IsDepthFirst)
-		{
-			BranchCount = new();
-			BranchCount.Push(DepthCount);
-		}
+			BranchPush(DepthCount);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,7 +74,7 @@ public sealed class GraphSignal<TNode>
 		{
 			while (TryGetNextInternal(out node))
 			{
-				if (Visited.Add(node.GetHashCode()))
+				if (Visited.Add(node))
 					return true;
 			}
 
@@ -89,8 +93,8 @@ public sealed class GraphSignal<TNode>
 		{
 			if (IsDepthFirst)
 			{
-				Depth = BranchCount.Count - 1;
-				BranchCount.Push(BranchCount.Pop() - 1);
+				Depth = BranchTop;
+				BranchCounts![BranchTop]--;
 			}
 			else
 			{
@@ -122,8 +126,9 @@ public sealed class GraphSignal<TNode>
 	{
 		if (IsDepthFirst)
 		{
-			while (BranchCount.TryPeek(out var count) && count == 0)
-				BranchCount.Pop();
+			// Pop empty branch frames by moving the top index left; avoids Stack<T>.TryPeek + Pop loop.
+			while (BranchTop >= 0 && BranchCounts![BranchTop] == 0)
+				BranchTop--;
 		}
 
 		if (!Skipped)
@@ -155,7 +160,10 @@ public sealed class GraphSignal<TNode>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(params TNode[] nodes)
 	{
-		Next(nodes.AsEnumerable());
+		// Fast-path for arrays: call the most specific Attach overload available.
+		var count = Nodes.Attach(nodes);
+		if (IsDepthFirst && count > 0)
+			BranchPush(count);
 	}
 
 	/// <summary>
@@ -164,10 +172,15 @@ public sealed class GraphSignal<TNode>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(IEnumerable<TNode> nodes)
 	{
-		var count = Nodes.Attach(nodes);
+		// Prefer array/list overloads when available to avoid enumerator overhead.
+		int count = nodes is TNode[] arr
+			? Nodes.Attach(arr)
+			: nodes is List<TNode> list
+				? Nodes.Attach(list)
+				: Nodes.Attach(nodes);
 
 		if (IsDepthFirst && count > 0)
-			BranchCount.Push(count);
+			BranchPush(count);
 	}
 
 	/// <summary>
@@ -177,4 +190,28 @@ public sealed class GraphSignal<TNode>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void End() => Nodes.Clear();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void BranchPush(int count)
+	{
+		// Push a new depth frame with the number of pending siblings.
+		// Uses a simple doubling growth strategy to minimize allocations in long traversals.
+		var arr = BranchCounts;
+		if (arr is null)
+		{
+			BranchCounts = arr = new int[4];
+		}
+
+		int nextTop = BranchTop + 1;
+		if ((uint)nextTop >= (uint)arr.Length)
+		{
+			// Grow by doubling; faster than Stack<T> path due to fewer checks and no version updates.
+			var newArr = new int[arr.Length << 1];
+			Array.Copy(arr, newArr, arr.Length);
+			arr = BranchCounts = newArr;
+		}
+
+		arr[nextTop] = count;
+		BranchTop = nextTop;
+	}
 }
