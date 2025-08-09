@@ -44,7 +44,11 @@ public class Node<TItem>
 	/// </summary>
 	[DataMember(Name = nameof(Children))]
 	[JsonInclude, JsonPropertyName(nameof(Children))]
-	private ISet<Node<TItem>>? _children;
+	private List<Node<TItem>>? _children;
+
+	// Membership set for O(1) contains checks; not serialized.
+	[IgnoreDataMember, JsonIgnore]
+	private HashSet<Node<TItem>>? _childSet;
 
 	/// <summary>
 	/// The item is the subject/content of the node.
@@ -89,8 +93,8 @@ public class Node<TItem>
 	public bool IsInternal => !IsLeaf;
 
 	/// <summary>
-	/// A node is "linked" when it is neither a root nor a child.
-	/// A node is "linked" when it has a parent or at least one child.
+	/// A node is "linked" when it has a parent or at least one child,
+	/// which means it's not both a root and a leaf.
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
 	public bool IsLinked => !IsRoot || !IsLeaf;
@@ -158,12 +162,16 @@ public class Node<TItem>
 		if (!children.All(node => node.IsBrandCompatible(this)))
 			throw new InvalidOperationException("Must all have a compatible brand");
 
-		_children ??= new HashSet<Node<TItem>>();
+		_children ??= new List<Node<TItem>>();
+		_childSet ??= new HashSet<Node<TItem>>(ReferenceEqualityComparer<Node<TItem>>.Instance);
 
 		foreach (var node in children)
 		{
-			_children.Add(node);
-			node.Parent = this;
+			if (_childSet!.Add(node))
+			{
+				_children!.Add(node);
+				node.Parent = this;
+			}
 		}
 
 		return this;
@@ -182,7 +190,7 @@ public class Node<TItem>
 		if (children.Length == 0)
 			throw new InvalidOperationException($"Must provide one or more {nameof(children)}.");
 
-		if (IsLeaf || !children.All(_children.Contains))
+		if (IsLeaf || !children.All(n => _childSet!.Contains(n)))
 			throw new InvalidOperationException($"Must all be {nameof(children)}.");
 
 		if (children.Any(node => node.IsBranded))
@@ -190,12 +198,16 @@ public class Node<TItem>
 
 		foreach (var node in children)
 		{
-			_children.Remove(node);
+			_childSet!.Remove(node);
+			_children!.Remove(node);
 			node.Parent = null;
 		}
 
 		if (IsLeaf)
+		{
 			_children = null;
+			_childSet = null;
+		}
 
 		return this;
 	}
@@ -213,13 +225,17 @@ public class Node<TItem>
 		if (IsBranded)
 			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
-		if (Parent.IsLeaf || !Parent.Children.Contains(this))
+		if (Parent.IsLeaf || !Parent._childSet!.Contains(this))
 			throw new Exception("Invalid object state: It should not be possible for the node not to be a child of its parent!.");
 
-		Parent._children.Remove(this);
+		Parent._childSet!.Remove(this);
+		Parent._children!.Remove(this);
 
 		if (Parent.IsLeaf)
+		{
 			Parent._children = null;
+			Parent._childSet = null;
+		}
 
 		Parent = null;
 

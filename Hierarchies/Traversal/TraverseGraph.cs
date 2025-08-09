@@ -19,7 +19,15 @@ public static partial class Traverse
 		if (root is null)
 			yield break;
 
-		HashSet<TNode>? visited = detectCycles ? new HashSet<TNode>() : null;
+		HashSet<TNode>? visited = null;
+		if (detectCycles)
+		{
+			// Align with TS semantics: nodes are considered unique by identity, not by item equality.
+			// If TNode is a reference type, use a reference comparer; otherwise use default comparer.
+			visited = typeof(TNode).IsValueType
+				? new HashSet<TNode>()
+				: new HashSet<TNode>(ReferenceEqualityComparer<TNode>.Instance);
+		}
 		ILinear<TNode> store = type == TraversalType.DepthFirst
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
@@ -76,7 +84,13 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
-		HashSet<TNode>? visited = detectCycles ? new HashSet<TNode>() : null;
+		HashSet<TNode>? visited = null;
+		if (detectCycles)
+		{
+			visited = typeof(TNode).IsValueType
+				? new HashSet<TNode>()
+				: new HashSet<TNode>(ReferenceEqualityComparer<TNode>.Instance);
+		}
 		ILinear<TNode> store = type == TraversalType.DepthFirst
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();

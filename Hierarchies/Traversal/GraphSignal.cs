@@ -53,7 +53,11 @@ public sealed class GraphSignal<TNode>
 	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (detectCycles)
-			Visited = new HashSet<TNode>();
+		{
+			Visited = typeof(TNode).IsValueType
+				? new HashSet<TNode>()
+				: new HashSet<TNode>(ReferenceEqualityComparer<TNode>.Instance);
+		}
 
 		IsDepthFirst = type == TraversalType.DepthFirst;
 

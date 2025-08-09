@@ -83,6 +83,29 @@ A node can be "branded" so that it cannot be attached to another node with a dif
 
 If you want to use this API yourself, know that when you brand a node, you get a debranding delegate back. Calling this is the only way to debrand the node, so make sure you keep track of it!
 
+#### Ordering and identity
+
+- Sibling order is deterministic. Children are kept in insertion order, and traversals enumerate children in that order. When constructing from relations or a child-map, the order in the source is preserved.
+- Cycle detection and visited semantics are identity-based. When `detectCycles` is enabled, traversal tracks visited nodes by reference. Separate `Node<T>` instances that wrap the same `Item` are considered distinct for visitation.
+- Equality: In .NET, `Node<T>` equality and hash code are based on the wrapped `Item`. This enables JSON round trips to compare equal by value. When you need identity semantics (e.g., visited sets, membership, caches keyed by node), use `ReferenceEqualityComparer<Node<T>>` with your `HashSet`/`Dictionary`.
+
+#### Serialization
+Nodes can be serialized and deserialized directly. `Node<T>` equality and hash code are based on the wrapped `Item`, which enables value-equal round trips after JSON deserialization. For example, a simple `Node<string>` renders as:
+
+```json
+{
+   "Children": [
+      {
+         "Children": null,
+         "Item": "a"
+      }
+   ],
+   "Item": "root"
+}
+```
+
+See the test `JsonConvert_BothWays_Works` for an end-to-end example.
+
 ### Relations
 
 We support quite a few representations for relations and provide extension methods for converting between them.
