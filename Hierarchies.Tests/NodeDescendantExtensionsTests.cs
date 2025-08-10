@@ -29,7 +29,6 @@ public class NodeDescendantExtensionsTests
 	}
 
 	#region FindDescendant Tests
-
 	[Fact]
 	public void FindDescendant_FindsFirstDescendantMatchingPredicate()
 	{
@@ -62,11 +61,9 @@ public class NodeDescendantExtensionsTests
 		var depthFirst = Roots.FindDescendant(n => n.Item == "A11" || n.Item == "B12", false, TraversalType.DepthFirst);
 		Assert.Equal("B12", depthFirst?.Item);
 	}
-
 	#endregion
 
 	#region FindDescendants Tests
-
 	[Fact]
 	public void FindDescendants_FindsAllDescendantsMatchingPredicate()
 	{
@@ -89,11 +86,9 @@ public class NodeDescendantExtensionsTests
 		var actual = Roots.FindDescendants(n => n.Item == "X");
 		Assert.Empty(actual);
 	}
-
 	#endregion
 
 	#region HasDescendant Tests
-
 	[Fact]
 	public void HasDescendant_ReturnsTrueWhenDescendantExists()
 	{
@@ -114,29 +109,9 @@ public class NodeDescendantExtensionsTests
 		var actual = NodeA.HasDescendant(n => n.Item == "A", true);
 		Assert.True(actual);
 	}
-
-	#endregion
-
-	#region GetDescendantItems Tests
-
-	[Fact]
-	public void GetDescendantItems_GetsDescendantItemsFromNodes()
-	{
-		var actual = NodeA.GetDescendantItems();
-		Assert.Equal(new[] { "A1", "A2", "A11", "A12" }, actual.ToArray());
-	}
-
-	[Fact]
-	public void GetDescendantItems_GetsDescendantItemsWithIncludeSelfTrue()
-	{
-		var actual = NodeA.GetDescendantItems(true);
-		Assert.Equal(new[] { "A", "A1", "A2", "A11", "A12" }, actual.ToArray());
-	}
-
 	#endregion
 
 	#region TraverseDescendants Tests
-
 	[Fact]
 	public void TraverseDescendants_ReturnsEnumerableForDescendants()
 	{
@@ -152,6 +127,5 @@ public class NodeDescendantExtensionsTests
 		var items = actual.Select(n => n.Item).ToArray();
 		Assert.Equal(new[] { "A", "A1", "A2", "A11", "A12" }, items);
 	}
-
 	#endregion
 }

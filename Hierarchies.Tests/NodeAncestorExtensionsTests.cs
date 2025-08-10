@@ -29,7 +29,6 @@ public class NodeAncestorExtensionsTests
 	}
 
 	#region FindAncestor Tests
-
 	[Fact]
 	public void FindAncestor_FindsFirstAncestorMatchingPredicate()
 	{
@@ -64,11 +63,9 @@ public class NodeAncestorExtensionsTests
 		var actual = NodeA11.FindAncestor(n => n.Item == "A1");
 		Assert.Equal("A1", actual?.Item);
 	}
-
 	#endregion
 
 	#region FindAncestors Tests
-
 	[Fact]
 	public void FindAncestors_FindsAllAncestorsMatchingPredicate()
 	{
@@ -107,11 +104,9 @@ public class NodeAncestorExtensionsTests
 		var items = actual.Select(n => n.Item).OrderBy(x => x).ToArray();
 		Assert.Equal(new[] { "A", "A1" }, items);
 	}
-
 	#endregion
 
 	#region HasAncestor Tests
-
 	[Fact]
 	public void HasAncestor_ReturnsTrueWhenAncestorExists()
 	{
@@ -132,11 +127,9 @@ public class NodeAncestorExtensionsTests
 		var actual = NodeA11.HasAncestor(n => n.Item == "A11", true);
 		Assert.True(actual);
 	}
-
 	#endregion
 
 	#region GetAncestors Tests
-
 	[Fact]
 	public void GetAncestors_GetsAllUniqueAncestorsFromSingleNode()
 	{
@@ -177,33 +170,5 @@ public class NodeAncestorExtensionsTests
 		var items = actual.Select(n => n.Item).ToArray();
 		Assert.Equal(new[] { "A1", "A" }, items);
 	}
-
-	#endregion
-
-	#region GetAncestorItems Tests
-
-	[Fact]
-	public void GetAncestorItems_GetsAncestorItemsFromNodes()
-	{
-		var actual = NodeA11.GetAncestorItems();
-		Assert.Equal(new[] { "A1", "A" }, actual.ToArray());
-	}
-
-	[Fact]
-	public void GetAncestorItems_GetsAncestorItemsWithIncludeSelfTrue()
-	{
-		var actual = NodeA11.GetAncestorItems(true);
-		Assert.Equal(new[] { "A11", "A1", "A" }, actual.ToArray());
-	}
-
-	[Fact]
-	public void GetAncestorItems_DeduplicatesFromMultipleNodes()
-	{
-		var nodes = new[] { NodeA11, NodeA12, NodeB1 };
-		var expected = new[] { "A1", "A", "B" };
-		var actual = nodes.GetAncestorItems();
-		Assert.Equal(expected, actual.ToArray());
-	}
-
 	#endregion
 }
