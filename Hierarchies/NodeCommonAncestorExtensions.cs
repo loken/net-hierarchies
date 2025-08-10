@@ -3,7 +3,7 @@ namespace Loken.Hierarchies;
 /// <summary>
 /// Extension methods for finding common ancestors between nodes within a graph of <see cref="Node{TItem}"/>s.
 /// </summary>
-public static class FindCommonAncestorExtensions
+public static class NodeCommonAncestorExtensions
 {
 	/// <summary>
 	/// Find the common ancestor node which is the closest to the nodes.

@@ -3,7 +3,7 @@ namespace Loken.Hierarchies;
 /// <summary>
 /// Extension methods for finding and traversing descendant nodes within a graph of <see cref="Node{TItem}"/>s.
 /// </summary>
-public static class FindDescendantExtensions
+public static class NodeDescendantExtensions
 {
 	/// <summary>
 	/// Find the first descendant node matching the predicate.

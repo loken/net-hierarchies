@@ -3,7 +3,7 @@ namespace Loken.Hierarchies;
 /// <summary>
 /// Extension methods for finding and traversing ancestor nodes within a graph of <see cref="Node{TItem}"/>s.
 /// </summary>
-public static class FindAncestorExtensions
+public static class NodeAncestorExtensions
 {
 	/// <summary>
 	/// Find the first ancestor node matching the predicate.

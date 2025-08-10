@@ -1,6 +1,6 @@
 namespace Loken.Hierarchies;
 
-public class FindDescendantExtensionsTests
+public class NodeDescendantExtensionsTests
 {
 	// Create explicit hierarchy for testing:
 	// A -> A1 -> A11
@@ -19,7 +19,7 @@ public class FindDescendantExtensionsTests
 
 	private static readonly Node<string>[] Roots = { NodeA, NodeB, NodeC };
 
-	static FindDescendantExtensionsTests()
+	static NodeDescendantExtensionsTests()
 	{
 		// Build the hierarchy
 		NodeA.Attach(NodeA1, NodeA2);

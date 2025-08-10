@@ -1,6 +1,6 @@
 namespace Loken.Hierarchies;
 
-public class FindCommonAncestorExtensionsTests
+public class NodeCommonAncestorExtensionsTests
 {
 	// Create hierarchy of individually attached nodes so we have references.
 	// A -> A1 -> A11
@@ -20,7 +20,7 @@ public class FindCommonAncestorExtensionsTests
 	private static readonly Node<string> NodeB2 = Nodes.Create("B2");
 	private static readonly Node<string> NodeB11 = Nodes.Create("B11");
 
-	static FindCommonAncestorExtensionsTests()
+	static NodeCommonAncestorExtensionsTests()
 	{
 		// Build the hierarchy
 		NodeRoot.Attach(NodeA, NodeB);
