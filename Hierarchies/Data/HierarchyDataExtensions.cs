@@ -46,7 +46,7 @@ public static class HierarchyDataExtensions
 	}
 
 	/// <summary>
-	/// Create a sequence of <see cref="HierarchyRelation{TId}"/>s for the node-to-chilren relations
+	/// Create a sequence of <see cref="HierarchyRelation{TId}"/>s for the node-to-children relations
 	/// of the <paramref name="hierarchy"/> and <paramref name="concept"/>.
 	/// </summary>
 	public static IEnumerable<HierarchyRelation<TId>> ToRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, string concept, RelType type)
@@ -57,7 +57,7 @@ public static class HierarchyDataExtensions
 	}
 
 	/// <summary>
-	/// Create a sequence of <see cref="HierarchyRelation{TId}"/>s for the node-to-chilren relations
+	/// Create a sequence of <see cref="HierarchyRelation{TId}"/>s for the node-to-children relations
 	/// of the <paramref name="hierarchy"/> and <paramref name="concept"/>.
 	/// </summary>
 	public static IEnumerable<HierarchyRelation<TId>> ToChildRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, string concept)

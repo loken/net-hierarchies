@@ -40,7 +40,9 @@ public static class FindDescendantExtensions
 	public static Node<TItem>? FindDescendant<TItem>(this Node<TItem>? root, NodePredicate<TItem> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		if (root == null) return null;
+		if (root == null)
+			return null;
+
 		return new[] { root }.FindDescendant(predicate, includeSelf, traversalType);
 	}
 
@@ -80,7 +82,9 @@ public static class FindDescendantExtensions
 	public static IList<Node<TItem>> FindDescendants<TItem>(this Node<TItem>? root, NodePredicate<TItem> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		if (root == null) return new List<Node<TItem>>();
+		if (root == null)
+			return [];
+
 		return new[] { root }.FindDescendants(predicate, includeSelf, traversalType);
 	}
 
@@ -111,7 +115,9 @@ public static class FindDescendantExtensions
 	public static bool HasDescendant<TItem>(this Node<TItem>? root, NodePredicate<TItem> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		if (root == null) return false;
+		if (root == null)
+			return false;
+
 		return new[] { root }.HasDescendant(predicate, includeSelf, traversalType);
 	}
 
@@ -126,7 +132,7 @@ public static class FindDescendantExtensions
 	public static IEnumerable<Node<TItem>> GetDescendants<TItem>(this Node<TItem> node, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		var roots = includeSelf ? new[] { node } : node.Children;
+		var roots = includeSelf ? [node] : node.Children;
 		return Traverse.Graph(roots, (n, signal) => signal.Next(n.Children), false, type);
 	}
 
@@ -163,7 +169,9 @@ public static class FindDescendantExtensions
 	public static IList<TItem> GetDescendantItems<TItem>(this Node<TItem>? root, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		if (root == null) return new List<TItem>();
+		if (root == null)
+			return [];
+
 		return new[] { root }.GetDescendantItems(includeSelf, traversalType);
 	}
 
@@ -194,7 +202,9 @@ public static class FindDescendantExtensions
 	public static IEnumerable<Node<TItem>> TraverseDescendants<TItem>(this Node<TItem>? root, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		if (root == null) return Enumerable.Empty<Node<TItem>>();
+		if (root == null)
+			return [];
+
 		return new[] { root }.TraverseDescendants(includeSelf, traversalType);
 	}
 }

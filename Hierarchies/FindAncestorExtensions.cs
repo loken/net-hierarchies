@@ -47,7 +47,9 @@ public static class FindAncestorExtensions
 	public static Node<TItem>? FindAncestor<TItem>(this Node<TItem>? node, NodePredicate<TItem> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null) return null;
+		if (node == null)
+			return null;
+
 		return new[] { node }.FindAncestor(predicate, includeSelf);
 	}
 
@@ -94,7 +96,9 @@ public static class FindAncestorExtensions
 	public static IList<Node<TItem>> FindAncestors<TItem>(this Node<TItem>? node, NodePredicate<TItem> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null) return new List<Node<TItem>>();
+		if (node == null)
+			return [];
+
 		return new[] { node }.FindAncestors(predicate, includeSelf);
 	}
 
@@ -208,7 +212,9 @@ public static class FindAncestorExtensions
 	public static IList<TItem> GetAncestorItems<TItem>(this Node<TItem>? node, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null) return new List<TItem>();
+		if (node == null)
+			return [];
+
 		return new[] { node }.GetAncestorItems(includeSelf);
 	}
 }

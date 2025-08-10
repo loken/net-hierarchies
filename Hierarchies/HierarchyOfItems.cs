@@ -18,9 +18,9 @@ public class Hierarchy<TItem, TId>
 {
 	public readonly Func<TItem, TId> Identify;
 
-	protected readonly List<Node<TItem>> _roots = new();
-	protected readonly Dictionary<TId, Node<TItem>> _nodes = new();
-	protected readonly Dictionary<TId, Action> _debrand = new();
+	protected readonly List<Node<TItem>> _roots = [];
+	protected readonly Dictionary<TId, Node<TItem>> _nodes = [];
+	protected readonly Dictionary<TId, Action> _debrand = [];
 
 	[IgnoreDataMember, JsonIgnore]
 	public IReadOnlyCollection<Node<TItem>> Nodes => _nodes.Values;

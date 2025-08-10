@@ -29,7 +29,9 @@ public static class FindCommonAncestorExtensions
 	public static Node<TItem>? FindCommonAncestor<TItem>(this Node<TItem>? node, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null) return null;
+		if (node == null)
+			return null;
+
 		return includeSelf ? node : null;
 	}
 
@@ -44,7 +46,7 @@ public static class FindCommonAncestorExtensions
 		where TItem : notnull
 	{
 		var commonAncestors = nodes.FindCommonAncestorSet(includeSelf);
-		return commonAncestors?.ToList() ?? new List<Node<TItem>>();
+		return commonAncestors?.ToList() ?? [];
 	}
 
 	/// <summary>
@@ -84,7 +86,7 @@ public static class FindCommonAncestorExtensions
 			{
 				commonAncestors.IntersectWith(ancestors);
 				if (commonAncestors.Count == 0)
-					return new HashSet<Node<TItem>>();
+					return [];
 			}
 		}
 
