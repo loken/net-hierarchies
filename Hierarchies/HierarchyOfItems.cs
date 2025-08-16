@@ -66,6 +66,37 @@ public class Hierarchy<TItem, TId>
 	}
 
 	/// <summary>
+	/// Check if the provided ID exists in the hierarchy.
+	/// </summary>
+	/// <param name="id">The ID to check for existence.</param>
+	/// <returns>True if the ID exists in the hierarchy, false otherwise.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Has(TId id)
+	{
+		return _nodes.ContainsKey(id);
+	}
+
+	/// <summary>
+	/// Check if all of the provided IDs exist in the hierarchy.
+	/// </summary>
+	/// <param name="ids">The IDs to check for existence.</param>
+	/// <returns>True if all IDs exist in the hierarchy, false otherwise.</returns>
+	public bool HasAll(IEnumerable<TId> ids)
+	{
+		return ids.All(_nodes.ContainsKey);
+	}
+
+	/// <summary>
+	/// Check if any of the provided IDs exist in the hierarchy.
+	/// </summary>
+	/// <param name="ids">The IDs to check for existence.</param>
+	/// <returns>True if any ID exists in the hierarchy, false otherwise.</returns>
+	public bool HasAny(IEnumerable<TId> ids)
+	{
+		return ids.Any(_nodes.ContainsKey);
+	}
+
+	/// <summary>
 	/// Attach the provided <paramref name="roots"/>.
 	/// </summary>
 	/// <param name="roots">Nodes to attach.</param>
