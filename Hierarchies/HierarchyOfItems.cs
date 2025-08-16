@@ -27,8 +27,35 @@ public class Hierarchy<TItem, TId>
 	[IgnoreDataMember, JsonIgnore]
 	public IReadOnlyCollection<Node<TItem>> Nodes => _nodes.Values;
 
+	/// <summary>
+	/// Get all root nodes.
+	/// </summary>
 	[DataMember, JsonInclude]
 	public IReadOnlyList<Node<TItem>> Roots { get; }
+
+	/// <summary>
+	/// Get all root items.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	public IList<TItem> RootItems => _roots.ToItems();
+
+	/// <summary>
+	/// Get all root IDs.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	public IList<TId> RootIds => _roots.ToIds(Identify);
+
+	/// <summary>
+	/// Get all node items.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	public IList<TItem> NodeItems => _nodes.Values.ToItems();
+
+	/// <summary>
+	/// Get all node IDs.
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	public IList<TId> NodeIds => _nodes.Values.ToIds(Identify);
 
 	internal Hierarchy(Func<TItem, TId> identify)
 	{
@@ -37,29 +64,59 @@ public class Hierarchy<TItem, TId>
 		Roots = new ReadOnlyCollection<Node<TItem>>(_roots);
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public Node<TItem> GetNode(TId id)
-	{
-		return _nodes[id];
-	}
-
+	/// <summary>
+	/// Attempt to get the node with the specified ID.
+	/// </summary>
+	/// <param name="id">The ID of the node to retrieve.</param>
+	/// <param name="node">When this method returns, contains the node with the specified ID if found; otherwise, null.</param>
+	/// <returns>True if a node with the specified ID was found; otherwise, false.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGetNode(TId id, [NotNullWhen(true)] out Node<TItem>? node)
 	{
 		return _nodes.TryGetValue(id, out node);
 	}
 
+	/// <summary>
+	/// Get the node with the specified ID.
+	/// </summary>
+	/// <param name="id">The ID of the node to retrieve.</param>
+	/// <returns>The node with the specified ID.</returns>
+	/// <exception cref="KeyNotFoundException">Thrown when no node with the specified ID exists in the hierarchy.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public Node<TItem> GetNode(TId id)
+	{
+		return _nodes[id];
+	}
+
+	/// <summary>
+	/// Get the nodes with the specified IDs.
+	/// </summary>
+	/// <param name="ids">The IDs of the nodes to retrieve.</param>
+	/// <returns>A list containing the nodes with the specified IDs.</returns>
+	/// <exception cref="KeyNotFoundException">Thrown when any of the specified IDs does not exist in the hierarchy.</exception>
 	public IList<Node<TItem>> GetNodes(IEnumerable<TId> ids)
 	{
 		return [.. ids.Select(id => _nodes[id])];
 	}
 
+	/// <summary>
+	/// Get the item of the node with the specified ID.
+	/// </summary>
+	/// <param name="id">The ID of the node whose item to retrieve.</param>
+	/// <returns>The item of the node with the specified ID.</returns>
+	/// <exception cref="KeyNotFoundException">Thrown when no node with the specified ID exists in the hierarchy.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public TItem GetItem(TId id)
 	{
 		return GetNode(id).Item;
 	}
 
+	/// <summary>
+	/// Get the items of the nodes with the specified IDs.
+	/// </summary>
+	/// <param name="ids">The IDs of the nodes whose items to retrieve.</param>
+	/// <returns>An enumerable containing the items of the nodes with the specified IDs.</returns>
+	/// <exception cref="KeyNotFoundException">Thrown when any of the specified IDs does not exist in the hierarchy.</exception>
 	public IEnumerable<TItem> GetItems(IEnumerable<TId> ids)
 	{
 		return [.. ids.Select(id => GetNode(id).Item)];

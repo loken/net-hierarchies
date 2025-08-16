@@ -68,7 +68,7 @@ public static class Hierarchy
 		where TItem : notnull
 		where TOther : notnull
 	{
-		var childMap = other.Roots.ToChildMap(other.Identify);
+		var childMap = other.ToChildMap();
 		return CreateMapped(identify, items, childMap);
 	}
 
@@ -109,7 +109,7 @@ public static class Hierarchy
 		where TId : notnull
 		where TOther : notnull
 	{
-		var childMap = other.Roots.ToChildMap(other.Identify);
+		var childMap = other.ToChildMap();
 		return CreateMapped(childMap);
 	}
 }

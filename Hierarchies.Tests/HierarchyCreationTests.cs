@@ -15,7 +15,7 @@ public class HierarchyCreationTests
 			new("B1", "B13"));
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.RootItems);
 	}
 
 	[Fact]
@@ -45,7 +45,7 @@ public class HierarchyCreationTests
 			]);
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item.Id).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.RootIds);
 	}
 
 	[Fact]
@@ -61,7 +61,7 @@ public class HierarchyCreationTests
 		var hc = Hierarchy.CreateMapped(childMap);
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.RootItems);
 	}
 
 	[Fact]

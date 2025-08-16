@@ -150,7 +150,7 @@ public class NodeAncestorExtensionsTests
 	public void GetAncestors_DeduplicatesAncestorsFromMultipleNodes()
 	{
 		var nodes = new[] { NodeA11, NodeA12, NodeB1 };
-		var nodeItems = nodes.Select(n => n.Item).ToArray();
+		var nodeItems = nodes.ToItems();
 		// The input nodes are in this order: A11, A12, B1
 		Assert.Equal(new[] { "A11", "A12", "B1" }, nodeItems);
 

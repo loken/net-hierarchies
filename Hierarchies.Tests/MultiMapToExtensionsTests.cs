@@ -72,9 +72,9 @@ public class MultiMapToExtensionsTests
 	public void ChildMapToNodes()
 	{
 		var roots = ChildMap.ToNodes();
-		var actualRootIds = roots.Select(r => r.Item).Order().ToArray();
+		var actualRootIds = roots.ToItems();
 
-		Assert.Equal(RootIds.Order().ToArray(), actualRootIds);
+		Assert.Equal(RootIds, actualRootIds);
 	}
 
 	[Fact]

@@ -16,7 +16,7 @@ public class HierarchyLinkingTests
 		hc.Attach("B1", Nodes.Create("B11"));
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.RootItems);
 	}
 
 	[Fact]
@@ -33,7 +33,7 @@ public class HierarchyLinkingTests
 		hc.Attach("B1", "B11");
 
 		Assert.Equal(2, hc.Roots.Count);
-		Assert.Equivalent(new[] { "A", "B" }, hc.Roots.Select(r => r.Item).ToArray());
+		Assert.Equivalent(new[] { "A", "B" }, hc.RootItems);
 	}
 
 	[Fact]
@@ -54,7 +54,7 @@ public class HierarchyLinkingTests
 		hc.AttachRoot(node);
 
 		Assert.Single(hc.Roots);
-		Assert.Equivalent(new[] { "A" }, hc.Roots.Select(r => r.Item).ToArray());
+		Assert.Equivalent(new[] { "A" }, hc.RootItems);
 	}
 
 	[Fact]

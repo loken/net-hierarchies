@@ -21,7 +21,7 @@ public class HierarchyFindExtensionsTests
 		var foundNodes = hierarchy.Find(["A", "B"]);
 
 		Assert.Equal(2, foundNodes.Count);
-		Assert.Equal(["A", "B"], foundNodes.Select(n => n.Item).ToArray());
+		Assert.Equal(["A", "B"], foundNodes.ToItems());
 	}
 
 	[Fact]
@@ -30,7 +30,7 @@ public class HierarchyFindExtensionsTests
 		var foundNodes = hierarchy.Find(["A", "NonExistent", "B"]);
 
 		Assert.Equal(2, foundNodes.Count);
-		Assert.Equal(["A", "B"], foundNodes.Select(n => n.Item).ToArray());
+		Assert.Equal(["A", "B"], foundNodes.ToItems());
 	}
 
 	[Fact]
@@ -74,7 +74,7 @@ public class HierarchyFindExtensionsTests
 		var foundNodes = hierarchy.Find(node => node.IsLeaf);
 
 		Assert.Equal(5, foundNodes.Count);
-		var leafItems = foundNodes.Select(n => n.Item).ToArray();
+		var leafItems = foundNodes.ToItems();
 		Assert.Contains("A11", leafItems);
 		Assert.Contains("A12", leafItems);
 		Assert.Contains("A21", leafItems);
