@@ -1,6 +1,4 @@
-﻿using System.Dynamic;
-
-namespace Loken.Hierarchies;
+﻿namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extensions for mapping from <see cref="Node{TItem}"/> to other representations.
