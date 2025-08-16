@@ -94,4 +94,72 @@ public class HierarchyCreationTests
 		var matchingStructure = matchingHierarchy.ToChildMap().Render();
 		Assert.Equal(idStructure, matchingStructure);
 	}
+
+
+	[Fact]
+	public void Clone_WithItemHierarchy_PreservesItems()
+	{
+		// Create hierarchy with complex items
+		var items = new[]
+		{
+			new Item<string>("A"),
+			new Item<string>("A1"),
+			new Item<string>("A2"),
+			new Item<string>("B"),
+		};
+
+		var childMap = new MultiMap<string>
+		{
+			{ "A", ["A1", "A2"] }
+		};
+		var originalWithItems = Hierarchy.CreateMapped(item => item.Id, items, childMap);
+
+		// Clone it
+		var cloneWithItems = originalWithItems.Clone();
+
+		// Verify all items are preserved
+		Assert.Equivalent(originalWithItems.NodeItems,
+		                  cloneWithItems.NodeItems);
+
+		// Verify nodes are new but items are same references
+		var originalItem = originalWithItems.GetNode("A").Item;
+		var clonedItem = cloneWithItems.GetNode("A").Item;
+		Assert.Same(originalItem, clonedItem); // Same item reference
+	}
+
+	[Fact]
+	public void CloneIds_CreatesIdenticalHierarchyWithNewNodes()
+	{
+		// Create original hierarchy
+		var original = Hierarchy.CreateRelational<string>(
+			new("A", "A1"),
+			new("A", "A2"),
+			new("A2", "A21"),
+			new("B", "B1"));
+
+		// Clone it
+		var clone = original.CloneIds();
+
+		// Verify structure is identical
+		Assert.Equal(original.ToChildMap().Render(), clone.ToChildMap().Render());
+
+		// Verify root structure
+		Assert.Equal(original.Roots.Count, clone.Roots.Count);
+		Assert.Equivalent(original.RootItems, clone.RootItems);
+
+		// Verify all items are preserved
+		Assert.Equivalent(original.NodeItems,
+		                  clone.NodeItems);
+
+		// Verify nodes are different instances (new nodes)
+		var originalNodeA = original.GetNode("A");
+		var cloneNodeA = clone.GetNode("A");
+		Assert.NotSame(originalNodeA, cloneNodeA); // Different node instances
+		Assert.Equal(originalNodeA.Item, cloneNodeA.Item); // Same item values
+
+		// Verify relationships are preserved but with new nodes
+		Assert.Equal(originalNodeA.Children.Count(), cloneNodeA.Children.Count());
+		Assert.Equivalent(originalNodeA.Children.Select(c => c.Item),
+		                  cloneNodeA.Children.Select(c => c.Item));
+	}
 }
