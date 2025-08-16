@@ -40,9 +40,19 @@ public class Hierarchy<TItem, TId>
 		return _nodes[id];
 	}
 
-	public TItem Get(TId id)
+	public IList<Node<TItem>> GetNodes(IEnumerable<TId> ids)
+	{
+		return [.. ids.Select(id => _nodes[id])];
+	}
+
+	public TItem GetItem(TId id)
 	{
 		return GetNode(id).Item;
+	}
+
+	public IEnumerable<TItem> GetItems(IEnumerable<TId> ids)
+	{
+		return [.. ids.Select(id => GetNode(id).Item)];
 	}
 
 	/// <summary>
