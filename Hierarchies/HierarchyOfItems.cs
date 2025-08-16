@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
@@ -35,9 +37,16 @@ public class Hierarchy<TItem, TId>
 		Roots = new ReadOnlyCollection<Node<TItem>>(_roots);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public Node<TItem> GetNode(TId id)
 	{
 		return _nodes[id];
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryGetNode(TId id, [NotNullWhen(true)] out Node<TItem>? node)
+	{
+		return _nodes.TryGetValue(id, out node);
 	}
 
 	public IList<Node<TItem>> GetNodes(IEnumerable<TId> ids)
@@ -45,6 +54,7 @@ public class Hierarchy<TItem, TId>
 		return [.. ids.Select(id => _nodes[id])];
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public TItem GetItem(TId id)
 	{
 		return GetNode(id).Item;
