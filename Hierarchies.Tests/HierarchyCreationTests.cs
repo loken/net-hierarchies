@@ -158,7 +158,7 @@ public class HierarchyCreationTests
 		Assert.Equal(originalNodeA.Item, cloneNodeA.Item); // Same item values
 
 		// Verify relationships are preserved but with new nodes
-		Assert.Equal(originalNodeA.Children.Count(), cloneNodeA.Children.Count());
+		Assert.Equal(originalNodeA.Children.Count, cloneNodeA.Children.Count);
 		Assert.Equivalent(originalNodeA.Children.Select(c => c.Item),
 		                  cloneNodeA.Children.Select(c => c.Item));
 	}

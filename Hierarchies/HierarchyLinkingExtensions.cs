@@ -90,7 +90,8 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> Attach<TId>(this Hierarchy<TId> hierarchy, TId parent, params TId[] children)
 		where TId : notnull
 	{
-		return hierarchy.Attach(parent, children.AsEnumerable());
+		hierarchy.Attach(parent, Nodes.CreateMany(children));
+		return hierarchy;
 	}
 
 	/// <summary>

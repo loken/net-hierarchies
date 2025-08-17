@@ -96,7 +96,7 @@ public class Hierarchy<TItem, TId>
 	/// <exception cref="KeyNotFoundException">Thrown when any of the specified IDs does not exist in the hierarchy.</exception>
 	public IList<Node<TItem>> GetNodes(IEnumerable<TId> ids)
 	{
-		return [.. ids.Select(id => _nodes[id])];
+		return ids.Select(id => _nodes[id]).ToList();
 	}
 
 	/// <summary>
@@ -115,11 +115,11 @@ public class Hierarchy<TItem, TId>
 	/// Get the items of the nodes with the specified IDs.
 	/// </summary>
 	/// <param name="ids">The IDs of the nodes whose items to retrieve.</param>
-	/// <returns>An enumerable containing the items of the nodes with the specified IDs.</returns>
+	/// <returns>A list containing the items of the nodes with the specified IDs.</returns>
 	/// <exception cref="KeyNotFoundException">Thrown when any of the specified IDs does not exist in the hierarchy.</exception>
-	public IEnumerable<TItem> GetItems(IEnumerable<TId> ids)
+	public IList<TItem> GetItems(IEnumerable<TId> ids)
 	{
-		return [.. ids.Select(id => GetNode(id).Item)];
+		return ids.Select(id => GetNode(id).Item).ToList();
 	}
 
 	/// <summary>

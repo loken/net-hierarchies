@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
@@ -14,15 +15,33 @@ public delegate bool NodePredicate<TItem>(Node<TItem> node)
 	where TItem : notnull;
 
 /// <summary>
-/// Wrapper for a <see cref="Item"/> participating in a double-linked graph.
+/// Wrapper for a <see cref="TItem"/> participating in a double-linked graph.
 /// <para>
 /// By using a wrapper rather than require specific properties on the type parameter
 /// we don't need to make any assumptions about the wrapped <see cref="Type"/>.
 /// </para>
 /// </summary>
 /// <remarks>
-/// Nodes are considered equal when they share the same <see cref="Item"/> instance regardless of its links.
-/// In order to support serialization we ignore the Parent relationship. Otherwise a serializer will trip up on circular dependencies.
+/// <para>
+/// <strong>Equality:</strong> Nodes are considered equal when they share the same <see cref="TItem"/>
+/// instance regardless of their links.
+/// </para>
+/// <para>
+/// <strong>Serialization:</strong> The Parent relationship is ignored during serialization to prevent
+/// circular dependencies. Only children are serialized to maintain tree structure.
+/// </para>
+/// <para>
+/// <strong>Performance Design:</strong> This class uses three internal collections for optimal performance:
+/// </para>
+/// <list type="bullet">
+/// <item><description><c>_children</c> - Maintains insertion order and supports serialization</description></item>
+/// <item><description><c>_childSet</c> - Provides O(1) membership testing and duplicate prevention</description></item>
+/// <item><description><c>_childCache</c> - Lazy cache for secure read-only access</description></item>
+/// </list>
+/// <para>
+/// This space-time tradeoff ensures O(1) operations for attach/detach while providing secure,
+/// ordered access to children through <see cref="IReadOnlyList{T}"/>.
+/// </para>
 /// </remarks>
 [DataContract]
 public class Node<TItem>
@@ -40,15 +59,28 @@ public class Node<TItem>
 
 	/// <summary>
 	/// Backing field for <see cref="Children"/>.
+	/// Maintains child insertion order and supports serialization.
 	/// Will be set to <c>null</c> when empty to keep memory footprint minimal.
 	/// </summary>
 	[DataMember(Name = nameof(Children))]
 	[JsonInclude, JsonPropertyName(nameof(Children))]
 	private List<Node<TItem>>? _children;
 
-	// Membership set for O(1) contains checks; not serialized.
+	/// <summary>
+	/// Membership set for O(1) contains checks to prevent duplicates and enable fast validation.
+	/// Uses <see cref="ReferenceEqualityComparer{T}"/> to ensure nodes are compared by reference.
+	/// Not serialized to avoid circular dependencies.
+	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
 	private HashSet<Node<TItem>>? _childSet;
+
+	/// <summary>
+	/// Lazy cache of the <see cref="Children"/> read-only view.
+	/// Protects against tampering by returning <see cref="IReadOnlyList{T}"/> instead of mutable <see cref="List{T}"/>.
+	/// Cache is invalidated whenever children are modified (attach/detach operations).
+	/// </summary>
+	[IgnoreDataMember, JsonIgnore]
+	private IReadOnlyList<Node<TItem>>? _childCache;
 
 	/// <summary>
 	/// The item is the subject/content of the node.
@@ -57,11 +89,31 @@ public class Node<TItem>
 	public required TItem Item { get; init; }
 
 	/// <summary>
-	/// Links to the node nodes.
-	/// No nodes means it's a "leaf".
+	/// Links to the child nodes in insertion order.
+	/// Returns an empty collection for leaf nodes.
+	/// <para>
+	/// <strong>Security:</strong> Returns <see cref="IReadOnlyList{T}"/> to prevent external modification.
+	/// The collection cannot be cast to mutable types like <see cref="List{T}"/>.
+	/// </para>
+	/// <para>
+	/// <strong>Performance:</strong> O(1) indexed access via <c>node.Children[index]</c>.
+	/// Result is cached until children are modified (attach/detach operations).
+	/// </para>
 	/// </summary>
+	/// <value>
+	/// A read-only list of child nodes, or an empty collection if this is a leaf node.
+	/// </value>
 	[IgnoreDataMember, JsonIgnore]
-	public IEnumerable<Node<TItem>> Children => _children?.AsEnumerable() ?? Enumerable.Empty<Node<TItem>>();
+	public IReadOnlyList<Node<TItem>> Children
+	{
+		get
+		{
+			if (_children is null)
+				return Array.Empty<Node<TItem>>();
+
+			return _childCache ??= _children.AsReadOnly();
+		}
+	}
 
 	/// <summary>
 	/// Link to the parent node.
@@ -174,6 +226,9 @@ public class Node<TItem>
 			}
 		}
 
+		// Invalidate cached read-only view
+		_childCache = null;
+
 		return this;
 	}
 
@@ -203,6 +258,9 @@ public class Node<TItem>
 			node.Parent = null;
 		}
 
+		// Invalidate cached read-only view
+		_childCache = null;
+
 		if (IsLeaf)
 		{
 			_children = null;
@@ -230,6 +288,9 @@ public class Node<TItem>
 
 		Parent._childSet!.Remove(this);
 		Parent._children!.Remove(this);
+
+		// Invalidate parent's cached read-only view
+		Parent._childCache = null;
 
 		if (Parent.IsLeaf)
 		{

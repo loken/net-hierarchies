@@ -30,7 +30,10 @@ public static class Nodes
 	public static Node<TItem>[] CreateMany<TItem>(params TItem[] items)
 		where TItem : notnull
 	{
-		return [.. CreateMany(items.AsEnumerable())];
+		var result = new Node<TItem>[items.Length];
+		for (int i = 0; i < items.Length; i++)
+			result[i] = new Node<TItem> { Item = items[i] };
+		return result;
 	}
 
 	/// <summary>
@@ -39,7 +42,7 @@ public static class Nodes
 	/// <typeparam name="TId">The type of IDs.</typeparam>
 	/// <param name="childMap">The map describing the relations.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TId>> FromChildMap<TId>(MultiMap<TId> childMap)
+	public static Node<TId>[] FromChildMap<TId>(MultiMap<TId> childMap)
 		where TId : notnull
 	{
 		return childMap.ToNodes();
@@ -51,7 +54,7 @@ public static class Nodes
 	/// <typeparam name="TId">The type of IDs.</typeparam>
 	/// <param name="relations">The relations describing the hierarchy structure.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TId>> FromRelations<TId>(IEnumerable<Relation<TId>> relations)
+	public static Node<TId>[] FromRelations<TId>(IEnumerable<Relation<TId>> relations)
 		where TId : notnull
 	{
 		return relations.ToNodes();
@@ -113,14 +116,15 @@ public static class Nodes
 	/// <param name="roots">The root items to wrap in nodes.</param>
 	/// <param name="getChildren">The delegate for getting the child items from a parent item.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TItem>> FromItemsWithChildren<TItem>(
+	public static Node<TItem>[] FromItemsWithChildren<TItem>(
 		IEnumerable<TItem> roots,
 		Func<TItem, IEnumerable<TItem>?> getChildren)
 		where TItem : notnull
 	{
 		var rootNodes = CreateMany(roots).ToArray();
 
-		Traverse.Graph(rootNodes, node => {
+		Traverse.Graph(rootNodes, node =>
+		{
 			var children = getChildren(node.Item);
 			if (children is not null)
 			{
@@ -144,7 +148,7 @@ public static class Nodes
 	/// <param name="leaves">The leaf items to wrap in nodes.</param>
 	/// <param name="getParent">The delegate for getting the parent of an item.</param>
 	/// <returns>The root nodes.</returns>
-	public static ICollection<Node<TItem>> FromItemsWithParents<TItem>(
+	public static IList<Node<TItem>> FromItemsWithParents<TItem>(
 		IEnumerable<TItem> leaves,
 		Func<TItem, TItem?> getParent)
 		where TItem : notnull
