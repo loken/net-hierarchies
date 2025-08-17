@@ -48,6 +48,11 @@ public class Node<TItem>
 	where TItem : notnull
 {
 	/// <summary>
+	/// An empty collection of child nodes to use as a result when there are no children.
+	/// </summary>
+	private static ReadOnlyCollection<Node<TItem>> EmptyChildren => new(Array.Empty<Node<TItem>>());
+
+	/// <summary>
 	/// The brand is used to lock the node to a specific owner.
 	/// </summary>
 	/// <remarks>
@@ -76,11 +81,11 @@ public class Node<TItem>
 
 	/// <summary>
 	/// Lazy cache of the <see cref="Children"/> read-only view.
-	/// Protects against tampering by returning <see cref="IReadOnlyList{T}"/> instead of mutable <see cref="List{T}"/>.
+	/// Protects against tampering by returning <see cref="ReadOnlyCollection{T}"/> instead of mutable <see cref="List{T}"/>.
 	/// Cache is invalidated whenever children are modified (attach/detach operations).
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
-	private IReadOnlyList<Node<TItem>>? _childCache;
+	private ReadOnlyCollection<Node<TItem>>? _childCache;
 
 	/// <summary>
 	/// The item is the subject/content of the node.
@@ -104,16 +109,9 @@ public class Node<TItem>
 	/// A read-only list of child nodes, or an empty collection if this is a leaf node.
 	/// </value>
 	[IgnoreDataMember, JsonIgnore]
-	public IReadOnlyList<Node<TItem>> Children
-	{
-		get
-		{
-			if (_children is null)
-				return Array.Empty<Node<TItem>>();
-
-			return _childCache ??= _children.AsReadOnly();
-		}
-	}
+	public IReadOnlyList<Node<TItem>> Children => _childCache ??= _children is null
+		? EmptyChildren
+		: _children.AsReadOnly();
 
 	/// <summary>
 	/// Link to the parent node.
@@ -134,6 +132,7 @@ public class Node<TItem>
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
 	[MemberNotNullWhen(false, nameof(_children))]
+	[MemberNotNullWhen(false, nameof(_childSet))]
 	public bool IsLeaf => _children is null or { Count: 0 };
 
 	/// <summary>
@@ -142,6 +141,7 @@ public class Node<TItem>
 	/// </summary>
 	[IgnoreDataMember, JsonIgnore]
 	[MemberNotNullWhen(true, nameof(_children))]
+	[MemberNotNullWhen(true, nameof(_childSet))]
 	public bool IsInternal => !IsLeaf;
 
 	/// <summary>
@@ -203,25 +203,28 @@ public class Node<TItem>
 	/// that aren't already attached to another parent.
 	/// </exception>
 	[MemberNotNull(nameof(_children))]
-	public Node<TItem> Attach(params Node<TItem>[] children)
+	public Node<TItem> Attach(IEnumerable<Node<TItem>> children)
 	{
-		if (children.Length == 0)
+		if (children is not ICollection<Node<TItem>> collection)
+			collection = [.. children];
+
+		if (collection.Count == 0)
 			throw new InvalidOperationException($"Must provide one or more {nameof(children)}");
 
-		if (children.Any(node => node.Parent is not null))
+		if (collection.Any(node => node.Parent is not null))
 			throw new InvalidOperationException($"Must all be without a {nameof(Parent)} before attaching to another {nameof(Parent)}");
 
-		if (!children.All(node => node.IsBrandCompatible(this)))
+		if (!collection.All(node => node.IsBrandCompatible(this)))
 			throw new InvalidOperationException("Must all have a compatible brand");
 
 		_children ??= new List<Node<TItem>>();
 		_childSet ??= new HashSet<Node<TItem>>(ReferenceEqualityComparer<Node<TItem>>.Instance);
 
-		foreach (var node in children)
+		foreach (var node in collection)
 		{
-			if (_childSet!.Add(node))
+			if (_childSet.Add(node))
 			{
-				_children!.Add(node);
+				_children.Add(node);
 				node.Parent = this;
 			}
 		}
@@ -240,18 +243,21 @@ public class Node<TItem>
 	/// <exception cref="InvalidOperationException">
 	/// Must provide non-empty set of attached and non-branded <paramref name="children"/>.
 	/// </exception>
-	public Node<TItem> Detach(params Node<TItem>[] children)
+	public Node<TItem> Detach(IEnumerable<Node<TItem>> children)
 	{
-		if (children.Length == 0)
+		if (children is not ICollection<Node<TItem>> collection)
+			collection = [.. children];
+
+		if (collection.Count == 0)
 			throw new InvalidOperationException($"Must provide one or more {nameof(children)}.");
 
-		if (IsLeaf || !children.All(n => _childSet!.Contains(n)))
+		if (IsLeaf || !collection.All(n => _childSet!.Contains(n)))
 			throw new InvalidOperationException($"Must all be {nameof(children)}.");
 
-		if (children.Any(node => node.IsBranded))
+		if (collection.Any(node => node.IsBranded))
 			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
-		foreach (var node in children)
+		foreach (var node in collection)
 		{
 			_childSet!.Remove(node);
 			_children!.Remove(node);
@@ -283,11 +289,11 @@ public class Node<TItem>
 		if (IsBranded)
 			throw new InvalidOperationException("Must clear brand using delegate before you can detach a branded node.");
 
-		if (Parent.IsLeaf || !Parent._childSet!.Contains(this))
+		if (Parent.IsLeaf || !Parent._childSet.Contains(this))
 			throw new Exception("Invalid object state: It should not be possible for the node not to be a child of its parent!.");
 
-		Parent._childSet!.Remove(this);
-		Parent._children!.Remove(this);
+		Parent._childSet.Remove(this);
+		Parent._children.Remove(this);
 
 		// Invalidate parent's cached read-only view
 		Parent._childCache = null;

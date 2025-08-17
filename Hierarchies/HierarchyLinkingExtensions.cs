@@ -1,4 +1,6 @@
-﻿namespace Loken.Hierarchies;
+﻿using System.ComponentModel.Design.Serialization;
+
+namespace Loken.Hierarchies;
 
 /// <summary>
 /// Extensions for managing how the <see cref="Node{TItem}"/>s of a <see cref="Hierarchy{TItem, TId}"/> are linked,
@@ -6,6 +8,7 @@
 /// </summary>
 public static class HierarchyLinkingExtensions
 {
+	#region AttachRoot
 	/// <summary>
 	/// Attach the provided <paramref name="roots"/> to the <paramref name="hierarchy"/>.
 	/// </summary>
@@ -16,30 +19,11 @@ public static class HierarchyLinkingExtensions
 	/// Must provide non-empty set of <paramref name="roots"/> of a compatible brand
 	/// that aren't already attached to another parent.
 	/// </exception>
-	public static Hierarchy<TItem, TId> AttachRoot<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<Node<TItem>> roots)
+	public static Hierarchy<TItem, TId> AttachRoot<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, params Node<TItem>[] roots)
 		where TItem : notnull
 		where TId : notnull
 	{
-		return hierarchy.AttachRoot([.. roots]);
-	}
-
-	/// <summary>
-	/// Attach the provided <paramref name="children"/> to the node of the
-	/// provided <paramref name="parentId"/> which is in the <paramref name="hierarchy"/>.
-	/// </summary>
-	/// <param name="hierarchy">Hierarchy to attach to.</param>
-	/// <param name="parentId">The ID of the node to attach to.</param>
-	/// <param name="children">Nodes to attach.</param>
-	/// <returns>The hierarchy itself for method chaining purposes.</returns>
-	/// <exception cref="InvalidOperationException">
-	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
-	/// that aren't already attached to another parent.
-	/// </exception>
-	public static Hierarchy<TItem, TId> Attach<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId parentId, IEnumerable<Node<TItem>> children)
-		where TItem : notnull
-		where TId : notnull
-	{
-		return hierarchy.Attach(parentId, [.. children]);
+		return hierarchy.AttachRoot(roots);
 	}
 
 	/// <summary>
@@ -55,7 +39,8 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> AttachRoot<TId>(this Hierarchy<TId> hierarchy, params TId[] roots)
 		where TId : notnull
 	{
-		return hierarchy.AttachRoot(roots.AsEnumerable());
+		hierarchy.AttachRoot(Nodes.CreateMany(roots));
+		return hierarchy;
 	}
 
 	/// <summary>
@@ -73,6 +58,27 @@ public static class HierarchyLinkingExtensions
 	{
 		hierarchy.AttachRoot(Nodes.CreateMany(roots));
 		return hierarchy;
+	}
+	#endregion
+
+	#region Attach
+	/// <summary>
+	/// Attach the provided <paramref name="children"/> to the node of the
+	/// provided <paramref name="parentId"/> which is in the <paramref name="hierarchy"/>.
+	/// </summary>
+	/// <param name="hierarchy">Hierarchy to attach to.</param>
+	/// <param name="parentId">The ID of the node to attach to.</param>
+	/// <param name="children">Nodes to attach.</param>
+	/// <returns>The hierarchy itself for method chaining purposes.</returns>
+	/// <exception cref="InvalidOperationException">
+	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
+	/// that aren't already attached to another parent.
+	/// </exception>
+	public static Hierarchy<TItem, TId> Attach<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId parentId, params Node<TItem>[] children)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return hierarchy.Attach(parentId, children);
 	}
 
 	/// <summary>
@@ -112,8 +118,9 @@ public static class HierarchyLinkingExtensions
 		hierarchy.Attach(parent, Nodes.CreateMany(children));
 		return hierarchy;
 	}
+	#endregion
 
-
+	#region Detach
 	/// <summary>
 	/// Detach the provided <paramref name="nodes"/>.
 	/// </summary>
@@ -123,11 +130,11 @@ public static class HierarchyLinkingExtensions
 	/// <exception cref="InvalidOperationException">
 	/// Must provide non-empty set of attached <paramref name="nodes"/>.
 	/// </exception>
-	public static Hierarchy<TItem, TId> Detach<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<Node<TItem>> nodes)
+	public static Hierarchy<TItem, TId> Detach<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, params Node<TItem>[] nodes)
 		where TItem : notnull
 		where TId : notnull
 	{
-		return hierarchy.Detach([.. nodes]);
+		return hierarchy.Detach(nodes);
 	}
 
 
@@ -143,7 +150,8 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> Detach<TId>(this Hierarchy<TId> hierarchy, params TId[] ids)
 		where TId : notnull
 	{
-		return hierarchy.Detach(ids.AsEnumerable());
+		hierarchy.Detach(hierarchy.GetNodes(ids));
+		return hierarchy;
 	}
 
 	/// <summary>
@@ -158,8 +166,8 @@ public static class HierarchyLinkingExtensions
 	public static Hierarchy<TId> Detach<TId>(this Hierarchy<TId> hierarchy, IEnumerable<TId> ids)
 		where TId : notnull
 	{
-		var nodes = ids.Select(hierarchy.GetNode);
-		hierarchy.Detach(nodes);
+		hierarchy.Detach(hierarchy.GetNodes(ids));
 		return hierarchy;
 	}
+	#endregion
 }

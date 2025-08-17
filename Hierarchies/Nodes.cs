@@ -21,7 +21,27 @@ public static class Nodes
 	public static IEnumerable<Node<TItem>> CreateMany<TItem>(IEnumerable<TItem> items)
 		where TItem : notnull
 	{
+		if (items is TItem[] array)
+			return CreateMany(array);
+
+		if (items is ICollection<TItem> collection)
+			return CreateMany(collection);
+
 		return items.Select(item => new Node<TItem>() { Item = item });
+	}
+
+	/// <summary>
+	/// Create a <see cref="Node{TItem}"/> for each of the <paramref name="items"/> (ICollection overload).
+	/// </summary>
+	public static Node<TItem>[] CreateMany<TItem>(ICollection<TItem> items)
+		where TItem : notnull
+	{
+		var result = new Node<TItem>[items.Count];
+		var output = result.AsSpan();
+		int i = 0;
+		foreach (var item in items)
+			output[i++] = new Node<TItem> { Item = item };
+		return result;
 	}
 
 	/// <summary>
@@ -31,8 +51,10 @@ public static class Nodes
 		where TItem : notnull
 	{
 		var result = new Node<TItem>[items.Length];
-		for (int i = 0; i < items.Length; i++)
-			result[i] = new Node<TItem> { Item = items[i] };
+		var input = items.AsSpan();
+		var output = result.AsSpan();
+		for (int i = 0; i < input.Length; i++)
+			output[i] = new Node<TItem> { Item = input[i] };
 		return result;
 	}
 

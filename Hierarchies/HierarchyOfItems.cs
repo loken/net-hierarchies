@@ -162,14 +162,17 @@ public class Hierarchy<TItem, TId>
 	/// Must provide non-empty set of <paramref name="roots"/> of a compatible brand
 	/// that aren't already attached to another parent.
 	/// </exception>
-	public Hierarchy<TItem, TId> AttachRoot(params Node<TItem>[] roots)
+	public Hierarchy<TItem, TId> AttachRoot(IEnumerable<Node<TItem>> roots)
 	{
-		if (!roots.All(root => root.IsRoot))
+		if (roots is not ICollection<Node<TItem>> collection)
+			collection = [.. roots];
+
+		if (!collection.All(root => root.IsRoot))
 			throw new InvalidOperationException("Must all be roots!");
 
-		AddNodes(roots);
+		AddNodes(collection);
 
-		_roots.AddRange(roots);
+		_roots.AddRange(collection);
 
 		return this;
 	}
@@ -185,15 +188,18 @@ public class Hierarchy<TItem, TId>
 	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
 	/// that aren't already attached to another parent.
 	/// </exception>
-	public Hierarchy<TItem, TId> Attach(TId parentId, params Node<TItem>[] children)
+	public Hierarchy<TItem, TId> Attach(TId parentId, IEnumerable<Node<TItem>> children)
 	{
+		if (children is not ICollection<Node<TItem>> collection)
+			collection = [.. children];
+
 		if (!_nodes.ContainsKey(parentId))
 			throw new ArgumentException("Matching parent not yet added", nameof(parentId));
 
-		AddNodes(children);
+		AddNodes(collection);
 
 		var parentNode = _nodes[parentId];
-		parentNode.Attach(children);
+		parentNode.Attach(collection);
 
 		return this;
 	}
@@ -206,9 +212,12 @@ public class Hierarchy<TItem, TId>
 	/// <exception cref="InvalidOperationException">
 	/// Must provide non-empty set of attached <paramref name="nodes"/>.
 	/// </exception>
-	public Hierarchy<TItem, TId> Detach(params Node<TItem>[] nodes)
+	public Hierarchy<TItem, TId> Detach(IEnumerable<Node<TItem>> nodes)
 	{
-		foreach (var node in Traverse.Graph(nodes, n => n.Children))
+		if (nodes is not ICollection<Node<TItem>> collection)
+			collection = [.. nodes];
+
+		foreach (var node in Traverse.Graph(collection, n => n.Children))
 		{
 			var id = Identify(node.Item);
 			_debrand[id]();
@@ -217,7 +226,7 @@ public class Hierarchy<TItem, TId>
 			_roots.Remove(node);
 		}
 
-		foreach (var node in nodes)
+		foreach (var node in collection)
 		{
 			if (!node.IsRoot)
 				node.DetachSelf();
@@ -226,7 +235,7 @@ public class Hierarchy<TItem, TId>
 		return this;
 	}
 
-	private void AddNodes(IEnumerable<Node<TItem>> nodes)
+	private void AddNodes(ICollection<Node<TItem>> nodes)
 	{
 		foreach (var node in Traverse.Graph(nodes, n => n.Children))
 		{
