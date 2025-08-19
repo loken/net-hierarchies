@@ -6,8 +6,20 @@ namespace Loken.Hierarchies;
 public static class HierarchySearchExtensions
 {
 	/// <summary>
-	/// Create a new hierarchy from matches and optional ancestors/descendants.
+	/// Create a new hierarchy with nodes for a subset of matching nodes.
 	/// </summary>
+	/// <param name="hierarchy">The hierarchy to search within.</param>
+	/// <param name="ids">The IDs to search for.</param>
+	/// <param name="include">
+	/// Flags controlling which nodes to include in the result:
+	/// <list type="bullet">
+	/// <item><description><see cref="SearchInclude.Matches"/> - Include the match itself</description></item>
+	/// <item><description><see cref="SearchInclude.Ancestors"/> - Include all ancestors of a match</description></item>
+	/// <item><description><see cref="SearchInclude.Descendants"/> - Include all descendants of a match</description></item>
+	/// <item><description><see cref="SearchInclude.All"/> - Include <see cref="SearchInclude.Matches"/>, <see cref="SearchInclude.Ancestors"/> and <see cref="SearchInclude.Descendants"/></description></item>
+	/// </list>
+	/// </param>
+	/// <returns>A new hierarchy containing only the specified subset of nodes - effectively a pruned clone.</returns>
 	public static Hierarchy<TItem, TId> Search<TItem, TId>(
 		this Hierarchy<TItem, TId> hierarchy,
 		IEnumerable<TId> ids,
@@ -127,5 +139,56 @@ public static class HierarchySearchExtensions
 		}
 
 		return Hierarchy.CreateMapped(hierarchy.Identify, items.Values, childMap);
+	}
+
+	/// <summary>
+	/// Create a new hierarchy with nodes for a subset of matching nodes.
+	/// </summary>
+	/// <param name="hierarchy">The hierarchy to search within.</param>
+	/// <param name="id">The ID to search for.</param>
+	/// <param name="include">
+	/// Flags controlling which nodes to include in the result:
+	/// <list type="bullet">
+	/// <item><description><see cref="SearchInclude.Matches"/> - Include the match itself</description></item>
+	/// <item><description><see cref="SearchInclude.Ancestors"/> - Include all ancestors of a match</description></item>
+	/// <item><description><see cref="SearchInclude.Descendants"/> - Include all descendants of a match</description></item>
+	/// <item><description><see cref="SearchInclude.All"/> - Include <see cref="SearchInclude.Matches"/>, <see cref="SearchInclude.Ancestors"/> and <see cref="SearchInclude.Descendants"/></description></item>
+	/// </list>
+	/// </param>
+	/// <returns>A new hierarchy containing only the specified subset of nodes - effectively a pruned clone.</returns>
+	public static Hierarchy<TItem, TId> Search<TItem, TId>(
+		this Hierarchy<TItem, TId> hierarchy,
+		TId id,
+		SearchInclude include = SearchInclude.All)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return hierarchy.Search([id], include);
+	}
+
+	/// <summary>
+	/// Create a new hierarchy with nodes for a subset of matching nodes.
+	/// </summary>
+	/// <param name="hierarchy">The hierarchy to search within.</param>
+	/// <param name="predicate">A predicate to filter nodes that should be included as matches.</param>
+	/// <param name="include">
+	/// Flags controlling which nodes to include in the result:
+	/// <list type="bullet">
+	/// <item><description><see cref="SearchInclude.Matches"/> - Include the match itself</description></item>
+	/// <item><description><see cref="SearchInclude.Ancestors"/> - Include all ancestors of a match</description></item>
+	/// <item><description><see cref="SearchInclude.Descendants"/> - Include all descendants of a match</description></item>
+	/// <item><description><see cref="SearchInclude.All"/> - Include <see cref="SearchInclude.Matches"/>, <see cref="SearchInclude.Ancestors"/> and <see cref="SearchInclude.Descendants"/></description></item>
+	/// </list>
+	/// </param>
+	/// <returns>A new hierarchy containing only the specified subset of nodes - effectively a pruned clone.</returns>
+	public static Hierarchy<TItem, TId> Search<TItem, TId>(
+		this Hierarchy<TItem, TId> hierarchy,
+		NodePredicate<TItem> predicate,
+		SearchInclude include = SearchInclude.All)
+		where TItem : notnull
+		where TId : notnull
+	{
+		var matchingIds = hierarchy.Find(predicate).ToIds(hierarchy.Identify);
+		return hierarchy.Search(matchingIds, include);
 	}
 }
