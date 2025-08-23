@@ -145,7 +145,7 @@ public static class Nodes
 	{
 		var rootNodes = CreateMany(roots).ToArray();
 
-		Traverse.Graph(rootNodes, node =>
+		Flatten.Graph(rootNodes, node =>
 		{
 			var children = getChildren(node.Item);
 			if (children is not null)
@@ -158,7 +158,7 @@ public static class Nodes
 			}
 
 			return node.Children;
-		}).EnumerateAll();
+		});
 
 		return rootNodes;
 	}

@@ -1,6 +1,6 @@
 ﻿namespace Loken.Hierarchies.Traversal;
 
-public class SequenceTests
+public class TraverseSequenceTests
 {
 	[Fact]
 	public void SequenceNext_YieldsInOrder()

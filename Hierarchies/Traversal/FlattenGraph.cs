@@ -1,23 +1,23 @@
-﻿namespace Loken.Hierarchies.Traversal;
+namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
-/// Provides traversal for sequences, trees and graphs.
+/// Provides eager traversal helpers that return arrays for sequences, trees and graphs.
 /// </summary>
-public static partial class Traverse
+public static partial class Flatten
 {
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// </summary>
+	/// Flatten a graph of nodes.
+	/// <para>Similar to <see cref="Traverse.Graph"/>, but collects eagerly.</para>
 	/// <typeparam name="TNode">The type of node.</typeparam>
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <returns>A list of nodes.</returns>
+	/// </summary>
+	public static IList<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
 		if (root is null)
-			yield break;
+			return [];
 
 		HashSet<TNode>? visited = null;
 		if (detectCycles)
@@ -32,14 +32,14 @@ public static partial class Traverse
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		// Single-root fast path; avoid IEnumerable machinery.
 		store.Attach(root);
 
+		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
 		{
 			if (visited is null || visited.Add(node))
 			{
-				yield return node;
+				result.Add(node);
 
 				var children = next(node);
 				if (children is not null)
@@ -54,34 +54,36 @@ public static partial class Traverse
 				}
 			}
 		}
+
+		return result;
 	}
 
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
-	/// and whether to include or skip the current node.</para>
-	/// <para>By providing no next nodes you exclude any children of the current node from traversal.</para>
-	/// </summary>
+	/// Flatten a graph of nodes.
+	/// <para>Uses a <see cref="GraphSignal{T}"/> to control traversal and yielding.</para>
 	/// <typeparam name="TNode">The type of node.</typeparam>
 	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <returns>A list of nodes.</returns>
+	/// </summary>
+	public static IList<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
+		if (root is null)
+			return [];
+
 		return Graph(root.ToEnumerable(), traverse, detectCycles, type);
 	}
 
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// </summary>
+	/// Flatten a graph of nodes.
+	/// <para>Similar to <see cref="Traverse.Graph"/>, but collects eagerly.</para>
 	/// <typeparam name="TNode">The type of node.</typeparam>
 	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <returns>A list of nodes.</returns>
+	/// </summary>
+	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
 		HashSet<TNode>? visited = null;
@@ -103,11 +105,12 @@ public static partial class Traverse
 		else
 			store.Attach(roots);
 
+		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
 		{
 			if (visited is null || visited.Add(node))
 			{
-				yield return node;
+				result.Add(node);
 
 				var children = next(node);
 				if (children is not null)
@@ -121,32 +124,34 @@ public static partial class Traverse
 				}
 			}
 		}
+
+		return result;
 	}
 
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
-	/// and whether to include or skip the current node.</para>
-	/// <para>By providing no next nodes you exclude any children of the current node from traversal.</para>
-	/// </summary>
+	/// Flatten a graph of nodes.
+	/// <para>Uses a <see cref="GraphSignal{T}"/> to control traversal and yielding.</para>
 	/// <typeparam name="TNode">The type of node.</typeparam>
 	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <returns>A list of nodes.</returns>
+	/// </summary>
+	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 		where TNode : notnull
 	{
 		var signal = new GraphSignal<TNode>(roots, detectCycles, type);
+		var result = new List<TNode>();
 
 		while (signal.TryGetNext(out TNode? current))
 		{
 			traverse(current, signal);
 
 			if (signal.ShouldYield())
-				yield return current;
+				result.Add(current);
 
 			signal.Cleanup();
 		}
+
+		return result;
 	}
 }

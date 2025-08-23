@@ -21,8 +21,8 @@ public static class NodeGetExtensions
 			return [];
 
 		return includeSelf
-			? [.. Traverse.Graph(root, node => node.Children, false, type)]
-			: [.. Traverse.Graph(root.Children, node => node.Children, false, type)];
+			? Flatten.Graph(root, node => node.Children, false, type)
+			: Flatten.Graph(root.Children, node => node.Children, false, type);
 	}
 
 	/// <summary>
@@ -37,8 +37,8 @@ public static class NodeGetExtensions
 		where TItem : notnull
 	{
 		return includeSelf
-			? [.. Traverse.Graph(roots, node => node.Children, false, type)]
-			: [.. Traverse.Graph(roots.SelectMany(r => r.Children), node => node.Children, false, type)];
+			? Flatten.Graph(roots, node => node.Children, false, type)
+			: Flatten.Graph(roots.SelectMany(r => r.Children), node => node.Children, false, type);
 	}
 	#endregion
 
@@ -58,7 +58,7 @@ public static class NodeGetExtensions
 			return [];
 
 		var first = includeSelf ? node : node.Parent;
-		return [.. Traverse.Sequence(first, n => n.Parent)];
+		return Flatten.Sequence(first, n => n.Parent);
 	}
 
 	/// <summary>

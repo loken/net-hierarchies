@@ -84,7 +84,7 @@ public static class NodesToExtensions
 			}
 		}
 
-		var nodes = Traverse.Graph(roots, node => node.Children.Where(n => n.IsInternal)).ToArray();
+		var nodes = Flatten.Graph(roots, node => node.Children.Where(n => n.IsInternal));
 
 		foreach (var node in nodes)
 		{
@@ -227,7 +227,7 @@ public static class NodesToExtensions
 	{
 		var relations = new List<Relation<TId>>();
 
-		Traverse.Graph(roots, node =>
+		Flatten.Graph(roots, node =>
 		{
 			var isRoot = node.IsRoot;
 			var isLeaf = node.IsLeaf;
@@ -249,7 +249,7 @@ public static class NodesToExtensions
 				relations.Add(new(nodeId, childId));
 
 			return children.Where(child => child.IsInternal);
-		}).EnumerateAll();
+		});
 
 		return relations;
 	}

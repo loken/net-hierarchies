@@ -217,7 +217,7 @@ public class Hierarchy<TItem, TId>
 		if (nodes is not ICollection<Node<TItem>> collection)
 			collection = [.. nodes];
 
-		foreach (var node in Traverse.Graph(collection, n => n.Children))
+		foreach (var node in collection.GetDescendants(true))
 		{
 			var id = Identify(node.Item);
 			_debrand[id]();
@@ -237,7 +237,7 @@ public class Hierarchy<TItem, TId>
 
 	private void AddNodes(ICollection<Node<TItem>> nodes)
 	{
-		foreach (var node in Traverse.Graph(nodes, n => n.Children))
+		foreach (var node in nodes.GetDescendants(true))
 		{
 			var id = Identify(node.Item);
 			_debrand.Add(id, node.Brand(this));
