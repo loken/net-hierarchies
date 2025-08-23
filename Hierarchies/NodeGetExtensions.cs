@@ -20,8 +20,9 @@ public static class NodeGetExtensions
 		if (root == null)
 			return [];
 
-		var roots = includeSelf ? [root] : root.Children;
-		return [.. Traverse.Graph(roots, node => node.Children, false, type)];
+		return includeSelf
+			? [.. Traverse.Graph(root, node => node.Children, false, type)]
+			: [.. Traverse.Graph(root.Children, node => node.Children, false, type)];
 	}
 
 	/// <summary>
@@ -35,8 +36,9 @@ public static class NodeGetExtensions
 	public static IList<Node<TItem>> GetDescendants<TItem>(this IEnumerable<Node<TItem>> roots, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		var rootsToTraverse = includeSelf ? roots : roots.SelectMany(r => r.Children);
-		return [.. Traverse.Graph(rootsToTraverse, node => node.Children, false, type)];
+		return includeSelf
+			? [.. Traverse.Graph(roots, node => node.Children, false, type)]
+			: [.. Traverse.Graph(roots.SelectMany(r => r.Children), node => node.Children, false, type)];
 	}
 	#endregion
 

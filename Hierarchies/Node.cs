@@ -94,7 +94,7 @@ public class Node<TItem>
 	public required TItem Item { get; init; }
 
 	/// <summary>
-	/// Links to the child nodes in insertion order.
+	/// List of child nodes in insertion order.
 	/// Returns an empty collection for leaf nodes.
 	/// <para>
 	/// <strong>Security:</strong> Returns <see cref="IReadOnlyList{T}"/> to prevent external modification.
@@ -109,7 +109,7 @@ public class Node<TItem>
 	/// A read-only list of child nodes, or an empty collection if this is a leaf node.
 	/// </value>
 	[IgnoreDataMember, JsonIgnore]
-	public IReadOnlyList<Node<TItem>> Children => _childCache ??= _children is null
+	public ReadOnlyCollection<Node<TItem>> Children => _childCache ??= _children is null
 		? EmptyChildren
 		: _children.AsReadOnly();
 
