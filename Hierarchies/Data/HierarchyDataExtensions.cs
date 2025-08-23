@@ -8,7 +8,7 @@ public static class HierarchyDataExtensions
 	public static Hierarchy<TId> ToHierarchy<TId>(this IEnumerable<HierarchyRelation<TId>> relations)
 		where TId : notnull
 	{
-		return Hierarchy.CreateMapped(relations.ToMap());
+		return Hierarchies.CreateFromChildMap(relations.ToMap());
 	}
 
 	/// <summary>

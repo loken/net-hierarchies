@@ -22,7 +22,7 @@ public class QueryTests : IClassFixture<DbFixture>
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
 		var childMap = MultiMap.Parse<string>(ChildMap);
-		var hc = Hierarchy.CreateMapped(childMap);
+		var hc = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hc, "companies");
 
 		var descendantMap = hc.ToMap(RelType.Descendants);
@@ -42,7 +42,7 @@ public class QueryTests : IClassFixture<DbFixture>
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
 		var childMap = MultiMap.Parse<string>(ChildMap);
-		var hc = Hierarchy.CreateMapped(childMap);
+		var hc = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hc, "companies", RelType.Children);
 
 		var childrenOfA = collection.GetChildren("companies", "A");

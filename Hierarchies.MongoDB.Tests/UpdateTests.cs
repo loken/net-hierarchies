@@ -22,7 +22,7 @@ public class UpdateTests : IClassFixture<DbFixture>
 			""");
 
 		// Create a hierarchy and store it to the database.
-		var hierarchy = Hierarchy.CreateMapped(childMap);
+		var hierarchy = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hierarchy, "companies", RelType.Children);
 
 		// Make modifications to the hierarchy.
@@ -54,11 +54,11 @@ public class UpdateTests : IClassFixture<DbFixture>
 			""");
 
 		// Keep an instance of the known state and store it to the database.
-		var known = Hierarchy.CreateMapped(childMap);
+		var known = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(known, "companies", RelType.Children);
 
 		// Create a working copy, modify it and update the database.
-		var modified = Hierarchy.CreateMatching(known);
+		var modified = Hierarchies.CreateFromHierarchy(known);
 		modified
 			.Detach("A")
 			.AttachRoot("C", "D")

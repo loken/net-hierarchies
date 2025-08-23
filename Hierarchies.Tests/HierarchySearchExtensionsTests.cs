@@ -34,13 +34,7 @@ public class HierarchySearchExtensionsTests
 		new("G22", "Two"),
 	];
 
-	private static readonly Hierarchy<RItem, string> Source = Hierarchy.CreateMapped(i => i.Id, Items, ChildMap);
-
-	private static IEnumerable<(string Parent, string? Kid)> Canonical(MultiMap<string> map)
-		=> map.ToRelations<string>()
-			.Select(r => (Parent: r.Parent, Kid: r.ParentOnly ? null : r.Child))
-			.OrderBy(t => t.Parent)
-			.ThenBy(t => t.Kid);
+	private static readonly Hierarchy<RItem, string> Source = Hierarchies.CreateFromChildMap(Items, i => i.Id, ChildMap);
 
 	[Fact]
 	public void Search_WithPredicate_ReturnsMatchesAncestorsDescendantsByDefault()
@@ -57,7 +51,7 @@ public class HierarchySearchExtensionsTests
 		G2:G21
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
@@ -71,7 +65,7 @@ public class HierarchySearchExtensionsTests
 		G2:G21,G22
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
@@ -85,7 +79,7 @@ public class HierarchySearchExtensionsTests
 		G:G2
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
@@ -98,7 +92,7 @@ public class HierarchySearchExtensionsTests
 		G
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
@@ -119,7 +113,7 @@ public class HierarchySearchExtensionsTests
 		G5
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 
 	[Fact]
@@ -134,6 +128,6 @@ public class HierarchySearchExtensionsTests
 		G22
 		""");
 
-		Assert.Equal(Canonical(expected), Canonical(actual));
+		Assert.Equal(expected, actual);
 	}
 }

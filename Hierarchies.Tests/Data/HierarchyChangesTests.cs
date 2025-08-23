@@ -12,8 +12,8 @@ public class HierarchyChangesTests
 			B1:B11,B12,B13
 			""");
 
-		var oldHierarchy = Hierarchy.CreateMapped(map);
-		var newHierarchy = Hierarchy.CreateMapped(map);
+		var oldHierarchy = Hierarchies.CreateFromChildMap(map);
+		var newHierarchy = Hierarchies.CreateFromChildMap(map);
 
 		newHierarchy
 			.Detach("A")

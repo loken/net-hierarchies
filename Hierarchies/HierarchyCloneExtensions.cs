@@ -18,7 +18,7 @@ public static class HierarchyCloneExtensions
 		where TId : notnull
 	{
 		var childMap = hierarchy.ToChildMap();
-		return Hierarchy.CreateMapped(hierarchy.Identify, hierarchy.NodeItems, childMap);
+		return Hierarchies.CreateFromChildMap(hierarchy.NodeItems, hierarchy.Identify, childMap);
 	}
 
 	/// <summary>
@@ -32,6 +32,6 @@ public static class HierarchyCloneExtensions
 		where TId : notnull
 	{
 		var childMap = hierarchy.ToChildMap();
-		return Hierarchy.CreateMapped(childMap);
+		return Hierarchies.CreateFromChildMap(childMap);
 	}
 }

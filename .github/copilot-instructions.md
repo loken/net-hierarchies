@@ -86,9 +86,10 @@
 - Test primarily on the `HCNode` level and don't create duplicate tests for methods which essentially are convenience wrappers, such as overloads or `Hierarchy<,>` variants.
 
 ## Key Files
-- `Hierarchies/Hierarchy.cs`, `Hierarchies/HierarchyOfIds.cs`, `Hierarchies/HierarchyOfItems.cs`: Core hierarchy logic
 - `Hierarchies/Node.cs`: Node wrapper and graph logic
-- `Hierarchies/Nodes.cs`: Factory methods for node creation
+- `Hierarchies/Nodes.cs`: Factory methods for creating nodes
+- `Hierarchies/HierarchyOfIds.cs`, `Hierarchies/HierarchyOfItems.cs`: Core hierarchy logic
+- `Hierarchies/Hierarchies.cs`: Factory methods for creating hierarchies
 - `Hierarchies/*Extensions.cs`: Extension methods for various operations (linking, traversal, search)
 - `Hierarchies.MongoDB/`: Satellite package for MongoDB integration
 - `Directory.Build.props`: Global project settings and using directives

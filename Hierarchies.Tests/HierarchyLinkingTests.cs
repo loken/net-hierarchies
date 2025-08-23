@@ -5,7 +5,7 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void Attach_NodesFromRootsDown_Works()
 	{
-		var hc = Hierarchy.CreateEmpty<string>();
+		var hc = Hierarchies.Create<string>();
 
 		hc.AttachRoot(Nodes.Create("A"));
 		hc.Attach("A", Nodes.Create("A1"));
@@ -22,7 +22,7 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void Attach_IDsFromRootsDown_Works()
 	{
-		var hc = Hierarchy.CreateEmpty<string>();
+		var hc = Hierarchies.Create<string>();
 
 		hc.AttachRoot("A");
 		hc.Attach("A", "A1");
@@ -39,7 +39,7 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void Attach_ToNonExistentParent_Throws()
 	{
-		var hc = Hierarchy.CreateEmpty<string>();
+		var hc = Hierarchies.Create<string>();
 
 		Assert.Throws<ArgumentException>(() => hc.Attach("NonExistentParentId", "Node"));
 	}
@@ -50,7 +50,7 @@ public class HierarchyLinkingTests
 		var node = Nodes.Create("A");
 		node.Attach(Nodes.CreateMany("A1", "A2"));
 
-		var hc = Hierarchy.CreateEmpty<string>();
+		var hc = Hierarchies.Create<string>();
 		hc.AttachRoot(node);
 
 		Assert.Single(hc.Roots);
@@ -60,8 +60,8 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void Attach_ToMultipleHierarchies_Throws()
 	{
-		var hc1 = Hierarchy.CreateEmpty<string>();
-		var hc2 = Hierarchy.CreateEmpty<string>();
+		var hc1 = Hierarchies.Create<string>();
+		var hc2 = Hierarchies.Create<string>();
 
 		var a = Nodes.Create("A");
 		var a1 = Nodes.Create("A1");
@@ -82,7 +82,7 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void NodeDetach_WhileBranded_Throws()
 	{
-		var hc1 = Hierarchy.CreateEmpty<string>();
+		var hc1 = Hierarchies.Create<string>();
 
 		var a = Nodes.Create("A");
 		var a1 = Nodes.Create("A1");
@@ -99,8 +99,8 @@ public class HierarchyLinkingTests
 	[Fact]
 	public void HierarchyDetach_Works()
 	{
-		var hc1 = Hierarchy.CreateEmpty<string>();
-		var hc2 = Hierarchy.CreateEmpty<string>();
+		var hc1 = Hierarchies.Create<string>();
+		var hc2 = Hierarchies.Create<string>();
 
 		var a = Nodes.Create("A");
 		var a1 = Nodes.Create("A1");

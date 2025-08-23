@@ -138,7 +138,7 @@ public static class HierarchySearchExtensions
 			}
 		}
 
-		return Hierarchy.CreateMapped(hierarchy.Identify, items.Values, childMap);
+		return Hierarchies.CreateFromChildMap(items.Values, hierarchy.Identify, childMap);
 	}
 
 	/// <summary>

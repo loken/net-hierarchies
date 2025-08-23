@@ -2,7 +2,7 @@
 
 /// <summary>
 /// A <see cref="Hierarchy{TId,TId}"/> where the items are the IDs.
-/// Created through <see cref="Hierarchy"/>.
+/// Created through the <see cref="Hierarchies"/> factory class.
 /// </summary>
 /// <remarks>
 /// These can be useful when you don't want to keep all of the items in memory,

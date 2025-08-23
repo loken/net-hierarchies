@@ -9,7 +9,7 @@ namespace Loken.Hierarchies;
 /// <summary>
 /// Keeps track of the a set of <see cref="Nodes"/> and their <see cref="Roots"/>
 /// and provides structural modification.
-/// <para>Created through <see cref="Hierarchy"/>.</para>
+/// <para>Created through the <see cref="Hierarchies"/> factory class.</para>
 /// </summary>
 /// <typeparam name="TItem">The <see cref="Type"/> of item held by each <see cref="Node{TItem}"/> of the <see cref="Nodes"/>.</typeparam>
 /// <typeparam name="TId">The <see cref="Type"/> of identifier for each of the <see cref="Nodes"/>.</typeparam>

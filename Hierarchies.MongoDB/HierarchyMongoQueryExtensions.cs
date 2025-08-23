@@ -76,6 +76,6 @@ public static class HierarchyMongoQueryExtensions
 		where TId : notnull
 	{
 		var childMap = collection.GetRelations(concept, RelType.Children).ToMap();
-		return Hierarchy.CreateMapped(childMap);
+		return Hierarchies.CreateFromChildMap(childMap);
 	}
 }

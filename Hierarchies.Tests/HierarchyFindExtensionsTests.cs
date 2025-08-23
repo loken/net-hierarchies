@@ -6,7 +6,7 @@ namespace Loken.Hierarchies;
 public class HierarchyFindExtensionsTests
 {
 	// Test data setup - equivalent to TypeScript test
-	private readonly Hierarchy<string> hierarchy = Hierarchy.CreateMapped(
+	private readonly Hierarchy<string> hierarchy = Hierarchies.CreateFromChildMap(
 		MultiMap.Parse<string>("""
 			A:A1,A2
 			A1:A11,A12
