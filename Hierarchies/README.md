@@ -1,96 +1,406 @@
 # Loken.Hierarchies ![Nuget](https://img.shields.io/nuget/v/Loken.Hierarchies)
 
-.NET library for working with hierarchies of identifiers and identifiable items.
+.NET 8 library for working with hierarchies of identifiers and identifiable items.
 
-The idea is that quite often you have a list of items, usually from a database that form a tree hierarchy and you want to traverse it, search it and reason about the parents, children, ancestors and descendants. `Loken.Hierarchies` is built to solve that.
+Traverse, search, and reason about hierarchical data with deterministic order, identity-aware traversal, and fast enumeration.
 
 
-## Getting started
+## Quick start
 
-Install the package from nuget.org into your .NET 7 or later project using your package manager of choice, or the command line;
+Install the package into your .NET 8 project:
 
 ```shell
 dotnet add package Loken.Hierarchies
 ```
 
-You may want to also use one of the `Loken.Hierarchies.*` satellite packages for a particular database. Look for them in your package manager or see a list at the [repository root](https://github.com/loken/loken-hierarchies-net).
-
-
-## Hierarchy of Items
-
-Sometimes the items are small, your list short and you can hold all of the items in memory at the same time. In such cases you can create a `Hierarchy<TItem, TId>`, a hierarchy of items, by passing the items along with `identify(item)` and `identifyParent(item)` delegates.
+Create from items with a parent ID or from items with externalized relations, traverse, and search:
 
 ```csharp
-var hierarchy = Hierarchy.CreateParented(item => item.Id, item => item.ParentId, items);
+var hierarchy1 = Hierarchies.CreateFromParents(items, item => item.Id, item => item.ParentId);
+var hierarchy2 = Hierarchies.CreateFromRelations(items, item => item.Id, [
+   new("r", "a"),
+   new("r", "b"),
+]);
+
+// Retrieve and project descendants or ancestors.
+var getNodes = hierarchy1.GetDescendants("a", includeSelf: true);
+var getItems = hierarchy1.GetDescendantItems("a", includeSelf: true);
+var getIds   = hierarchy1.GetDescendantIds("a", includeSelf: true);
+
+// Find matches by predicate
+var foundNodes = hierarchy1.Find(n => n.Item.Name == "a");
+var foundItems = hierarchy1.FindItems(n => n.Item.Name == "a");
+var foundIds   = hierarchy1.FindIds(n => n.Item.Name == "a");
+
+// Search to create a pruned clone of the hierarchy.
+var prunedHierarchy = hierarchy1.Search(["a"], SearchInclude.Matches | SearchInclude.Descendants);
+
+// Clone the entire hierarchy.
+var clonedHierarchy = hierarchy1.Clone();
 ```
 
-If you already have a hierarchy of IDs, you can use that to create a hierarchy with matching relations. You must still provide the `identify(item)` delegate so we know which entity goes where.
+## Features
+
+- Build hierarchies from items, relations, or child maps with simple factory methods
+- Deterministic sibling order and stable traversal (preserves source order)
+- Fast breadth- or depth first traversal with optional cycle detection
+- Advanced traversal with a `signal` delegate for pruning/early stop
+- Powerful search: find by predicate or produce pruned hierarchies (matches/ancestors/descendants)
+- Convenient mapping: convert between relations, child maps, nodes and text
+- Serialization helpers for fixtures, tests and persistence
+- Node branding to prevent cross-hierarchy contamination
+- Optimized for speed and low memory overhead
+
+
+## Core usage
+
+### Preamble: Prepare items and relations
+
+A hierarchy can hold IDs or Items represented by IDs.
+
+Let's prepare some items and relations to use for our examples.
+
+When the Item contains a parent ID, we can derive relations from the items.
 
 ```csharp
-var hierarchy = Hierarchy.CreateMatching(item => item.Id, items);
+record Item(string? ParentId, string Id, string Name);
+Item[] items =
+[
+   new(null, "r", "root"),
+   new("r", "a", "branch-A"),
+   new("r", "b", "branch-B"),
+   new("a", "a1", "leaf-A1"),
+   new("a", "a2", "leaf-A2"),
+];
 ```
 
-
-## Hierarchy of IDs
-
-Other times holding all items in memory is not feasible, but you still need to reason around the hierarchical relations so that you can retrieve a parent, ancestors, children or descendants of an entity.
-
-In such cases you can build a `Hierarchy<TId>`, a hierarchy of IDs, based on known relations and then traverse that hierarchy of IDs to find the IDs of a parent, ancestors, children or descendants of an ID. Those IDs can then be used to retrieve the items from a database.
-
-> "How do you know know what the relationships are?"
-
-If you can't or don't want to store your relations separate from your entities, chances are your entities have a foreign key to the ID of its parent. In such cases, you query the entities for a projection of `Relation<TId>` instances, which contains only the ID of a parent and child and create the hierarchy of IDs from that.
-
+When it does not, we must provide the structure through other means such relations or a child map. Let's prepare both.
 
 ```csharp
-var idHierarchy = Hierarchy.CreateRelational(relations)
+Relation<string>[] relations =
+[
+   new("r"),
+   new("r", "a"),
+   new("r", "b"),
+   new("a", "a1"),
+   new("a", "a2"),
+];
+var childMap = MultiMap.Parse<string>("""
+   r:a,b
+   a:a1,a2
+   """);
 ```
 
-If you have a one-to-many parent-to-children relationship table to work with you can retrieve `HierarchyRelation<TId>` instances from that table and create the hierarchy of IDs from that.
+### Creating hierarchies
+
+There are many ways of creating a hierarchy. We can build it imperatively, use known relations encoded into the items as a parent-child relationship or use an external list of relations or a child-map.
+
+#### Build imperatively
+
+Create an empty hierarchy, then create nodes and attach them to each other or to the hierarchy directly.
 
 ```csharp
-var idHierarchy = Hierarchy.CreateMapped(relations.ToMap());
+var hierarchy = Hierarchies.Create<Item, string>(i => i.Id);
+
+// Create nodes and attach them to each other
+var branchNodes = Nodes.CreateMany(items[1], items[2]);
+var rootNode    = Nodes.Create(items[0]).Attach(branchNodes);
+
+// Attach the root node as a hierarchy root. (Yes we can have multiple roots.)
+hierarchy.AttachRoot(rootNode);
+
+// Create some leaf nodes and attach them to the "a" branch of the hierarchy directly.
+var leafNodes = Nodes.CreateMany(items[3], items[4]);
+hierarchy.Attach("a", leafNodes);
 ```
 
-> NB! Some of the `Loken.Hierarchies.*` satellite packages will help you create and maintain appropriate relationship tables.
+#### Create from items with parent IDs
+
+We can provide the structure implicitly by providing a mapping delegate. The delegate may provide the parent ID from a property, as shown below, or though any other means such as another data structure.
+
+```csharp
+var parentedHc = Hierarchies.CreateFromParents(items, item => item.Id, item => item.ParentId);
+```
+
+#### Create from relations
+
+You can create an ID-hierarchy from other relational structures such as the relations or child-map created in the preamble.
+
+```csharp
+   var idHierarchyFromRelations = Hierarchies.CreateFromRelations(relations);
+   var idHierarchyFromMap       = Hierarchies.CreateFromChildMap(childMap);
+```
+
+#### Create matching
+
+Create a hierarchy that matches the structure of another hierarchy but with different content.
+
+Common scenarios:
+1. **Memory optimization** - Convert an item-hierarchy to an ID-hierarchy when you only need structural reasoning
+2. **Data hydration** - Build an item-hierarchy from database items matching an existing ID-hierarchy
+3. **Multiple representations** - Create hierarchies for different data views of the same conceptual structure
+
+```csharp
+// Create ID-hierarchy matching an item-hierarchy's structure
+var matchingIdHc = Hierarchies.CreateFromHierarchy(parentedHc);
+
+// Create item-hierarchy matching an ID-hierarchy's structure
+var matchingItemHc = Hierarchies.CreateFromHierarchy(items, item => item.Id, matchingIdHc);
+```
+
+#### Item vs ID hierarchies
+
+- Use a hierarchy of items when the dataset is small enough to keep in memory and you want to traverse and query rich objects directly.
+- Use a hierarchy of IDs when items are too large or remote; traverse IDs first, then fetch the matching entities from your data source.
+
+### Search
+
+Search and query hierarchies using the high-level `Hierarchy<TItem, TId>` API.
+
+- `Get*` methods will throw if you pass an ID which does not exist in the hierarchy. If you don't know, use `Find*` instead!
+- For methods traversing ancestors or descendants, you can provide an optional `includeSelf` flag to specify whether the provided IDs should be included in the retrieval or search.
+- For methods traversing descendants you may also specify if the `TraversalType` should be breadth-first or depth-first. 
+
+#### Get by ID
+
+Check existence and retrieve specific nodes or items by their IDs.
+
+```csharp
+// Check existence
+hierarchy.Has("a");
+hierarchy.HasAny(["a", "b"]);
+hierarchy.HasAll(["a", "b"]);
+
+// Get a single item
+hierarchy.GetNode("a");
+hierarchy.GetItem("a");
+
+// Get multiple items
+hierarchy.GetNodes(["a", "b"]);
+hierarchy.GetItems(["a", "b"]);
+```
+
+#### Find by predicate
+
+Lookup all nodes, items or IDs matching a predicate.
+
+```csharp
+hierarchy.Find(n => n.Item.Name == "a");
+hierarchy.FindItems(n => n.Item.Name == "a");
+hierarchy.FindIds(n => n.Item.Name == "a");
+```
+
+#### Get descendants and ancestors
+
+Retrieve all descendants or ancestors of one or more IDs.
+
+```csharp
+// Get descendants/ancestors by ID
+hierarchy.GetDescendants("a");
+hierarchy.GetDescendantItems("a");
+hierarchy.GetDescendantIds("a");
+// Get descendants/ancestors by IDs
+hierarchy.GetDescendants(["a", "b"]);
+hierarchy.GetDescendantItems(["a", "b"]);
+hierarchy.GetDescendantIds(["a", "b"]);
+// Similar methods exist for ancestors: GetAncestors, GetAncestorItems, GetAncestorIds
+```
+
+#### Find descendants and ancestors
+
+Search within descendants or ancestors of nodes matching the ID(s) of the first parameter, looking for nodes matching the ID(s) or predicate of the second parameter.
+
+```csharp
+// Find the first matching descendant of a single starting node.
+hierarchy.FindDescendant("a", "a2");
+hierarchy.FindDescendant("a", ["a1", "a2"]);
+hierarchy.FindDescendant("a", n => n.Item.Id.EndsWith('2'));
+
+// Find the first matching descendant of a multiple starting nodes.
+hierarchy.FindDescendant(["a", "b"], "a2");
+hierarchy.FindDescendant(["a", "b"], ["a1", "a2"]);
+hierarchy.FindDescendant(["a", "b"], n => n.Item.Id.EndsWith('2'));
+
+// Find all matching descendants of a single starting node.
+hierarchy.FindDescendants("a", ["a1", "a2"]);
+hierarchy.FindDescendants("a", n => n.Item.Id.EndsWith('2'));
+hierarchy.FindDescendantIds("a", ["a1", "a2"]);
+hierarchy.FindDescendantIds("a", n => n.Item.Id.EndsWith('2'));
+hierarchy.FindDescendantItems("a", ["a1", "a2"]);
+hierarchy.FindDescendantItems("a", n => n.Item.Id.EndsWith('2'));
+
+// Find all matching descendants of multiple starting nodes.
+hierarchy.FindDescendants(["a", "b"], ["a1", "a2"]);
+hierarchy.FindDescendants(["a", "b"], n => n.Item.Id.EndsWith('2'));
+hierarchy.FindDescendantIds(["a", "b"], ["a1", "a2"]);
+hierarchy.FindDescendantIds(["a", "b"], n => n.Item.Id.EndsWith('2'));
+hierarchy.FindDescendantItems(["a", "b"], ["a1", "a2"]);
+hierarchy.FindDescendantItems(["a", "b"], n => n.Item.Id.EndsWith('2'));
+```
+> **NB!** Similar methods exist for ancestors: FindAncestor, FindAncestors, etc.
+
+#### Search for sub-hierarchy
+
+Create a new hierarchy with nodes for a subset of matching nodes.
+
+The included nodes depends on the `SearchInclude` `Flags` enum parameter:
+- `Matches`: Include the match itself
+- `Ancestors`: Include all ancestors of a match.
+- `Descendants`: Include all descendants of a match.
+- `All`: Include `Matches`, `Ancestors` and `Descendants`.
+
+The result is effectively a pruned clone of the original hierarchy.
+
+```csharp
+// Create a hierarchy consisting of the root, "a", "a1" and "a2", effectively excluding branch "b".
+hierarchy.Search("a", SearchInclude.All);
+// Create a hierarchy consisting of the node "a" and its ancestors "r".
+hierarchy.Search("a", SearchInclude.Matches | SearchInclude.Ancestors);
+// Create a hierarchy consisting of the branch "a" as its root.
+hierarchy.Search("a", SearchInclude.Matches | SearchInclude.Descendants);
+// Create a hierarchy consisting of the branches "a" and "b" as its roots.
+hierarchy.Search(["a", "b"], SearchInclude.Matches | SearchInclude.Descendants);
+// Create a hierarchy consisting of nodes with a single letter ID; "r", "a", "b".
+hierarchy.Search(n => n.Item.Id.Length == 1, SearchInclude.Matches);
+```
+
+### Node and traversal APIs
+
+When you need fine-grained control or are working directly with nodes, use these lower-level APIs.
+
+#### Node retrieval
+
+```csharp
+var descendants = branchNodes.GetDescendants(includeSelf: true, type: TraversalType.DepthFirst);
+var ancestors   = branchNodes.GetAncestors(includeSelf: true);
+```
+
+#### Graph traversal
+
+For advanced scenarios where you need custom traversal logic with pruning or early termination.
+
+```csharp
+// Simple traversal
+var nextNodes = Traverse.Graph(root, node => node.Children);
+
+// Advanced traversal with signal controller (prune/skip/early stop)
+var signalNodes = Traverse.Graph(
+   rootNode, (node, signal) =>
+   {
+      // Don't traverse into the children of "a1"
+      if (node.Item.Id != "a1")
+         signal.Next(node.Children);
+      // Don't yield for "a"
+      if (node.Parent?.Item.Id == "a")
+         signal.Skip();
+      // If you reach "x", stop the traversal
+      if (node.Item.Id == "x")
+         signal.End();
+   },
+   detectCycles: false,
+   type: TraversalType.DepthFirst);
+```
+
+#### Sequence traversal
+
+For traversing non-hierarchy sequences with similar control patterns.
+
+```csharp
+var list = new LinkedList<int>(Enumerable.Range(1, 4));
+var elements = Traverse.Sequence(list.First!, (el, signal) =>
+{
+   // Skip odd numbers
+   if (el.Value % 2 == 1)
+      signal.Skip();
+   // Provide next when continuing
+   if (el.Next is not null)
+      signal.Next(el.Next);
+});
+```
 
 
-## Identity delegates?
+## Performance tips
 
-> "Why the delegates to identify items?"
+- Prefer the simple `next` delegate for enumeration; use `signal` only when you need pruning or early stop.
+- Only enable cycle detection if you expect cycles; it adds hashing per node.
 
-We didn't want to enforce applying a particular interface or use reflection to access the primary key of an item. By instead using delegates you can use whatever you like to identify an item.
 
-This opens up scenarios such as not having a database at all, and using the hash code or an index in a global list or some other madness. You can have a primary key that consists of multiple fields, by using a delegate you can combine those two fields into a tuple and use that as an identifier.
+## Advanced concepts
 
-## Concepts
+### Relations
 
-Let's describe the conceptually different things included in the package.
+We support several representations and conversions:
 
-### Data structures
+1. `Relation<TId>` holds a parent-to-child relation, with implicit casts to tuple in some APIs.
+2. `MultiMap<TId>` is used for representing a child map for ID relations. You can build it directly, or use helpers like `MultiMap.Parse<TId>(text)` and `map.Render()` to serialize as text.
+3. `HierarchyRelation<TId>` describes ID-to-targets relations with a `Type` and `Concept`.
 
-Above we've discussed how to create the main data structures: `Hierarchy<TItem, TId>` and `Hierarchy<TId>`, hierarchy of items and hierarchy of IDs, respectively.
+#### Managing relational data
 
-A hierarchy contains a tree of `Node<T>`'s. A node is double-linked wrapper for a `T`. The double-link allow us to easily and efficiently traverse both up through the ancestry and down through descendants following links.
+1. Store `HierarchyRelation<TId>`s to your database when you need to query your hierarchies. They contain a `Concept` and `Type` so you can keep many relations in the same table/collection.
+   - `Concept`: Specify what the relations are for.
+   - `Type`: Specify if the relations are for `Children`, `Descendants` or `Ancestors`. Yes, you can generate all of these from a `Hierarchy<TId>` to support advanced queries.
+2. Produce a `HierarchyDiff<TId>` when you need to create batched database updates.
+- *Note:* In-memory synchronization of `Hierarchy<TId>` instances using diffs is not yet supported. For now, reconstruct hierarchies from a complete set of relations or a child map. Database synchronization is available via satellite assemblies.
 
-The hierarchy also holds a dictionary of the nodes and roots so that it provides O(1) time complexity for looking them up by ID.
+```csharp
+var modifiedIds = hierarchy.CloneIds().Attach("a", "a3");
 
-#### Memory
-Of course, double-linking comes at the cost of memory. We assume that you don't have a huge amount of nodes, and as such we've not optimized for minimal memory consumption. So if you do have a *lot* of nodes, you should check that we don't consume more memory than you can afford. (We've tried to be efficient in not realizing `IEnumerable<T>`s to collections as much as possible, though, so don't think we didn't consider memory at all!)
+var diff = HierarchyChanges.Difference(hierarchy, modifiedIds, "companies", RelType.Children);
+// The diff has `Deleted`, `Inserted` and `Removed` properties containing the changes.
+// In this case that "a3" was inserted.
+```
 
-#### Branding
-A node can be "branded" so that it cannot be attached to another node with a different brand. A node held by a hierarchy is automatically branded. This means that unless you want to intentionally break things by using reflection to break the branding protection, each node in a hierarchy can only belong to that hierarchy. Because of this we expose the nodes in the hierarchy.
+### Identification delegates
 
-If you want to use this API yourself, know that when you brand a node, you get a debranding delegate back. Calling this is the only way to debrand the node, so make sure you keep track of it!
+Why delegates to identify items? We don't force an interface or reflection. Passing `identify(item)` (and `identifyParent(item)`) lets you pick any key shape, including composites, hashes, or adapters over legacy models, without changing your types.
 
-#### Ordering and identity
+### Performance & Memory
 
-- Sibling order is deterministic. Children are kept in insertion order, and traversals enumerate children in that order. When constructing from relations or a child-map, the order in the source is preserved.
+Nodes are double-linked for fast up/down traversal. This trades a small memory overhead for speed; be mindful with very large graphs.
+
+The library is mindful about when to use eager vs. lazy flattening:
+- Results are often eager lists, avoiding the overhead of enumerators
+- Collection parameters are often overloaded with internals trying to reuse the runtime type instead of creating a clone
+- The result is that passing the result of one method to another will not create extra clones.
+- Some properties like `Node.Children`, on the other hand, are lazily evaluated to minimize churn while modifying a hierarchy.
+
+### Persistence
+
+- Store relations (as `Relation<TId>` or `MultiMap<TId>`) in your database or a fixture.
+- After in-memory edits, compute a diff with `HierarchyChanges.Differences(..)` (by concept/rel type) to get a `HierarchyDiff<TId>` and apply it as batch updates.
+- Satellite packages can help automate this wiring (see MongoDB extensions for examples).
+- Use `Attach`/`Detach` on nodes or the hierarchy helpers to modify an existing graph.
+
+### Branding
+
+Nodes can be branded to prevent cross-hierarchy contamination. Branding is not serialized; reapply brands after deserialization if needed.
+
+### Mapping
+
+There are extension methods for mapping between various structure representations for IDs; nodes, relations, child maps and text.
+
+Small mapping example:
+
+```csharp
+// Mapping between structure representations
+var relationsFromHierarchy = hierarchy.ToRelations();
+var childMapFromHierarchy  = hierarchy.ToChildMap();
+var nodesFromRelations     = relationsFromHierarchy.ToNodes();
+var nodesFromChildMap      = childMapFromHierarchy.ToNodes();
+```
+
+## Semantics
+
+### Ordering and identity
+
+- Sibling order is deterministic. Children are kept in insertion order, and traversals enumerate children in that order. When constructing from relations or a child map, the source order is preserved.
 - Cycle detection and visited semantics are identity-based. When `detectCycles` is enabled, traversal tracks visited nodes by reference. Separate `Node<T>` instances that wrap the same `Item` are considered distinct for visitation.
-- Equality: In .NET, `Node<T>` equality and hash code are based on the wrapped `Item`. This enables JSON round trips to compare equal by value. When you need identity semantics (e.g., visited sets, membership, caches keyed by node), use `ReferenceEqualityComparer<Node<T>>` with your `HashSet`/`Dictionary`.
+- Equality: `Node<T>` equality and hash code are based on the wrapped `Item`. This enables JSON round trips to compare equal by value. When you need identity semantics (e.g., visited sets, membership, caches keyed by node), use `ReferenceEqualityComparer<Node<T>>` with your `HashSet`/`Dictionary`.
 
-#### Serialization
-Nodes can be serialized and deserialized directly. `Node<T>` equality and hash code are based on the wrapped `Item`, which enables value-equal round trips after JSON deserialization. For example, a simple `Node<string>` renders as:
+### Serialization
+
+Nodes can be serialized and deserialized directly. Equality based on `Item` makes round trips value-equal. For example, a simple `Node<string>` renders as:
 
 ```json
 {
@@ -106,125 +416,11 @@ Nodes can be serialized and deserialized directly. `Node<T>` equality and hash c
 
 See the test `JsonConvert_BothWays_Works` for an end-to-end example.
 
-### Relations
+## Docs and snippets
 
-We support quite a few representations for relations and provide extension methods for converting between them.
+README code snippets are compile-verified in `Hierarchies.Tests/ReadmeSnippetsTests.cs`.
+Section headings mirror region names in that test to keep docs and examples in sync.
 
-1. `Relation<TId>` holds a parent-to-child relation and can be implicitly cast to a (parent TId, child TId) tuple used by some extension methods.
-2. `HierarchyRelation<TId>` holds an ID-to-targets relation where the meaning of the Targets can be children, descendants or ancestors determined by the `Type` field. It also has a field for the `Concept` of a relation. The idea is that each hierarchy describes a concept. This essentially acts as an identifier for the hierarchy as a whole. Often the concept will match the entity type. But sometimes you will want multiple independent hierarchies of the same type in which case you should chose separate `Concept`s for each hierarchy.
-3. `IDictionary<TId, ISet<TID>` is another representation of a `HierarchyRelation<TId>`. In `Loken.Extensions.System` this is called a "MultiMap", and there are some convenient helpers in there for parsing a string into a MultiMap or rendering a MultiMap into a string. This means you could store your relations in a file using these extensions. We don't necessarily suggest that you do this, but it's an option for some quick prototyping etc.
-
-### Traversal
-
-An essential part of any tree/hierarchy/graph library is traversal. The `Loken.Hierarchies.Traversal` namespace provides a static `Traverse` class which exposes methods for traversal with multiple overloads for simple or complex traversal of a single or multiple nodes to use as roots. It has a separate, but similar, set of methods for traversing a graph or a sequence.
-
-#### Traverse next
-For simple node enumeration you simply pass the starting point and a delegate describing where to find the next nodes or node.
-
-Here is an example of what simple traversal might look like for both Graph and Sequence:
-
-```csharp
-var nodes = Traverse.Graph(root, node => node.Children);
-```
-```csharp
-var nodes = Traverse.Sequence(first, current => current.Next);
-```
-
-#### Traverse with signal
-If you want to stop traversal at some condition like a certain depth or the contents of a node or skip some nodes from the output you can use the other delegate which takes a `signal` property. You call members on the `signal` to signal what to do. In the case of the graph traversal the `signal` exposes the current `Depth` as a property.
-
-Here is an example of what complex traversal using signal might look like for both Graph and Sequence:
-
-```csharp
-var nodes = Traverse.Graph(root, (node, signal) =>
-{
-   // Exclude children of the node with item 3.
-   if (node.Item != 3)
-      signal.Next(node.Children);
-
-   // Skip children of of the node with item 1.
-   if (node.Parent?.Item == 1)
-      signal.Skip();
-}, false);
-```
-```csharp
-var list = new LinkedList<int>(Enumerable.Range(1, 4));
-var elements = Traverse.Sequence(list.First!, (el, signal) =>
-{
-   // Skip odd numbers.
-   if (el.Value % 2 == 1)
-      signal.Skip();
-
-   // By not providing the child as a next value at el 3
-   // we don't iterate into el 4 which would otherwise not be skipped.
-   if (el.Value < 3)
-      signal.Next(el.Next);
-});
-```
-
-#### Options
-By default traversal type is `TraversalType.BreadthFirst`. But you can specify `TraversalType.DepthFirst` though the optional `type` argument.
-
-It is assumed that the graph is a tree, but if there can be cycles in your nodes, you can enable cycle detection through the optional `detectCycles` property (`false` by default).
-
-#### Performance guidance: Next vs Signal
-- Prefer the simple "next" delegate when you only need to enumerate children. Graph traversal has a dedicated fast path for this and avoids signal overhead.
-- Use the "signal" form when you need pruning/skipping, early stop, or depth-aware behavior. It's more flexible, but adds per-node overhead.
-- Benchmarks show the "next" path is typically 10-30% faster on larger/deeper traversals (especially DepthFirst); BreadthFirst gains are smaller but generally positive.
-- Only enable cycle detection if you expect cycles; it uses hashing and slows traversal.
-
-#### Traverse a `Hierarchy` or `Node`
-We provide some extensions for traversal of a `Hierarchy` or one or more `Node`s as a slightly higher abstraction than the static `Traverse` class.
-
-These don't give you the option of breaking cycles, but they do give you the option of deciding whether to includeSelf, meaning include the node, nodes, id or ids you're starting at.
-
-These are the signatures for the `NodeTraversalExtensions`:
-
-```csharp
-IEnumerable<Node<TItem>> nodes =  node.GetDescendants(bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<Node<TItem>> nodes = nodes.GetDescendants(bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
-
-IEnumerable<Node<TItem>> nodes =  node.GetAncestors(bool includeSelf = false);
-IEnumerable<Node<TItem>> nodes = nodes.GetAncestors(bool includeSelf = false);
-```
-
-These are the signatures for the `HierarchyTraversalExtensions`:
-
-```csharp
-IEnumerable<Node<TItem>> nodes = hierarchy.GetDescendantNodes(TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<TItem> items       = hierarchy.GetDescendants(    TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
-IEnumerable<TId> ids           = hierarchy.GetDescendantIds(  TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst);
-
-IEnumerable<Node<TItem>> nodes = hierarchy.GetAncestorNodes(TId id, bool includeSelf = false);
-IEnumerable<TItem> items       = hierarchy.GetAncestors(    TId id, bool includeSelf = false);
-IEnumerable<TId> ids           = hierarchy.GetAncestorIds(  TId id, bool includeSelf = false);
-```
-
-### Search
-
-You can combine the `HierarchyTraversalExtensions`, mentioned above, in combination with LINQ to search for something.
-
-If you need to know the depth of a node during your search, you may want to use the `NodeFindExtensions` which provide some `Find` methods for starting the search at one or more root nodes and searching through their descendants using a `(Node<TItem> node, int depth) => bool` matching function.
-
-These methods return an `IEnumerable<Node<TItem>`, so you can use LINQ to control your search further here as well.
-
-### Changes
-
-You will probably want to move nodes from one parent to another. We use the method names `Attach` and `Detach` for this. You detach one node from another and then attach it to another.
-
-If you store your relations in the database separate from a parent property on the entity, you will want to update those relations once you've performed your changes to your `Hierarchy`.
-
-We provide a few static `HierarchyChanges.Differences(..)` methods to help with this. You pass the old and new variant of the hierarchy in one representation or another along with a concept and `RelType`, and out you get a `HierarchyDiff<TId>`. This is written so that it should be as easy as possible to turn this diff into a batch operation of updates.
-
-Your `Loken.Hierarchies.*` satellite package may provide you with further extensions which does that for you, or you will have to do that yourself if it doesn't or there is no such satellite package for your database. In that case you can have a look at how this is done in the `HierarchyMongoDiffExtensions` in the `Loken.Hierarchies.MongoDB` package to gain some inspiration.
-
-This is the tool you need for keeping your in-memory hierarchy in sync with your database relations.
-
-### Mapping
-
-There are quite a few extension methods for mapping between relations, mapping from items to nodes, mapping items to IDs etc. Please explore the tests!
-
-
-## Feedback & Contribution
+## Feedback and contribution
 
 Please see the [repository root](https://github.com/loken/loken-hierarchies-net#feedback--contribution).
