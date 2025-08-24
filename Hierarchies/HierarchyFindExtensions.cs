@@ -46,7 +46,7 @@ public static class HierarchyFindExtensions
 	/// <param name="hierarchy">The hierarchy to search in.</param>
 	/// <param name="predicate">The predicate function to match nodes.</param>
 	/// <returns>An array of matching nodes.</returns>
-	public static IList<Node<TItem>> Find<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, NodePredicate<TItem> predicate)
+	public static IList<Node<TItem>> Find<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Func<Node<TItem>, bool> predicate)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -103,7 +103,7 @@ public static class HierarchyFindExtensions
 	/// <param name="hierarchy">The hierarchy to search in.</param>
 	/// <param name="predicate">The predicate function to match nodes.</param>
 	/// <returns>An array of matching items.</returns>
-	public static IList<TItem> FindItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, NodePredicate<TItem> predicate)
+	public static IList<TItem> FindItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Func<Node<TItem>, bool> predicate)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -160,7 +160,7 @@ public static class HierarchyFindExtensions
 	/// <param name="hierarchy">The hierarchy to search in.</param>
 	/// <param name="predicate">The predicate function to match nodes.</param>
 	/// <returns>An array of matching IDs.</returns>
-	public static IList<TId> FindIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, NodePredicate<TItem> predicate)
+	public static IList<TId> FindIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Func<Node<TItem>, bool> predicate)
 		where TItem : notnull
 		where TId : notnull
 	{

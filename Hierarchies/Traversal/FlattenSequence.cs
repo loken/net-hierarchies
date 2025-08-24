@@ -12,8 +12,7 @@ public static partial class Flatten
 	/// <param name="next">Describes what the next element of the sequence should be, if any.</param>
 	/// <returns>A list of elements.</returns>
 	/// </summary>
-	public static IList<TEl> Sequence<TEl>(TEl? element, NextElement<TEl> next)
-		where TEl : notnull
+	public static IList<TEl> Sequence<TEl>(TEl? element, Func<TEl, TEl?> next)
 	{
 		if (element is null)
 			return [];
@@ -40,7 +39,6 @@ public static partial class Flatten
 	/// <returns>A list of elements.</returns>
 	/// </summary>
 	public static IList<TEl> Sequence<TEl>(TEl? element, TraverseElement<TEl> traverse)
-		where TEl : notnull
 	{
 		if (element is null)
 			return [];

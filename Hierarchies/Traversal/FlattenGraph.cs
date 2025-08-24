@@ -13,8 +13,7 @@ public static partial class Flatten
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
 	/// <returns>A list of nodes.</returns>
 	/// </summary>
-	public static IList<TNode> Graph<TNode>(TNode? root, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static IList<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>?> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (root is null)
 			return [];
@@ -67,7 +66,6 @@ public static partial class Flatten
 	/// <returns>A list of nodes.</returns>
 	/// </summary>
 	public static IList<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
 	{
 		if (root is null)
 			return [];
@@ -83,8 +81,7 @@ public static partial class Flatten
 	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
 	/// <returns>A list of nodes.</returns>
 	/// </summary>
-	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		HashSet<TNode>? visited = null;
 		if (detectCycles)
@@ -137,7 +134,6 @@ public static partial class Flatten
 	/// <returns>A list of nodes.</returns>
 	/// </summary>
 	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
 	{
 		var signal = new GraphSignal<TNode>(roots, detectCycles, type);
 		var result = new List<TNode>();

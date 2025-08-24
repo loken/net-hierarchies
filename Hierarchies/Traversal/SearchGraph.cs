@@ -9,8 +9,7 @@ public static partial class Search
 	/// Search a graph of nodes by traversing from a single <paramref name="root"/>.
 	/// <para>The search stops when the first node matching <paramref name="predicate"/> is found.</para>
 	/// </summary>
-	public static TNode? Graph<TNode>(TNode? root, NextNodes<TNode> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static TNode? Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (root is null)
 			return default;
@@ -57,8 +56,7 @@ public static partial class Search
 	/// Search a graph of nodes by traversing from a set of <paramref name="roots"/>.
 	/// <para>The search stops when the first node matching <paramref name="predicate"/> is found.</para>
 	/// </summary>
-	public static TNode? Graph<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static TNode? Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		HashSet<TNode>? visited = null;
 		if (detectCycles)
@@ -105,8 +103,7 @@ public static partial class Search
 	/// Search a graph of nodes by traversing from a single <paramref name="root"/>.
 	/// <para>The search is exhaustive and returns all nodes matching <paramref name="predicate"/>.</para>
 	/// </summary>
-	public static IList<TNode> GraphMany<TNode>(TNode? root, NextNodes<TNode> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static IList<TNode> GraphMany<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		if (root is null)
 			return [];
@@ -152,8 +149,7 @@ public static partial class Search
 	/// Search a graph of nodes by traversing from a set of <paramref name="roots"/>.
 	/// <para>The search is exhaustive and returns all nodes matching <paramref name="predicate"/>.</para>
 	/// </summary>
-	public static IList<TNode> GraphMany<TNode>(IEnumerable<TNode> roots, NextNodes<TNode> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-		where TNode : notnull
+	public static IList<TNode> GraphMany<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
 		HashSet<TNode>? visited = null;
 		if (detectCycles)

@@ -51,7 +51,7 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, NodePredicate<TItem> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -106,7 +106,7 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, NodePredicate<TItem> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
 		where TId : notnull
 		where TItem : notnull
 	{

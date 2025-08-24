@@ -54,7 +54,7 @@ public static class HierarchyFindAncestorExtensions
 	/// <param name="search">The predicate function to match nodes.</param>
 	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
 	/// <returns>The first matching ancestor node, or null if none found.</returns>
-	public static Node<TItem>? FindAncestor<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, NodePredicate<TItem> search, bool includeSelf = false)
+	public static Node<TItem>? FindAncestor<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false)
 		where TId : notnull
 		where TItem : notnull
 	{
@@ -106,7 +106,7 @@ public static class HierarchyFindAncestorExtensions
 	/// <param name="search">The predicate function to match nodes.</param>
 	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
 	/// <returns>The first matching ancestor node, or null if none found.</returns>
-	public static Node<TItem>? FindAncestor<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, NodePredicate<TItem> search, bool includeSelf = false)
+	public static Node<TItem>? FindAncestor<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false)
 		where TId : notnull
 		where TItem : notnull
 	{

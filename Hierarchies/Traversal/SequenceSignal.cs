@@ -7,7 +7,6 @@ namespace Loken.Hierarchies.Traversal;
 /// Use this to signal to the traversal what's <see cref="Next"/> and what to <see cref="Skip"/>.
 /// </summary>
 public sealed class SequenceSignal<TEl>
-	where TEl : notnull
 {
 	private TEl? NextEl;
 	private bool Skipped;

@@ -8,7 +8,6 @@ namespace Loken.Hierarchies.Traversal;
 /// what to <see cref="Skip"/> and whether to <see cref="End"/>.
 /// </summary>
 public sealed class GraphSignal<TNode>
-	where TNode : notnull
 {
 	/// <summary>
 	/// Visited set for detecting cycles.

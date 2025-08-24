@@ -183,7 +183,7 @@ public static class HierarchySearchExtensions
 	/// <returns>A new hierarchy containing only the specified subset of nodes - effectively a pruned clone.</returns>
 	public static Hierarchy<TItem, TId> Search<TItem, TId>(
 		this Hierarchy<TItem, TId> hierarchy,
-		NodePredicate<TItem> predicate,
+		Func<Node<TItem>, bool> predicate,
 		SearchInclude include = SearchInclude.All)
 		where TItem : notnull
 		where TId : notnull

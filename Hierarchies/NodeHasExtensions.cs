@@ -15,7 +15,7 @@ public static class NodeHasExtensions
 	/// <param name="includeSelf">Whether to include the root node itself in the search.</param>
 	/// <param name="traversalType">The type of traversal to use (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches, false otherwise.</returns>
-	public static bool HasDescendant<TItem>(this Node<TItem>? root, NodePredicate<TItem> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem>(this Node<TItem>? root, Func<Node<TItem>, bool> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
 		if (root == null)
@@ -33,7 +33,7 @@ public static class NodeHasExtensions
 	/// <param name="includeSelf">Whether to include the root nodes themselves in the search.</param>
 	/// <param name="traversalType">The type of traversal to use (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches, false otherwise.</returns>
-	public static bool HasDescendant<TItem>(this IEnumerable<Node<TItem>> roots, NodePredicate<TItem> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem>(this IEnumerable<Node<TItem>> roots, Func<Node<TItem>, bool> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
 		return roots.FindDescendant(predicate, includeSelf, traversalType) != null;
@@ -49,7 +49,7 @@ public static class NodeHasExtensions
 	/// <param name="predicate">The predicate to match nodes.</param>
 	/// <param name="includeSelf">Whether to include the starting node itself in the search.</param>
 	/// <returns>True if any ancestor matches, false otherwise.</returns>
-	public static bool HasAncestor<TItem>(this Node<TItem>? node, NodePredicate<TItem> predicate, bool includeSelf = false)
+	public static bool HasAncestor<TItem>(this Node<TItem>? node, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
 		return node?.FindAncestor(predicate, includeSelf) != null;
@@ -63,7 +63,7 @@ public static class NodeHasExtensions
 	/// <param name="predicate">The predicate to match nodes.</param>
 	/// <param name="includeSelf">Whether to include the starting nodes themselves in the search.</param>
 	/// <returns>True if any ancestor matches, false otherwise.</returns>
-	public static bool HasAncestor<TItem>(this IEnumerable<Node<TItem>> nodes, NodePredicate<TItem> predicate, bool includeSelf = false)
+	public static bool HasAncestor<TItem>(this IEnumerable<Node<TItem>> nodes, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
 		return nodes.FindAncestor(predicate, includeSelf) != null;
