@@ -72,7 +72,7 @@ public static class NodeGetExtensions
 	public static IList<Node<TItem>> GetAncestors<TItem>(this IEnumerable<Node<TItem>> nodes, bool includeSelf = false)
 		where TItem : notnull
 	{
-		var seen = new HashSet<Node<TItem>>();
+		var seen = new HashSet<Node<TItem>>(ReferenceEqualityComparer.Instance);
 		var ancestors = new List<Node<TItem>>();
 
 		foreach (var node in nodes)

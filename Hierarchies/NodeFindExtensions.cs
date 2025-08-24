@@ -21,7 +21,9 @@ public static class NodeFindExtensions
 		if (root == null)
 			return null;
 
-		return new[] { root }.FindDescendant(predicate, includeSelf, traversalType);
+		return includeSelf
+			? Search.Graph(root, n => n.Children, predicate, false, traversalType)
+			: Search.Graph(root.Children, n => n.Children, predicate, false, traversalType);
 	}
 
 	/// <summary>
@@ -36,15 +38,9 @@ public static class NodeFindExtensions
 	public static Node<TItem>? FindDescendant<TItem>(this IEnumerable<Node<TItem>> roots, Func<Node<TItem>, bool> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		var rootsToSearch = includeSelf ? roots : roots.SelectMany(r => r.Children);
-
-		foreach (var node in Traverse.Graph(rootsToSearch, (n, signal) => signal.Next(n.Children), false, traversalType))
-		{
-			if (predicate(node))
-				return node;
-		}
-
-		return null;
+		return includeSelf
+			? Search.Graph(roots, n => n.Children, predicate, false, traversalType)
+			: Search.Graph(roots.SelectMany(r => r.Children), n => n.Children, predicate, false, traversalType);
 	}
 
 	/// <summary>
@@ -62,7 +58,9 @@ public static class NodeFindExtensions
 		if (root == null)
 			return [];
 
-		return new[] { root }.FindDescendants(predicate, includeSelf, traversalType);
+		return includeSelf
+			? Search.GraphMany(root, n => n.Children, predicate, false, traversalType)
+			: Search.GraphMany(root.Children, n => n.Children, predicate, false, traversalType);
 	}
 
 	/// <summary>
@@ -77,16 +75,9 @@ public static class NodeFindExtensions
 	public static IList<Node<TItem>> FindDescendants<TItem>(this IEnumerable<Node<TItem>> roots, Func<Node<TItem>, bool> predicate, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
 		where TItem : notnull
 	{
-		var results = new List<Node<TItem>>();
-		var rootsToSearch = includeSelf ? roots : roots.SelectMany(r => r.Children);
-
-		foreach (var node in Traverse.Graph(rootsToSearch, (n, signal) => signal.Next(n.Children), false, traversalType))
-		{
-			if (predicate(node))
-				results.Add(node);
-		}
-
-		return results;
+		return includeSelf
+			? Search.GraphMany(roots, n => n.Children, predicate, false, traversalType)
+			: Search.GraphMany(roots.SelectMany(r => r.Children), n => n.Children, predicate, false, traversalType);
 	}
 	#endregion
 
@@ -102,17 +93,9 @@ public static class NodeFindExtensions
 	public static Node<TItem>? FindAncestor<TItem>(this Node<TItem>? node, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null)
-			return null;
-
-		var first = includeSelf ? node : node.Parent;
-		foreach (var ancestor in Traverse.Sequence(first, n => n.Parent))
-		{
-			if (predicate(ancestor))
-				return ancestor;
-		}
-
-		return null;
+		return includeSelf
+			? Search.Sequence(node, n => n.Parent, predicate)
+			: Search.Sequence(node?.Parent, n => n.Parent, predicate);
 	}
 
 	/// <summary>
@@ -126,7 +109,7 @@ public static class NodeFindExtensions
 	public static Node<TItem>? FindAncestor<TItem>(this IEnumerable<Node<TItem>> nodes, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		var seen = new HashSet<Node<TItem>>();
+		var seen = new HashSet<Node<TItem>>(ReferenceEqualityComparer.Instance);
 
 		foreach (var node in nodes)
 		{
@@ -157,18 +140,7 @@ public static class NodeFindExtensions
 	public static IList<Node<TItem>> FindAncestors<TItem>(this Node<TItem>? node, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		if (node == null)
-			return [];
-
-		var results = new List<Node<TItem>>();
-		var first = includeSelf ? node : node.Parent;
-		foreach (var ancestor in Traverse.Sequence(first, n => n.Parent))
-		{
-			if (predicate(ancestor))
-				results.Add(ancestor);
-		}
-
-		return results;
+		return Search.SequenceMany(includeSelf ? node : node?.Parent, n => n.Parent, predicate);
 	}
 
 	/// <summary>
@@ -182,7 +154,7 @@ public static class NodeFindExtensions
 	public static IList<Node<TItem>> FindAncestors<TItem>(this IEnumerable<Node<TItem>> nodes, Func<Node<TItem>, bool> predicate, bool includeSelf = false)
 		where TItem : notnull
 	{
-		var seen = new HashSet<Node<TItem>>();
+		var seen = new HashSet<Node<TItem>>(ReferenceEqualityComparer.Instance);
 		var results = new List<Node<TItem>>();
 
 		foreach (var node in nodes)
@@ -276,7 +248,7 @@ public static class NodeFindExtensions
 
 		foreach (var node in nodes)
 		{
-			var ancestors = new HashSet<Node<TItem>>(node.GetAncestors(includeSelf));
+			var ancestors = new HashSet<Node<TItem>>(node.GetAncestors(includeSelf), ReferenceEqualityComparer.Instance);
 
 			if (commonAncestors == null)
 			{
