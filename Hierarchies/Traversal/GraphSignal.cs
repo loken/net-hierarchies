@@ -5,7 +5,7 @@ namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
 /// Use this to signal to the traversal what's <see cref="Next"/>,
-/// what to <see cref="Skip"/> and whether to <see cref="End"/>.
+/// what to <see cref="Skip"/> and whether to <see cref="Stop"/>.
 /// </summary>
 public sealed class GraphSignal<TNode>
 {
@@ -14,7 +14,7 @@ public sealed class GraphSignal<TNode>
 	/// Stores nodes directly to avoid false positives from hash collisions
 	/// and to align with TS implementation semantics.
 	/// </summary>
-	private readonly ISet<TNode>? Visited;
+	private readonly HashSet<TNode>? Visited;
 
 	/// <summary>
 	/// Depth tracking depends on the <see cref="TraversalType"/>.
@@ -48,6 +48,25 @@ public sealed class GraphSignal<TNode>
 	/// Did the user signal to skip the current node?
 	/// </summary>
 	private bool Skipped;
+
+	/// <summary>
+	/// Did the user explicitly request yielding the current node?
+	/// Default behavior is to yield unless <see cref="Skip"/> is called; this flag is only used for guard-rails.
+	/// </summary>
+	private bool Yielded;
+
+	/// <summary>
+	/// Did the user explicitly request pruning the children of the current node?
+	/// Functionally equivalent to not calling <see cref="Next(TNode[])"/> or <see cref="Next(IEnumerable{TNode})"/>,
+	/// but tracked to enforce exclusivity with <see cref="Next(TNode[])"/>/ <see cref="Next(IEnumerable{TNode})"/>.
+	/// </summary>
+	private bool Pruned;
+
+	/// <summary>
+	/// Did the user call any <see cref="Next(TNode[])"/> or <see cref="Next(IEnumerable{TNode})"/> overload for this node?
+	/// Used to enforce exclusivity with <see cref="Prune"/>.
+	/// </summary>
+	private bool NextSet;
 
 	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
 	{
@@ -109,6 +128,9 @@ public sealed class GraphSignal<TNode>
 			}
 
 			Skipped = false;
+			Yielded = false;
+			Pruned = false;
+			NextSet = false;
 			return true;
 		}
 		else
@@ -153,28 +175,60 @@ public sealed class GraphSignal<TNode>
 	/// meaning it will not be part of the output.
 	/// <para>Traversal will still continue to whatever roots are passed to
 	/// <see cref="Next"/> irrespective of calling <see cref="Skip"/>.</para>
+	/// <para>Mutually exclusive with <see cref="Yield"/> for the same node; attempting to call both will throw.</para>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Skip() => Skipped = true;
+	public void Skip()
+	{
+		if (Yielded)
+			throw new InvalidOperationException($"Cannot call {nameof(Skip)}() after {nameof(Yield)}(). {nameof(Yield)} and {nameof(Skip)} are mutually exclusive for the same node.");
+
+		Skipped = true;
+	}
 
 	/// <summary>
-	/// Call this when traversal should continue to a sub sequence of child roots.
+	/// Explicitly mark that the current node should be yielded (included in the output).
+	/// <para>By default, nodes are yielded unless <see cref="Skip"/> is called; use this for clarity in complex callbacks.</para>
+	/// <para>Mutually exclusive with <see cref="Skip"/> for the same node; attempting to call both will throw.</para>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Next(params TNode[] nodes)
+	public void Yield()
 	{
-		// Fast-path for arrays: call the most specific Attach overload available.
-		var count = Nodes.Attach(nodes);
-		if (IsDepthFirst && count > 0)
-			BranchPush(count);
+		if (Skipped)
+			throw new InvalidOperationException($"Cannot call {nameof(Yield)}() after {nameof(Skip)}(). {nameof(Yield)} and {nameof(Skip)} are mutually exclusive for the same node.");
+
+		// Idempotent for ergonomics.
+		Yielded = true;
 	}
 
 	/// <summary>
 	/// Call this when traversal should continue to a sub sequence of child roots.
+	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Next(params TNode[] nodes)
+	{
+		if (Pruned)
+			throw new InvalidOperationException($"Cannot call {nameof(Next)}() after {nameof(Prune)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
+
+		// Fast-path for arrays: call the most specific Attach overload available.
+		var count = Nodes.Attach(nodes);
+		if (IsDepthFirst && count > 0)
+			BranchPush(count);
+
+		NextSet = true;
+	}
+
+	/// <summary>
+	/// Call this when traversal should continue to a sub sequence of child roots.
+	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(IEnumerable<TNode> nodes)
 	{
+		if (Pruned)
+			throw new InvalidOperationException($"Cannot call {nameof(Next)}() after {nameof(Prune)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
+
 		// Prefer array/list overloads when available to avoid enumerator overhead.
 		int count = nodes is TNode[] arr
 			? Nodes.Attach(arr)
@@ -184,15 +238,32 @@ public sealed class GraphSignal<TNode>
 
 		if (IsDepthFirst && count > 0)
 			BranchPush(count);
+
+		NextSet = true;
 	}
 
 	/// <summary>
-	/// Call this when all traversal should end immediately.
+	/// Prune the current branch by not traversing any children for this node.
+	/// <para>Functionally equivalent to not calling <see cref="Next(TNode[])"/> or <see cref="Next(IEnumerable{TNode})"/>.</para>
+	/// <para>Mutually exclusive with <see cref="Next(TNode[])"/> and <see cref="Next(IEnumerable{TNode})"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Prune()
+	{
+		if (NextSet)
+			throw new InvalidOperationException($"Cannot call {nameof(Prune)}() after {nameof(Next)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
+
+		// Idempotent for ergonomics.
+		Pruned = true;
+	}
+
+	/// <summary>
+	/// Call this when all traversal should stop immediately.
 	/// <para>Ending traversal of a particular branch is controlled by not calling
 	/// <see cref="Next"/> for that branch.</para>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void End() => Nodes.Clear();
+	public void Stop() => Nodes.Clear();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void BranchPush(int count)

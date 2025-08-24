@@ -99,7 +99,7 @@ public class TraverseGraphTests
 			// We want to stop traversal once we find the item we want
 			// and to skip every other item.
 			if (node.Item == expected)
-				signal.End();
+				signal.Stop();
 			else
 				signal.Skip();
 		});
@@ -177,5 +177,65 @@ public class TraverseGraphTests
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));
+	}
+
+	[Fact]
+	public void TraverseSignal_Throws_WhenCallingYieldThenSkip()
+	{
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Graph(IntRoot, (node, signal) =>
+			{
+				signal.Yield();
+				signal.Skip();
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Yield and Skip are mutually exclusive", ex.Message);
+	}
+
+	[Fact]
+	public void TraverseSignal_Throws_WhenCallingSkipThenYield()
+	{
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Graph(IntRoot, (node, signal) =>
+			{
+				signal.Skip();
+				signal.Yield();
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Yield and Skip are mutually exclusive", ex.Message);
+	}
+
+	[Fact]
+	public void TraverseSignal_Throws_WhenCallingPruneThenNext()
+	{
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Graph(IntRoot, (node, signal) =>
+			{
+				signal.Prune();
+				signal.Next(node.Children);
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Prune and Next are mutually exclusive", ex.Message);
+	}
+
+	[Fact]
+	public void TraverseSignal_Throws_WhenCallingNextThenPrune()
+	{
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Graph(IntRoot, (node, signal) =>
+			{
+				signal.Next(node.Children);
+				signal.Prune();
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Prune and Next are mutually exclusive", ex.Message);
 	}
 }

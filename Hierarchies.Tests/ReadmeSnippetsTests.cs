@@ -201,7 +201,7 @@ public class ReadmeSnippetsTests
 				signal.Skip();
 			// If you reach "x", stop the traversal
 			if (node.Item.Id == "x")
-				signal.End();
+				signal.Stop();
 		});
 		// Optionally takes detectCycles and TraversalType parameters.
 		#endregion

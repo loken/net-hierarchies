@@ -130,4 +130,36 @@ public class TraverseSequenceTests
 
 		Assert.Empty(actual);
 	}
+
+	[Fact]
+	public void SequenceSignal_Throws_WhenCallingYieldThenSkip()
+	{
+		var list = new LinkedList<int>([1]);
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Sequence(list.First!, (el, signal) =>
+			{
+				signal.Yield();
+				signal.Skip();
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Yield and Skip are mutually exclusive", ex.Message);
+	}
+
+	[Fact]
+	public void SequenceSignal_Throws_WhenCallingPruneThenNext()
+	{
+		var list = new LinkedList<int>([1, 2]);
+		var ex = Assert.Throws<InvalidOperationException>(() =>
+		{
+			Traverse.Sequence(list.First!, (el, signal) =>
+			{
+				signal.Prune();
+				signal.Next(el.Next);
+			}).EnumerateAll();
+		});
+
+		Assert.Contains("Prune and Next are mutually exclusive", ex.Message);
+	}
 }

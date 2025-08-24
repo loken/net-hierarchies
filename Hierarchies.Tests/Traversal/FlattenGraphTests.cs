@@ -99,7 +99,7 @@ public class FlattenGraphTests
 			// We want to stop traversal once we find the item we want
 			// and to skip every other item.
 			if (node.Item == expected)
-				signal.End();
+				signal.Stop();
 			else
 				signal.Skip();
 		});

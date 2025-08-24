@@ -49,7 +49,7 @@ var clonedHierarchy = hierarchy1.Clone();
 - Build hierarchies from items, relations, or child maps with simple factory methods
 - Deterministic sibling order and stable traversal (preserves source order)
 - Fast breadth- or depth first traversal with optional cycle detection
-- Advanced traversal with a `signal` delegate for pruning/early stop
+- Advanced traversal with a `signal` delegate for (prune/skip/stop)
 - Powerful search: find by predicate or produce pruned hierarchies (matches/ancestors/descendants)
 - Convenient mapping: convert between relations, child maps, nodes and text
 - Serialization helpers for fixtures, tests and persistence
@@ -332,7 +332,7 @@ For advanced scenarios where you need custom traversal logic with pruning or ear
 // Simple traversal
 var nextNodes = Traverse.Graph(rootNode, node => node.Children);
 
-// Advanced traversal with signal controller (prune/skip/early stop)
+// Advanced traversal with signal controller (next/skip/stop)
 var signalNodes = Traverse.Graph(rootNode, (node, signal) =>
 {
    // Don't traverse into the children of "a1"
@@ -343,10 +343,11 @@ var signalNodes = Traverse.Graph(rootNode, (node, signal) =>
       signal.Skip();
    // If you reach "x", stop the traversal
    if (node.Item.Id == "x")
-      signal.End();
+      signal.Stop();
 });
 // Optionally takes detectCycles and TraversalType parameters.
 ```
+> **Tip**: Defaults are "yield this node" and "don't traverse children." Use `Next()` to traverse and `Skip()` to exclude. `Yield()` and `Prune()` are optional no-ops to be explicit and aid with code flow.
 
 #### Sequence traversal
 
@@ -364,6 +365,8 @@ var elements = Traverse.Sequence(list.First!, (el, signal) =>
       signal.Next(el.Next);
 });
 ```
+> **Tip**: `Yield()` and `Prune()` exists here like for `Traverse.Graph()`.
+
 
 ## Performance
 
