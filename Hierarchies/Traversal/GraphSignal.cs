@@ -83,7 +83,14 @@ public sealed class GraphSignal<TNode>
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		DepthCount = Nodes.Attach(roots);
+		if (roots is IList<TNode> rootList)
+			Nodes.AttachMany(rootList);
+		else if (roots is ICollection<TNode> rootCollection)
+			Nodes.AttachMany(rootCollection);
+		else
+			Nodes.AttachMany(roots);
+
+		DepthCount = Nodes.Count;
 
 		if (IsDepthFirst)
 			BranchPush(DepthCount);
@@ -212,9 +219,9 @@ public sealed class GraphSignal<TNode>
 			throw new InvalidOperationException($"Cannot call {nameof(Next)}() after {nameof(Prune)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
 
 		// Fast-path for arrays: call the most specific Attach overload available.
-		var count = Nodes.Attach(nodes);
-		if (IsDepthFirst && count > 0)
-			BranchPush(count);
+		Nodes.AttachMany(nodes);
+		if (IsDepthFirst && nodes.Length > 0)
+			BranchPush(nodes.Length);
 
 		NextSet = true;
 	}
@@ -229,15 +236,20 @@ public sealed class GraphSignal<TNode>
 		if (Pruned)
 			throw new InvalidOperationException($"Cannot call {nameof(Next)}() after {nameof(Prune)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
 
-		// Prefer array/list overloads when available to avoid enumerator overhead.
-		int count = nodes is TNode[] arr
-			? Nodes.Attach(arr)
-			: nodes is List<TNode> list
-				? Nodes.Attach(list)
-				: Nodes.Attach(nodes);
+		var count = Nodes.Count;
 
-		if (IsDepthFirst && count > 0)
-			BranchPush(count);
+		// Prefer list/collection overloads when available to avoid enumerator overhead.
+		if (nodes is IList<TNode> rootList)
+			Nodes.AttachMany(rootList);
+		else if (nodes is ICollection<TNode> rootCollection)
+			Nodes.AttachMany(rootCollection);
+		else
+			Nodes.AttachMany(nodes);
+
+		var added = Nodes.Count - count;
+
+		if (IsDepthFirst && added > 0)
+			BranchPush(added);
 
 		NextSet = true;
 	}

@@ -39,12 +39,12 @@ public static partial class Search
 				var children = next(node);
 				if (children is not null)
 				{
-					if (children is TNode[] childArray)
-						store.Attach(childArray);
-					else if (children is List<TNode> childList)
-						store.Attach(childList);
+					if (children is IList<TNode> childList)
+						store.AttachMany(childList);
+					else if (children is ICollection<TNode> childCollection)
+						store.AttachMany(childCollection);
 					else
-						store.Attach(children);
+						store.AttachMany(children);
 				}
 			}
 		}
@@ -69,12 +69,12 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is TNode[] arr)
-			store.Attach(arr);
-		else if (roots is List<TNode> list)
-			store.Attach(list);
+		if (roots is IList<TNode> rootList)
+			store.AttachMany(rootList);
+		else if (roots is ICollection<TNode> rootCollection)
+			store.AttachMany(rootCollection);
 		else
-			store.Attach(roots);
+			store.AttachMany(roots);
 
 		while (store.TryDetach(out var node))
 		{
@@ -86,12 +86,12 @@ public static partial class Search
 				var children = next(node);
 				if (children is not null)
 				{
-					if (children is TNode[] childArray)
-						store.Attach(childArray);
-					else if (children is List<TNode> childList)
-						store.Attach(childList);
+					if (children is IList<TNode> childList)
+						store.AttachMany(childList);
+					else if (children is ICollection<TNode> childCollection)
+						store.AttachMany(childCollection);
 					else
-						store.Attach(children);
+						store.AttachMany(children);
 				}
 			}
 		}
@@ -132,12 +132,12 @@ public static partial class Search
 				var children = next(node);
 				if (children is not null)
 				{
-					if (children is TNode[] childArray)
-						store.Attach(childArray);
-					else if (children is List<TNode> childList)
-						store.Attach(childList);
+					if (children is IList<TNode> childList)
+						store.AttachMany(childList);
+					else if (children is ICollection<TNode> childCollection)
+						store.AttachMany(childCollection);
 					else
-						store.Attach(children);
+						store.AttachMany(children);
 				}
 			}
 		}
@@ -162,12 +162,12 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is TNode[] arr)
-			store.Attach(arr);
-		else if (roots is List<TNode> list)
-			store.Attach(list);
+		if (roots is IList<TNode> rootList)
+			store.AttachMany(rootList);
+		else if (roots is ICollection<TNode> rootCollection)
+			store.AttachMany(rootCollection);
 		else
-			store.Attach(roots);
+			store.AttachMany(roots);
 
 		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
@@ -180,12 +180,12 @@ public static partial class Search
 				var children = next(node);
 				if (children is not null)
 				{
-					if (children is TNode[] childArray)
-						store.Attach(childArray);
-					else if (children is List<TNode> childList)
-						store.Attach(childList);
+					if (children is IList<TNode> childList)
+						store.AttachMany(childList);
+					else if (children is ICollection<TNode> childCollection)
+						store.AttachMany(childCollection);
 					else
-						store.Attach(children);
+						store.AttachMany(children);
 				}
 			}
 		}
