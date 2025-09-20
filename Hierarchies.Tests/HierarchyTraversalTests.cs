@@ -13,7 +13,7 @@ public class HierarchyTraversalTests
 	[Fact]
 	public void GetAncestorIds_WithSelf_ReturnsAncestryInOrder()
 	{
-		var ancestors = _hierarchy.GetAncestorIds("A12", true).ToList();
+		var ancestors = _hierarchy.GetAncestorIds("A12", Ascend.WithSelf).ToList();
 
 		var expected = new List<string> { "A12", "A1", "A" };
 
@@ -23,7 +23,7 @@ public class HierarchyTraversalTests
 	[Fact]
 	public void GetAncestorIds_WithoutSelf_ReturnsAncestryInOrder()
 	{
-		var ancestors = _hierarchy.GetAncestorIds("A12", false).ToList();
+		var ancestors = _hierarchy.GetAncestorIds("A12").ToList();
 
 		var expected = new List<string> { "A1", "A" };
 
@@ -33,7 +33,7 @@ public class HierarchyTraversalTests
 	[Fact]
 	public void GetDescendantIds_WithSelf_ReturnsDescendants()
 	{
-		var ancestors = _hierarchy.GetDescendantIds("A1", true).ToList();
+		var ancestors = _hierarchy.GetDescendantIds("A1", Descend.WithSelf).ToList();
 
 		var expected = new List<string> { "A1", "A11", "A12" };
 
@@ -43,7 +43,7 @@ public class HierarchyTraversalTests
 	[Fact]
 	public void GetDescendantIds_WithoutSelf_ReturnsDescendantsOrderedByDepth()
 	{
-		var ancestors = _hierarchy.GetDescendantIds("A", false).ToList();
+		var ancestors = _hierarchy.GetDescendantIds("A").ToList();
 
 		var expected = new List<string> { "A1", "A2", "A11", "A12", "A21" };
 

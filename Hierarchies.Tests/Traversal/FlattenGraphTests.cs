@@ -20,7 +20,7 @@ public class FlattenGraphTests
 	[Fact]
 	public void FlattenNext_BreadthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Flatten.Graph(IntRoot, node => node.Children, type: TraversalType.BreadthFirst);
+		var nodes = Flatten.Graph(IntRoot, node => node.Children, TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -31,7 +31,7 @@ public class FlattenGraphTests
 	[Fact]
 	public void FlattenNext_DepthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Flatten.Graph(IntRoot, node => node.Children, type: TraversalType.DepthFirst);
+		var nodes = Flatten.Graph(IntRoot, node => node.Children, TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.ToItems().ToArray();
@@ -42,10 +42,10 @@ public class FlattenGraphTests
 	[Fact]
 	public void FlattenSignal_BreadthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Flatten.Graph(IntRoot, (node, signal) =>
-		{
-			signal.Next(node.Children);
-		}, type: TraversalType.BreadthFirst);
+		var nodes = Flatten.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -56,10 +56,10 @@ public class FlattenGraphTests
 	[Fact]
 	public void FlattenSignal_DepthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Flatten.Graph(IntRoot, (node, signal) =>
-		{
-			signal.Next(node.Children);
-		}, type: TraversalType.DepthFirst);
+		var nodes = Flatten.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.ToItems().ToArray();
@@ -122,7 +122,7 @@ public class FlattenGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var nodes = Flatten.Graph(first, node => node.Children, true);
+		var nodes = Flatten.Graph(first, node => node.Children, new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
 		var actual = nodes.ToItems().ToArray();
@@ -142,7 +142,7 @@ public class FlattenGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var nodes = Flatten.Graph(first, (node, signal) => signal.Next(node.Children), true);
+		var nodes = Flatten.Graph(first, (node, signal) => signal.Next(node.Children), new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
 		var actual = nodes.ToItems().ToArray();
@@ -159,7 +159,7 @@ public class FlattenGraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.BreadthFirst);
+		}, TraversalType.BreadthFirst);
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));
@@ -174,7 +174,7 @@ public class FlattenGraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.DepthFirst);
+		}, TraversalType.DepthFirst);
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));

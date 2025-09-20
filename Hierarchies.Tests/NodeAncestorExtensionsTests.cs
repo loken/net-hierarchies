@@ -39,7 +39,7 @@ public class NodeAncestorExtensionsTests
 	[Fact]
 	public void FindAncestor_FindsFirstAncestorWithIncludeSelfTrue()
 	{
-		var actual = NodeA11.FindAncestor(n => n.Item == "A11", true);
+		var actual = NodeA11.FindAncestor(n => n.Item == "A11", ascend: Ascend.WithSelf);
 		Assert.Equal("A11", actual?.Item);
 	}
 
@@ -77,7 +77,7 @@ public class NodeAncestorExtensionsTests
 	[Fact]
 	public void FindAncestors_FindsAllAncestorsWithIncludeSelfTrue()
 	{
-		var actual = NodeA11.FindAncestors(n => n.Item.StartsWith("A"), true);
+		var actual = NodeA11.FindAncestors(n => n.Item.StartsWith("A"), ascend: Ascend.WithSelf);
 		var items = actual.Select(n => n.Item).OrderBy(x => x).ToArray();
 		Assert.Equal(new[] { "A", "A1", "A11" }, items);
 	}
@@ -92,7 +92,7 @@ public class NodeAncestorExtensionsTests
 	[Fact]
 	public void FindAncestors_HandlesMultipleStartingNodesWithDeduplication()
 	{
-		var actual = new[] { NodeA11, NodeA12, NodeB1 }.FindAncestors(n => new[] { "A", "A1", "B" }.Contains(n.Item), true);
+		var actual = new[] { NodeA11, NodeA12, NodeB1 }.FindAncestors(n => new[] { "A", "A1", "B" }.Contains(n.Item), ascend: Ascend.WithSelf);
 		var items = actual.Select(n => n.Item).OrderBy(x => x).ToArray();
 		Assert.Equal(new[] { "A", "A1", "B" }, items);
 	}
@@ -124,7 +124,7 @@ public class NodeAncestorExtensionsTests
 	[Fact]
 	public void HasAncestor_WorksWithIncludeSelfTrue()
 	{
-		var actual = NodeA11.HasAncestor(n => n.Item == "A11", true);
+		var actual = NodeA11.HasAncestor(n => n.Item == "A11", ascend: Ascend.WithSelf);
 		Assert.True(actual);
 	}
 	#endregion
@@ -141,7 +141,7 @@ public class NodeAncestorExtensionsTests
 	[Fact]
 	public void GetAncestors_GetsAllUniqueAncestorsWithIncludeSelfTrue()
 	{
-		var actual = NodeA11.GetAncestors(true);
+		var actual = NodeA11.GetAncestors(ascend: Ascend.WithSelf);
 		var items = actual.Select(n => n.Item).ToArray();
 		Assert.Equal(new[] { "A11", "A1", "A" }, items);
 	}

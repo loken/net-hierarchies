@@ -51,7 +51,7 @@ public class NodeLinkingTests
 		var root = Nodes.Create("root").Attach(branchA, branchB);
 
 		var descendantsOfA = branchA.GetDescendants().ToArray();
-		var other = root.GetDescendants(true).Where(n => !n.Item.StartsWith('a')).ToArray();
+		var other = root.GetDescendants(Descend.WithSelf).Where(n => !n.Item.StartsWith('a')).ToArray();
 
 		branchA.Dismantle(false);
 
@@ -75,7 +75,7 @@ public class NodeLinkingTests
 		var branchB = Nodes.Create("B").Attach(Nodes.Create("b1"), Nodes.Create("b2").Attach(Nodes.Create("b21")));
 		var root = Nodes.Create("root").Attach(branchA, branchB);
 
-		var nodes = root.GetDescendants(true).ToArray();
+		var nodes = root.GetDescendants(Descend.WithSelf).ToArray();
 
 		Assert.Equal(10, nodes.Length);
 

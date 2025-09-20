@@ -13,7 +13,7 @@ public class SearchGraphTests
 	[Fact]
 	public void SearchNext_BreadthFirst_FindsFirstLeaf()
 	{
-		var match = Search.Graph(IntRoot, n => n.Children, n => n.IsLeaf, type: TraversalType.BreadthFirst);
+		var match = Search.Graph(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.BreadthFirst);
 
 		Assert.NotNull(match);
 		Assert.Equal(2, match!.Item);
@@ -22,7 +22,7 @@ public class SearchGraphTests
 	[Fact]
 	public void SearchNext_DepthFirst_FindsFirstLeaf()
 	{
-		var match = Search.Graph(IntRoot, n => n.Children, n => n.IsLeaf, type: TraversalType.DepthFirst);
+		var match = Search.Graph(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.DepthFirst);
 
 		Assert.NotNull(match);
 		Assert.Equal(32, match!.Item);
@@ -31,7 +31,7 @@ public class SearchGraphTests
 	[Fact]
 	public void SearchManyNext_BreadthFirst_FindsAllLeavesInOrder()
 	{
-		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, type: TraversalType.BreadthFirst);
+		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.BreadthFirst);
 		var actual = matches.ToItems().ToArray();
 
 		var expected = new[] { 2, 11, 31, 32, 121 };
@@ -41,7 +41,7 @@ public class SearchGraphTests
 	[Fact]
 	public void SearchManyNext_DepthFirst_FindsAllLeavesInOrder()
 	{
-		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, type: TraversalType.DepthFirst);
+		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.DepthFirst);
 		var actual = matches.ToItems().ToArray();
 
 		var expected = new[] { 32, 31, 2, 121, 11 };
@@ -60,7 +60,7 @@ public class SearchGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var match = Search.Graph(first, n => n.Children, n => n.Item == 4, true);
+		var match = Search.Graph(first, n => n.Children, n => n.Item == 4, new Descend { DetectCycles = true });
 
 		Assert.NotNull(match);
 		Assert.Equal(4, match!.Item);
@@ -78,7 +78,7 @@ public class SearchGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var matches = Search.GraphMany(first, n => n.Children, _ => true, true);
+		var matches = Search.GraphMany(first, n => n.Children, _ => true, new Descend { DetectCycles = true });
 		var actual = matches.ToItems().ToArray();
 
 		var expected = new[] { 1, 2, 3, 4 };

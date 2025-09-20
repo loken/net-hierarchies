@@ -11,16 +11,16 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The search criteria - ID to match.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, TId search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, TId search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.HasDescendant(n => search.Equals(hierarchy.Identify(n.Item)), includeSelf, type);
+			.FindDescendant(n => search.Equals(hierarchy.Identify(n.Item)), descend) != null;
 	}
 
 	/// <summary>
@@ -29,17 +29,17 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		var searchSet = new HashSet<TId>(search);
 		return hierarchy
 			.GetNode(id)
-			.HasDescendant(n => searchSet.Contains(hierarchy.Identify(n.Item)), includeSelf, type);
+			.FindDescendant(n => searchSet.Contains(hierarchy.Identify(n.Item)), descend) != null;
 	}
 
 	/// <summary>
@@ -51,13 +51,13 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.HasDescendant(search, includeSelf, type);
+			.FindDescendant(search, descend) != null;
 	}
 
 	/// <summary>
@@ -69,13 +69,13 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, TId search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, TId search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.HasDescendant(n => search.Equals(hierarchy.Identify(n.Item)), includeSelf, type);
+			.FindDescendant(n => search.Equals(hierarchy.Identify(n.Item)), descend) != null;
 	}
 
 	/// <summary>
@@ -87,14 +87,14 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		var searchSet = new HashSet<TId>(search);
 		return hierarchy
 			.GetNodes(ids)
-			.HasDescendant(n => searchSet.Contains(hierarchy.Identify(n.Item)), includeSelf, type);
+			.FindDescendant(n => searchSet.Contains(hierarchy.Identify(n.Item)), descend) != null;
 	}
 
 	/// <summary>
@@ -106,12 +106,12 @@ public static class HierarchyHasDescendantExtensions
 	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>True if any descendant matches the search criteria.</returns>
-	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static bool HasDescendant<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.HasDescendant(search, includeSelf, type);
+			.FindDescendant(search, descend) != null;
 	}
 }

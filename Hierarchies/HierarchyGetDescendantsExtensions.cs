@@ -11,14 +11,13 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant nodes in specified order.</returns>
-	public static IList<Node<TItem>> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<Node<TItem>> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendants([id], includeSelf, type);
+		return hierarchy.GetDescendants([id], descend);
 	}
 
 	/// <summary>
@@ -26,16 +25,15 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant nodes in specified order.</returns>
-	public static IList<Node<TItem>> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<Node<TItem>> GetDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.GetDescendants(includeSelf, type);
+			.GetDescendants(descend);
 	}
 	#endregion
 
@@ -45,14 +43,13 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant items in specified order.</returns>
-	public static IList<TItem> GetDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TItem> GetDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendants(id, includeSelf, type).ToItems();
+		return hierarchy.GetDescendants(id, descend).ToItems();
 	}
 
 	/// <summary>
@@ -60,14 +57,13 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant items in specified order.</returns>
-	public static IList<TItem> GetDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TItem> GetDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendants(ids, includeSelf, type).ToItems();
+		return hierarchy.GetDescendants(ids, descend).ToItems();
 	}
 	#endregion
 
@@ -77,14 +73,13 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant IDs in specified order.</returns>
-	public static IList<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendants(id, includeSelf, type).ToIds(hierarchy.Identify);
+		return hierarchy.GetDescendants(id, descend).ToIds(hierarchy.Identify);
 	}
 
 	/// <summary>
@@ -92,14 +87,13 @@ public static class HierarchyGetDescendantsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An array of descendant IDs in specified order.</returns>
-	public static IList<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TId> GetDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.GetDescendants(ids, includeSelf, type).ToIds(hierarchy.Identify);
+		return hierarchy.GetDescendants(ids, descend).ToIds(hierarchy.Identify);
 	}
 	#endregion
 }

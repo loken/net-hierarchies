@@ -12,7 +12,7 @@ public class TraversalParityTests
 		a.Attach(b2);
 
 		var seen = new List<Node<string>>();
-		foreach (var n in Traverse.Graph(a, n => n.Children, detectCycles: true))
+		foreach (var n in Traverse.Graph(a, n => n.Children, new Descend(DetectCycles: true)))
 			seen.Add(n);
 
 		// We expect both Y nodes to appear, since they are different instances.

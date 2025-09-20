@@ -11,18 +11,17 @@ public static class NodeGetExtensions
 	/// </summary>
 	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
 	/// <param name="root">The root node to traverse from.</param>
-	/// <param name="includeSelf">Whether to include the root node itself.</param>
-	/// <param name="type">The type of traversal to use (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IList<Node<TItem>> GetDescendants<TItem>(this Node<TItem>? root, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<Node<TItem>> GetDescendants<TItem>(this Node<TItem>? root, Descend? descend = null)
 		where TItem : notnull
 	{
-		if (root == null)
+		if (root is null)
 			return [];
-
-		return includeSelf
-			? Flatten.Graph(root, node => node.Children, false, type)
-			: Flatten.Graph(root.Children, node => node.Children, false, type);
+		var opts = Descend.Normalize(descend, includeSelfDefault: false); // descendants default exclude self
+		return opts.IncludeSelf == true
+			? Flatten.Graph(root, n => n.Children, opts)
+			: Flatten.Graph(root.Children, n => n.Children, opts);
 	}
 
 	/// <summary>
@@ -30,55 +29,51 @@ public static class NodeGetExtensions
 	/// </summary>
 	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
 	/// <param name="roots">The root nodes to traverse from.</param>
-	/// <param name="includeSelf">Whether to include the root nodes themselves.</param>
-	/// <param name="type">The type of traversal to use (breadth-first or depth-first).</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
 	/// <returns>An enumeration of nodes.</returns>
-	public static IList<Node<TItem>> GetDescendants<TItem>(this IEnumerable<Node<TItem>> roots, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<Node<TItem>> GetDescendants<TItem>(this IEnumerable<Node<TItem>> roots, Descend? descend = null)
 		where TItem : notnull
 	{
-		return includeSelf
-			? Flatten.Graph(roots, node => node.Children, false, type)
-			: Flatten.Graph(roots.SelectMany(r => r.Children), node => node.Children, false, type);
+		var opts = Descend.Normalize(descend, includeSelfDefault: false);
+		return opts.IncludeSelf == true
+			? Flatten.Graph(roots, n => n.Children, opts)
+			: Flatten.Graph(roots.SelectMany(r => r.Children), n => n.Children, opts);
 	}
 	#endregion
 
 	#region Ancestors
 	/// <summary>
-	/// Walks up the <see cref="Parent"/> links yielding each node.
+	/// Walks up the <see cref="Node{TItem}.Parent"/> chain yielding ancestor nodes.
 	/// </summary>
-	/// <param name="includeSelf">
-	/// Should the node itself be yielded (true) or should it start
-	/// with its <see cref="Parent"/> (false)?
-	/// </param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IList<Node<TItem>> GetAncestors<TItem>(this Node<TItem>? node, bool includeSelf = false)
+	/// <param name="node">The starting node.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>Ancestor nodes in order from nearest to farthest.</returns>
+	public static IList<Node<TItem>> GetAncestors<TItem>(this Node<TItem>? node, Ascend? ascend = null)
 		where TItem : notnull
 	{
-		if (node == null)
+		if (node is null)
 			return [];
-
-		var first = includeSelf ? node : node.Parent;
+		var opts = Ascend.Normalize(ascend, includeSelfDefault: false); // ancestors default exclude self
+		var first = opts.IncludeSelf == true ? node : node.Parent;
 		return Flatten.Sequence(first, n => n.Parent);
 	}
 
 	/// <summary>
-	/// Get all unique ancestor nodes from multiple starting nodes with deduplication.
-	/// Matches TypeScript behavior where ancestors are collected bottom-up with deduplication.
+	/// Collects all unique ancestor nodes from multiple starting nodes (deduplicated as encountered).
 	/// </summary>
 	/// <typeparam name="TItem">The type of item in the nodes.</typeparam>
 	/// <param name="nodes">The starting nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes themselves.</param>
-	/// <returns>All unique ancestor nodes in the order they were first encountered.</returns>
-	public static IList<Node<TItem>> GetAncestors<TItem>(this IEnumerable<Node<TItem>> nodes, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>Unique ancestor nodes in the order first encountered.</returns>
+	public static IList<Node<TItem>> GetAncestors<TItem>(this IEnumerable<Node<TItem>> nodes, Ascend? ascend = null)
 		where TItem : notnull
 	{
+		var opts = Ascend.Normalize(ascend, includeSelfDefault: false);
 		var seen = new HashSet<Node<TItem>>(ReferenceEqualityComparer.Instance);
 		var ancestors = new List<Node<TItem>>();
-
 		foreach (var node in nodes)
 		{
-			var current = includeSelf ? node : node.Parent;
-
+			var current = opts.IncludeSelf == true ? node : node.Parent;
 			while (current != null && !seen.Contains(current))
 			{
 				seen.Add(current);
@@ -86,7 +81,6 @@ public static class NodeGetExtensions
 				current = current.Parent;
 			}
 		}
-
 		return ancestors;
 	}
 	#endregion

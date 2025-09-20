@@ -15,16 +15,16 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor nodes.</returns>
-	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		var searchSet = new HashSet<TId>(search);
 		return hierarchy
 			.GetNode(id)
-			.FindAncestors(n => searchSet.Contains(hierarchy.Identify(n.Item)), includeSelf);
+			.FindAncestors(n => searchSet.Contains(hierarchy.Identify(n.Item)), ascend);
 	}
 
 	/// <summary>
@@ -33,15 +33,15 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor nodes.</returns>
-	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.FindAncestors(search, includeSelf);
+			.FindAncestors(search, ascend);
 	}
 
 	/// <summary>
@@ -50,16 +50,16 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor nodes.</returns>
-	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		var searchSet = new HashSet<TId>(search);
 		return hierarchy
 			.GetNodes(ids)
-			.FindAncestors(n => searchSet.Contains(hierarchy.Identify(n.Item)), includeSelf);
+			.FindAncestors(n => searchSet.Contains(hierarchy.Identify(n.Item)), ascend);
 	}
 
 	/// <summary>
@@ -68,15 +68,15 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor nodes.</returns>
-	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<Node<TItem>> FindAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.FindAncestors(search, includeSelf);
+			.FindAncestors(search, ascend);
 	}
 	#endregion
 
@@ -87,13 +87,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor items.</returns>
-	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(id, search, includeSelf).ToItems();
+		return hierarchy.FindAncestors(id, search, ascend).ToItems();
 	}
 
 	/// <summary>
@@ -102,13 +102,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor items.</returns>
-	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(id, search, includeSelf).ToItems();
+		return hierarchy.FindAncestors(id, search, ascend).ToItems();
 	}
 
 	/// <summary>
@@ -117,13 +117,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor items.</returns>
-	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(ids, search, includeSelf).ToItems();
+		return hierarchy.FindAncestors(ids, search, ascend).ToItems();
 	}
 
 	/// <summary>
@@ -132,13 +132,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor items.</returns>
-	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<TItem> FindAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(ids, search, includeSelf).ToItems();
+		return hierarchy.FindAncestors(ids, search, ascend).ToItems();
 	}
 	#endregion
 
@@ -149,13 +149,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor IDs.</returns>
-	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(id, search, includeSelf).ToIds(hierarchy.Identify);
+		return hierarchy.FindAncestors(id, search, ascend).ToIds(hierarchy.Identify);
 	}
 
 	/// <summary>
@@ -164,13 +164,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The ID of node to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor IDs.</returns>
-	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(id, search, includeSelf).ToIds(hierarchy.Identify);
+		return hierarchy.FindAncestors(id, search, ascend).ToIds(hierarchy.Identify);
 	}
 
 	/// <summary>
@@ -179,13 +179,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The search criteria - IDs to match.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor IDs.</returns>
-	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, bool includeSelf = false)
+	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, IEnumerable<TId> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(ids, search, includeSelf).ToIds(hierarchy.Identify);
+		return hierarchy.FindAncestors(ids, search, ascend).ToIds(hierarchy.Identify);
 	}
 
 	/// <summary>
@@ -194,13 +194,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The IDs of nodes to search from.</param>
 	/// <param name="search">The predicate function to match nodes.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the search.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All matching ancestor IDs.</returns>
-	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, bool includeSelf = false)
+	public static IList<TId> FindAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Func<Node<TItem>, bool> search, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindAncestors(ids, search, includeSelf).ToIds(hierarchy.Identify);
+		return hierarchy.FindAncestors(ids, search, ascend).ToIds(hierarchy.Identify);
 	}
 	#endregion
 
@@ -210,15 +210,15 @@ public static class HierarchyFindAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to find common ancestors for.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes themselves as potential ancestors.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All common ancestor nodes, or empty list if none found.</returns>
-	public static IList<Node<TItem>> FindCommonAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	public static IList<Node<TItem>> FindCommonAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.FindCommonAncestors(includeSelf);
+			.FindCommonAncestors(ascend);
 	}
 
 	/// <summary>
@@ -226,13 +226,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to find common ancestor items for.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes themselves as potential ancestors.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All common ancestor items, or empty list if none found.</returns>
-	public static IList<TItem> FindCommonAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	public static IList<TItem> FindCommonAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindCommonAncestors(ids, includeSelf).ToItems();
+		return hierarchy.FindCommonAncestors(ids, ascend).ToItems();
 	}
 
 	/// <summary>
@@ -240,13 +240,13 @@ public static class HierarchyFindAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to find common ancestor IDs for.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes themselves as potential ancestors.</param>
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
 	/// <returns>All common ancestor IDs, or empty list if none found.</returns>
-	public static IList<TId> FindCommonAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	public static IList<TId> FindCommonAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
-		return hierarchy.FindCommonAncestors(ids, includeSelf).ToIds(hierarchy.Identify);
+		return hierarchy.FindCommonAncestors(ids, ascend).ToIds(hierarchy.Identify);
 	}
 	#endregion
 }

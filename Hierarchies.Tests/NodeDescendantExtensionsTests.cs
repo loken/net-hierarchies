@@ -39,7 +39,7 @@ public class NodeDescendantExtensionsTests
 	[Fact]
 	public void FindDescendant_FindsFirstDescendantWithIncludeSelfTrue()
 	{
-		var actual = NodeA.FindDescendant(n => n.Item == "A", true);
+		var actual = NodeA.FindDescendant(n => n.Item == "A", Descend.WithSelf);
 		Assert.Equal("A", actual?.Item);
 	}
 
@@ -54,11 +54,11 @@ public class NodeDescendantExtensionsTests
 	public void FindDescendant_SupportsBreadthFirstAndDepthFirstTraversal()
 	{
 		// Breadth-first traversal: A1, A2, B1, A11, A12, B12 => A11
-		var breadthFirst = Roots.FindDescendant(n => n.Item == "A11" || n.Item == "B12", false, TraversalType.BreadthFirst);
+		var breadthFirst = Roots.FindDescendant(n => n.Item == "A11" || n.Item == "B12", TraversalType.BreadthFirst);
 		Assert.Equal("A11", breadthFirst?.Item);
 
 		// Depth-first traversal: B1, B12, A2, A1, A12, A11 => B12
-		var depthFirst = Roots.FindDescendant(n => n.Item == "A11" || n.Item == "B12", false, TraversalType.DepthFirst);
+		var depthFirst = Roots.FindDescendant(n => n.Item == "A11" || n.Item == "B12", TraversalType.DepthFirst);
 		Assert.Equal("B12", depthFirst?.Item);
 	}
 	#endregion
@@ -75,7 +75,7 @@ public class NodeDescendantExtensionsTests
 	[Fact]
 	public void FindDescendants_FindsAllDescendantsWithIncludeSelfTrue()
 	{
-		var actual = NodeA.FindDescendants(n => n.Item.StartsWith("A"), true);
+		var actual = NodeA.FindDescendants(n => n.Item.StartsWith("A"), Descend.WithSelf);
 		var items = actual.Select(n => n.Item).OrderBy(x => x).ToArray();
 		Assert.Equal(new[] { "A", "A1", "A11", "A12", "A2" }, items);
 	}
@@ -106,7 +106,7 @@ public class NodeDescendantExtensionsTests
 	[Fact]
 	public void HasDescendant_WorksWithIncludeSelfTrue()
 	{
-		var actual = NodeA.HasDescendant(n => n.Item == "A", true);
+		var actual = NodeA.HasDescendant(n => n.Item == "A", Descend.WithSelf);
 		Assert.True(actual);
 	}
 	#endregion
@@ -123,7 +123,7 @@ public class NodeDescendantExtensionsTests
 	[Fact]
 	public void TraverseDescendants_WorksWithIncludeSelfTrue()
 	{
-		var actual = NodeA.TraverseDescendants(true);
+		var actual = NodeA.TraverseDescendants(Descend.WithSelf);
 		var items = actual.Select(n => n.Item).ToArray();
 		Assert.Equal(new[] { "A", "A1", "A2", "A11", "A12" }, items);
 	}

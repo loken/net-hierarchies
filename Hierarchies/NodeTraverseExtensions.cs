@@ -14,13 +14,12 @@ public static class NodeTraverseExtensions
 	/// <param name="includeSelf">Whether to include the root node itself.</param>
 	/// <param name="traversalType">The type of traversal to use (breadth-first or depth-first).</param>
 	/// <returns>Enumerable of descendant nodes in traversal order.</returns>
-	public static IEnumerable<Node<TItem>> TraverseDescendants<TItem>(this Node<TItem>? root, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
+	public static IEnumerable<Node<TItem>> TraverseDescendants<TItem>(this Node<TItem>? root, Descend? descend = null)
 		where TItem : notnull
 	{
-		if (root == null)
+		if (root is null)
 			return [];
-
-		return new[] { root }.TraverseDescendants(includeSelf, traversalType);
+		return new[] { root }.TraverseDescendants(descend);
 	}
 
 	/// <summary>
@@ -31,12 +30,12 @@ public static class NodeTraverseExtensions
 	/// <param name="includeSelf">Whether to include the root nodes themselves.</param>
 	/// <param name="traversalType">The type of traversal to use (breadth-first or depth-first).</param>
 	/// <returns>Enumerable of descendant nodes in traversal order.</returns>
-	public static IEnumerable<Node<TItem>> TraverseDescendants<TItem>(this IEnumerable<Node<TItem>> roots, bool includeSelf = false, TraversalType traversalType = TraversalType.BreadthFirst)
+	public static IEnumerable<Node<TItem>> TraverseDescendants<TItem>(this IEnumerable<Node<TItem>> roots, Descend? descend = null)
 		where TItem : notnull
 	{
-		var rootsToTraverse = includeSelf ? roots : roots.SelectMany(r => r.Children);
-
-		return Traverse.Graph(rootsToTraverse, node => node.Children, false, traversalType);
+		var opts = Descend.Normalize(descend, includeSelfDefault: false);
+		var rootsToTraverse = opts.IncludeSelf == true ? roots : roots.SelectMany(r => r.Children);
+		return Traverse.Graph(rootsToTraverse, n => n.Children, opts);
 	}
 	#endregion
 }

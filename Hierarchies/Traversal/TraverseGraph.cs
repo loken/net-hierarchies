@@ -14,32 +14,32 @@ public delegate void TraverseNode<TNode>(TNode node, GraphSignal<TNode> signal);
 public static partial class Traverse
 {
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
+	/// Lazily traverses a graph from a single <paramref name="root"/> using a <c>next</c> delegate.
 	/// </summary>
-	/// <typeparam name="TNode">The type of node.</typeparam>
-	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
-	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>?> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <typeparam name="TNode">The node type.</typeparam>
+	/// <param name="root">Starting node; if <c>null</c> yields none.</param>
+	/// <param name="next">Returns children for a node or <c>null</c>.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
+	/// <returns>Nodes in visitation order.</returns>
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, Func<TNode, IEnumerable<TNode>?> next, Descend? descend = null)
 	{
 		if (root is null)
 			yield break;
-
+		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		// Single-root path identical to legacy but driven by opts.DetectCycles / opts.Type.
 		HashSet<TNode>? visited = null;
-		if (detectCycles)
+
+		if (opts.DetectCycles)
 		{
-			// Align with TS semantics: nodes are considered unique by identity, not by item equality.
-			// If TNode is a reference type, use a reference comparer; otherwise use default comparer.
 			visited = typeof(TNode).IsValueType
 				? new HashSet<TNode>()
 				: new HashSet<TNode>(ReferenceEqualityComparer<TNode>.Instance);
 		}
-		ILinear<TNode> store = type == TraversalType.DepthFirst
+
+		ILinear<TNode> store = opts.Type == TraversalType.DepthFirst
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		// Single-root fast path; avoid IEnumerable machinery.
 		store.Attach(root);
 
 		while (store.TryDetach(out var node))
@@ -51,7 +51,6 @@ public static partial class Traverse
 				var children = next(node);
 				if (children is not null)
 				{
-					// Prefer concrete types to avoid enumerator overhead where possible.
 					if (children is IList<TNode> childList)
 						store.AttachMany(childList);
 					else if (children is ICollection<TNode> childCollection)
@@ -64,43 +63,29 @@ public static partial class Traverse
 	}
 
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
-	/// and whether to include or skip the current node.</para>
-	/// <para>By providing no next nodes you exclude any children of the current node from traversal.</para>
+	/// Lazily traverses a graph from multiple <paramref name="roots"/> using a <c>next</c> delegate.
 	/// </summary>
-	/// <typeparam name="TNode">The type of node.</typeparam>
-	/// <param name="root">The root may have a parent, but it is treated as a depth 0 node for the traversal.</param>
-	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <typeparam name="TNode">The node type.</typeparam>
+	/// <param name="roots">Seed nodes; order influences initial visitation.</param>
+	/// <param name="next">Returns children for a node or <c>null</c>.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
+	/// <returns>Nodes in visitation order.</returns>
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Descend? descend = null)
 	{
-		return Graph(root.ToEnumerable(), traverse, detectCycles, type);
-	}
-
-	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// </summary>
-	/// <typeparam name="TNode">The type of node.</typeparam>
-	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
-	/// <param name="next">Describes the next nodes, or children, of the current node, if any.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
-	{
+		var opts = Descend.Normalize(descend, includeSelfDefault: true);
 		HashSet<TNode>? visited = null;
-		if (detectCycles)
+
+		if (opts.DetectCycles)
 		{
 			visited = typeof(TNode).IsValueType
 				? new HashSet<TNode>()
 				: new HashSet<TNode>(ReferenceEqualityComparer<TNode>.Instance);
 		}
-		ILinear<TNode> store = type == TraversalType.DepthFirst
+
+		ILinear<TNode> store = opts.Type == TraversalType.DepthFirst
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		// Prefer concrete types to avoid enumerator overhead when seeding roots.
 		if (roots is IList<TNode> rootList)
 			store.AttachMany(rootList);
 		else if (roots is ICollection<TNode> rootCollection)
@@ -129,19 +114,44 @@ public static partial class Traverse
 	}
 
 	/// <summary>
-	/// Traverse a graph of nodes.
-	/// <para>Similar to <see cref="Flatten.Graph"/>, but yields nodes lazily.</para>
-	/// <para>Use the <see cref="GraphSignal{T}"/> to provide the next nodes
-	/// and whether to include or skip the current node.</para>
-	/// <para>By providing no next nodes you exclude any children of the current node from traversal.</para>
+	/// Lazily traverses a graph from a single <paramref name="root"/> using a signal-driven <paramref name="traverse"/> delegate.
 	/// </summary>
-	/// <typeparam name="TNode">The type of node.</typeparam>
-	/// <param name="roots">The roots may have parents, but they are treated as depth 0 nodes for the traversal.</param>
-	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
-	/// <returns>An enumeration of nodes.</returns>
-	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	/// <typeparam name="TNode">The node type.</typeparam>
+	/// <param name="root">Starting node; if <c>null</c> yields none.</param>
+	/// <param name="traverse">Delegate invoked per node; use the signal to enqueue children, prune, skip or stop.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
+	/// <returns>Nodes in visitation order (excluding skipped).</returns>
+	public static IEnumerable<TNode> Graph<TNode>(TNode? root, TraverseNode<TNode> traverse, Descend? descend = null)
 	{
-		var signal = new GraphSignal<TNode>(roots, detectCycles, type);
+		if (root is null)
+			yield break;
+
+		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var signal = new GraphSignal<TNode>(root.ToEnumerable(), opts.DetectCycles, opts.Type);
+
+		while (signal.TryGetNext(out TNode? current))
+		{
+			traverse(current, signal);
+
+			if (signal.ShouldYield())
+				yield return current;
+
+			signal.Cleanup();
+		}
+	}
+
+	/// <summary>
+	/// Lazily traverses a graph from multiple <paramref name="roots"/> using a signal-driven <paramref name="traverse"/> delegate.
+	/// </summary>
+	/// <typeparam name="TNode">The node type.</typeparam>
+	/// <param name="roots">Seed nodes; order influences initial visitation.</param>
+	/// <param name="traverse">Delegate invoked per node; use the signal to enqueue children, prune, skip or stop.</param>
+	/// <param name="descend">Options for controlling how we descend the graph.</param>
+	/// <returns>Nodes in visitation order (excluding skipped).</returns>
+	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, Descend? descend = null)
+	{
+		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var signal = new GraphSignal<TNode>(roots, opts.DetectCycles, opts.Type);
 
 		while (signal.TryGetNext(out TNode? current))
 		{

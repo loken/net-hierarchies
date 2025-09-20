@@ -12,12 +12,12 @@ public static class HierarchyGetAllDescendantsExtensions
 	/// <param name="includeSelf">Whether to include the root nodes in the result.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>An array of descendant nodes in specified order.</returns>
-	public static IList<Node<TItem>> GetAllDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<Node<TItem>> GetAllDescendants<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy.Roots
-			.GetDescendants(includeSelf, type);
+			.GetDescendants(descend);
 	}
 
 	/// <summary>
@@ -27,12 +27,12 @@ public static class HierarchyGetAllDescendantsExtensions
 	/// <param name="includeSelf">Whether to include the root nodes in the result.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>An array of descendant items in specified order.</returns>
-	public static IList<TItem> GetAllDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TItem> GetAllDescendantItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy.Roots
-			.GetDescendants(includeSelf, type)
+			.GetDescendants(descend)
 			.ToItems();
 	}
 
@@ -43,12 +43,12 @@ public static class HierarchyGetAllDescendantsExtensions
 	/// <param name="includeSelf">Whether to include the root nodes in the result.</param>
 	/// <param name="type">The traversal type (breadth-first or depth-first).</param>
 	/// <returns>An array of descendant IDs in specified order.</returns>
-	public static IList<TId> GetAllDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, bool includeSelf = false, TraversalType type = TraversalType.BreadthFirst)
+	public static IList<TId> GetAllDescendantIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, Descend? descend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy.Roots
-			.GetDescendants(includeSelf, type)
+			.GetDescendants(descend)
 			.ToIds(hierarchy.Identify);
 	}
 }

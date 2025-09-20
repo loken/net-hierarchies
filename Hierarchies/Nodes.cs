@@ -145,7 +145,7 @@ public static class Nodes
 	{
 		var rootNodes = CreateMany(roots).ToArray();
 
-		Flatten.Graph(rootNodes, node =>
+		Flatten.Graph<Node<TItem>>(rootNodes, node =>
 		{
 			var children = getChildren(node.Item);
 			if (children is not null)

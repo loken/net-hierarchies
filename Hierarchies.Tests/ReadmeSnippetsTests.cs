@@ -38,9 +38,9 @@ public class ReadmeSnippetsTests
 		]);
 
 		// Retrieve and project descendants or ancestors.
-		var getNodes = hierarchy1.GetDescendants("a", includeSelf: true);
-		var getItems = hierarchy1.GetDescendantItems("a", includeSelf: true);
-		var getIds   = hierarchy1.GetDescendantIds("a", includeSelf: true);
+		var getNodes = hierarchy1.GetDescendants("a", Descend.WithSelf);
+		var getItems = hierarchy1.GetDescendantItems("a", Descend.WithSelf);
+		var getIds   = hierarchy1.GetDescendantIds("a", Descend.WithSelf);
 
 		// Find matches by predicate
 		var foundNodes = hierarchy1.Find(n => n.Item.Name == "a");
@@ -181,8 +181,8 @@ public class ReadmeSnippetsTests
 
 
 		#region Node retrieval
-		var descendants = branchNodes.GetDescendants(includeSelf: true, type: TraversalType.DepthFirst);
-		var ancestors   = branchNodes.GetAncestors(includeSelf: true);
+		var descendants = branchNodes.GetDescendants(Descend.DepthFirstWithSelf);
+		var ancestors   = branchNodes.GetAncestors(Ascend.WithSelf);
 		#endregion
 
 

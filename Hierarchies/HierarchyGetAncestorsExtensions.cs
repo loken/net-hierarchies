@@ -11,15 +11,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <returns>An array of ancestor nodes in order from immediate parent to root.</returns>
-	public static IList<Node<TItem>> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor nodes in order from nearest to farthest.</returns>
+	public static IList<Node<TItem>> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.GetAncestors(includeSelf);
+			.GetAncestors(ascend);
 	}
 
 	/// <summary>
@@ -27,15 +27,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <returns>An array of ancestor nodes in order from immediate parent to root.</returns>
-	public static IList<Node<TItem>> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor nodes in order from nearest to farthest.</returns>
+	public static IList<Node<TItem>> GetAncestors<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.GetAncestors(includeSelf);
+			.GetAncestors(ascend);
 	}
 	#endregion
 
@@ -45,15 +45,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <returns>An array of ancestor items in order from immediate parent to root.</returns>
-	public static IList<TItem> GetAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor items in order from nearest to farthest.</returns>
+	public static IList<TItem> GetAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.GetAncestors(includeSelf)
+			.GetAncestors(ascend)
 			.ToItems();
 	}
 
@@ -62,15 +62,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <returns>An array of ancestor items in order from immediate parent to root.</returns>
-	public static IList<TItem> GetAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor items in order from nearest to farthest.</returns>
+	public static IList<TItem> GetAncestorItems<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.GetAncestors(includeSelf)
+			.GetAncestors(ascend)
 			.ToItems();
 	}
 	#endregion
@@ -81,15 +81,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="id">The identifier for the item to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting node in the result.</param>
-	/// <returns>An array of ancestor IDs in order from immediate parent to root.</returns>
-	public static IList<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor IDs in order from nearest to farthest.</returns>
+	public static IList<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, TId id, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNode(id)
-			.GetAncestors(includeSelf)
+			.GetAncestors(ascend)
 			.ToIds(hierarchy.Identify);
 	}
 
@@ -98,15 +98,15 @@ public static class HierarchyGetAncestorsExtensions
 	/// </summary>
 	/// <param name="hierarchy">The <see cref="Hierarchy{TItem,TId}"/> to search.</param>
 	/// <param name="ids">The identifiers for the items to start traversal from.</param>
-	/// <param name="includeSelf">Whether to include the starting nodes in the result.</param>
-	/// <returns>An array of ancestor IDs in order from immediate parent to root.</returns>
-	public static IList<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, bool includeSelf = false)
+	/// <param name="ascend">Options for controlling how we ascend the graph.</param>
+	/// <returns>An array of ancestor IDs in order from nearest to farthest.</returns>
+	public static IList<TId> GetAncestorIds<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, IEnumerable<TId> ids, Ascend? ascend = null)
 		where TId : notnull
 		where TItem : notnull
 	{
 		return hierarchy
 			.GetNodes(ids)
-			.GetAncestors(includeSelf)
+			.GetAncestors(ascend)
 			.ToIds(hierarchy.Identify);
 	}
 	#endregion

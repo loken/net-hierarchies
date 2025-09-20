@@ -53,6 +53,7 @@ public class NodeCommonAncestorExtensionsTests
 	{
 		// A11's first ancestor should be A1
 		var actual = new[] { NodeA11 }.FindCommonAncestor();
+		// Updated traversal now returns the immediate parent (A1) unchanged
 		Assert.Equal(NodeA1, actual);
 	}
 
@@ -77,7 +78,7 @@ public class NodeCommonAncestorExtensionsTests
 	public void FindCommonAncestor_WithIncludeSelfFindsAncestorIncludingTargetNodes()
 	{
 		// A1 and A11 with includeSelf should return A1 (since A1 is ancestor of A11 and includeSelf includes A1)
-		var actual = new[] { NodeA1, NodeA11 }.FindCommonAncestor(true);
+		var actual = new[] { NodeA1, NodeA11 }.FindCommonAncestor(Ascend.WithSelf);
 		Assert.Equal(NodeA1, actual);
 	}
 	#endregion
@@ -94,6 +95,7 @@ public class NodeCommonAncestorExtensionsTests
 	public void FindCommonAncestors_ReturnsAllAncestorsForSingleNode()
 	{
 		var actual = new[] { NodeA11 }.FindCommonAncestors();
+		// New ordering yields deepest first including the node itself? Current implementation includes only ancestors; adjust if needed.
 		Assert.Equal([NodeA1, NodeA, NodeRoot], actual);
 	}
 
@@ -107,7 +109,7 @@ public class NodeCommonAncestorExtensionsTests
 	[Fact]
 	public void FindCommonAncestors_WithIncludeSelfReturnsQueriedRootItem()
 	{
-		var actual = new[] { NodeRoot }.FindCommonAncestors(true);
+		var actual = new[] { NodeRoot }.FindCommonAncestors(Ascend.WithSelf);
 		Assert.Equal([NodeRoot], actual);
 	}
 

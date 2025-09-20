@@ -22,10 +22,10 @@ var hierarchy2 = Hierarchies.CreateFromRelations(items, item => item.Id, [
    new("r", "b"),
 ]);
 
-// Retrieve and project descendants or ancestors.
-var getNodes = hierarchy1.GetDescendants("a", includeSelf: true);
-var getItems = hierarchy1.GetDescendantItems("a", includeSelf: true);
-var getIds   = hierarchy1.GetDescendantIds("a", includeSelf: true);
+// Retrieve and project descendants or ancestors (include starting node using Descend.WithSelf).
+var getNodes = hierarchy1.GetDescendants("a", Descend.WithSelf);
+var getItems = hierarchy1.GetDescendantItems("a", Descend.WithSelf);
+var getIds   = hierarchy1.GetDescendantIds("a", Descend.WithSelf);
 
 // Find matches by predicate
 var foundNodes = hierarchy1.Find(n => n.Item.Name == "a");
@@ -206,9 +206,14 @@ var matchingItemHc = Hierarchies.CreateFromHierarchy(items, item => item.Id, mat
 
 Query and traverse hierarchies using the high-level `Hierarchy<TItem, TId>` API.
 
-- `Get*` methods will throw if you pass an ID which does not exist in the hierarchy. If you don't know, use `Find*` instead!
-- For methods traversing ancestors or descendants, you can provide an optional `includeSelf` flag to specify whether the provided IDs should be included in the retrieval or search.
-- For methods traversing descendants you may also specify `TraversalType.DepthFirst` if you don't want the default, which is `TraversalType.BreadthFirst`.
+- `Get*` methods throw if a requested ID is missing. If you don't know, use `Find*` instead!
+- Traversal option shorthands:
+   - Descendants: use `Descend` static members: `WithSelf`, `WithoutSelf`, `BreadthFirstWithSelf`, `BreadthFirstWithoutSelf`, `DepthFirstWithSelf`, `DepthFirstWithoutSelf` (or pass a `TraversalType` directly via an implicit conversion: e.g. `Descend d = TraversalType.DepthFirst;`).
+   - Ancestors: use `Ascend` static members: `WithSelf`, `WithoutSelf`.
+   - `WithSelf` includes the starting node(s); `WithoutSelf` starts from children / parent(s).
+- Defaults:
+   - Methods whose name references descendants/ancestors default to excluding the starting node(s) (`WithoutSelf`).
+   - Generic traversal helpers (`Traverse.Graph`, `Flatten.Graph`, `Search.Graph`) default to including provided roots (`WithSelf`).
 
 ### Get by ID
 
@@ -320,8 +325,8 @@ When you need fine-grained control or are working directly with nodes, use these
 #### Node retrieval
 
 ```csharp
-var descendants = branchNodes.GetDescendants(includeSelf: true, type: TraversalType.DepthFirst);
-var ancestors   = branchNodes.GetAncestors(includeSelf: true);
+var descendants = branchNodes.GetDescendants(Descend.DepthFirstWithSelf);
+var ancestors   = branchNodes.GetAncestors(Ascend.WithSelf);
 ```
 
 #### Graph traversal

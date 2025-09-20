@@ -20,7 +20,7 @@ public class TraverseGraphTests
 	[Fact]
 	public void TraverseNext_BreadthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.BreadthFirst);
+		var nodes = Traverse.Graph(IntRoot, node => node.Children, TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -31,7 +31,7 @@ public class TraverseGraphTests
 	[Fact]
 	public void TraverseNext_DepthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Traverse.Graph(IntRoot, node => node.Children, type: TraversalType.DepthFirst);
+		var nodes = Traverse.Graph(IntRoot, node => node.Children, TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.ToItems().ToArray();
@@ -42,10 +42,10 @@ public class TraverseGraphTests
 	[Fact]
 	public void TraverseSignal_BreadthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
-		{
-			signal.Next(node.Children);
-		}, type: TraversalType.BreadthFirst);
+		var nodes = Traverse.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -56,10 +56,10 @@ public class TraverseGraphTests
 	[Fact]
 	public void TraverseSignal_DepthFirst_YieldsCorrectOrder()
 	{
-		var nodes = Traverse.Graph(IntRoot, (node, signal) =>
-		{
-			signal.Next(node.Children);
-		}, type: TraversalType.DepthFirst);
+		var nodes = Traverse.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
 		var actual = nodes.ToItems().ToArray();
@@ -79,7 +79,7 @@ public class TraverseGraphTests
 			// Skip children of 1 which is 11 and 12.
 			if (node.Parent?.Item == 1)
 				signal.Skip();
-		}, false);
+		});
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
 		var actual = nodes.ToItems().ToArray();
@@ -121,7 +121,7 @@ public class TraverseGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var nodes = Traverse.Graph(first, node => node.Children, true);
+		var nodes = Traverse.Graph(first, node => node.Children, new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
 		var actual = nodes.ToItems().ToArray();
@@ -141,7 +141,7 @@ public class TraverseGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var nodes = Traverse.Graph(first, (node, signal) => signal.Next(node.Children), true);
+		var nodes = Traverse.Graph(first, (node, signal) => signal.Next(node.Children), new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
 		var actual = nodes.ToItems().ToArray();
@@ -158,7 +158,7 @@ public class TraverseGraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.BreadthFirst).EnumerateAll();
+		}, TraversalType.BreadthFirst).EnumerateAll();
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));
@@ -173,7 +173,7 @@ public class TraverseGraphTests
 			signal.Next(node.Children);
 
 			traversed.Add((node.Item, signal.Depth));
-		}, type: TraversalType.DepthFirst).EnumerateAll();
+		}, TraversalType.DepthFirst).EnumerateAll();
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));

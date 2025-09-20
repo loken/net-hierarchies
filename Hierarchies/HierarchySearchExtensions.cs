@@ -45,7 +45,8 @@ public static class HierarchySearchExtensions
 			if (includeAncestors)
 			{
 				var ancestorIds = new List<TId>();
-				foreach (var node in hierarchy.GetAncestors(id, includeMatches))
+				var ascend = includeMatches ? Ascend.WithSelf : (Ascend?)null;
+				foreach (var node in hierarchy.GetAncestors(id, ascend))
 				{
 					var aId = hierarchy.Identify(node.Item);
 					ancestorIds.Add(aId);
@@ -77,7 +78,7 @@ public static class HierarchySearchExtensions
 			// Descendants facet
 			if (includeDescendants)
 			{
-				foreach (var node in hierarchy.GetDescendants(id, includeMatches))
+				foreach (var node in hierarchy.GetDescendants(id, includeMatches ? Descend.WithSelf : (Descend?)null))
 				{
 					var nId = hierarchy.Identify(node.Item);
 					if (!items.ContainsKey(nId))
