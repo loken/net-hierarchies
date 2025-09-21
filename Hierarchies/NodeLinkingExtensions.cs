@@ -16,10 +16,10 @@ public static class NodeLinkingExtensions
 	/// Must provide non-empty set of <paramref name="children"/> of a compatible brand
 	/// that aren't already attached to another parent.
 	/// </exception>
-	public static Node<TItem> Attach<TItem>(this Node<TItem> parent, IEnumerable<Node<TItem>> children)
+	public static Node<TItem> Attach<TItem>(this Node<TItem> parent, params Node<TItem>[] children)
 		where TItem : notnull
 	{
-		return parent.Attach(children.ToArray());
+		return parent.Attach(children);
 	}
 
 	/// <summary>
@@ -31,10 +31,10 @@ public static class NodeLinkingExtensions
 	/// <exception cref="InvalidOperationException">
 	/// Must provide non-empty set of attached and non-branded <paramref name="children"/>.
 	/// </exception>
-	public static Node<TItem> Detach<TItem>(this Node<TItem> parent, IEnumerable<Node<TItem>> children)
+	public static Node<TItem> Detach<TItem>(this Node<TItem> parent, params Node<TItem>[] children)
 		where TItem : notnull
 	{
-		return parent.Detach(children.ToArray());
+		return parent.Detach(children);
 	}
 
 	/// <summary>

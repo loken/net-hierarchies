@@ -16,7 +16,7 @@ public class CreationTests : IClassFixture<DbFixture>
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
 
 		var indexNames = collection.Indexes.List()
-			.ToEnumerable()
+			.ToList()
 			.Select(d => d.GetValue("name").AsString)
 			.ToArray();
 

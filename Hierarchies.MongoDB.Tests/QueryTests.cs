@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections.MultiMap;
-
-namespace Loken.Hierarchies.Data.MongoDB;
+﻿namespace Loken.Hierarchies.Data.MongoDB;
 
 [Collection("MongoDB")]
 public class QueryTests : IClassFixture<DbFixture>
@@ -23,8 +21,8 @@ public class QueryTests : IClassFixture<DbFixture>
 	public void GetRelations()
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
-		var childMap = ChildMap.ParseMultiMap();
-		var hc = Hierarchy.CreateMapped(childMap);
+		var childMap = MultiMap.Parse<string>(ChildMap);
+		var hc = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hc, "companies");
 
 		var descendantMap = hc.ToMap(RelType.Descendants);
@@ -43,8 +41,8 @@ public class QueryTests : IClassFixture<DbFixture>
 	public void GetChildren()
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
-		var childMap = ChildMap.ParseMultiMap();
-		var hc = Hierarchy.CreateMapped(childMap);
+		var childMap = MultiMap.Parse<string>(ChildMap);
+		var hc = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hc, "companies", RelType.Children);
 
 		var childrenOfA = collection.GetChildren("companies", "A");

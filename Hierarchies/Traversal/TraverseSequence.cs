@@ -1,6 +1,14 @@
 ﻿namespace Loken.Hierarchies.Traversal;
 
 /// <summary>
+/// Describes how to traverse a sequence when visiting an element using a <see cref="SequenceSignal{TEl}"/>.
+/// </summary>
+/// <typeparam name="TEl">The type of element.</typeparam>
+/// <param name="node">The source element.</param>
+/// <param name="signal">Use this to signal how to traverse.</param>
+public delegate void TraverseElement<TEl>(TEl element, SequenceSignal<TEl> signal);
+
+/// <summary>
 /// Provides traversal for sequences, trees and graphs.
 /// </summary>
 public static partial class Traverse
@@ -12,10 +20,18 @@ public static partial class Traverse
 	/// <param name="element">The starting element.</param>
 	/// <param name="next">Describes what the next element of the sequence should be, if any.</param>
 	/// <returns>An enumeration of elements.</returns>
-	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, NextElement<TEl> next)
-		where TEl : notnull
+	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, Func<TEl, TEl?> next)
 	{
-		return Sequence(element, (el, signal) => signal.Next(next(el)));
+		// Specialized fast path: avoid lambda allocation and Signal machinery.
+		if (element is null)
+			yield break;
+
+		var current = element;
+		while (current is not null)
+		{
+			yield return current;
+			current = next(current);
+		}
 	}
 
 	/// <summary>
@@ -29,7 +45,6 @@ public static partial class Traverse
 	/// <param name="traverse">The traversal action where you detail what's next and what to skip.</param>
 	/// <returns>An enumeration of elements.</returns>
 	public static IEnumerable<TEl> Sequence<TEl>(TEl? element, TraverseElement<TEl> traverse)
-		where TEl : notnull
 	{
 		if (element is null)
 			yield break;

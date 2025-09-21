@@ -34,15 +34,15 @@ public class HierarchyDiff<TId>
 	/// <summary>
 	/// Entries that didn't exist prior.
 	/// </summary>
-	public IDictionary<TId, ISet<TId>> Inserted { get; } = new Dictionary<TId, ISet<TId>>();
+	public MultiMap<TId> Inserted { get; } = [];
 
 	/// <summary>
 	/// Entries that have had some targets removed.
 	/// </summary>
-	public IDictionary<TId, ISet<TId>> Removed { get; } = new Dictionary<TId, ISet<TId>>();
+	public MultiMap<TId> Removed { get; } = [];
 
 	/// <summary>
 	/// Entries that have had some targets added.
 	/// </summary>
-	public IDictionary<TId, ISet<TId>> Added { get; } = new Dictionary<TId, ISet<TId>>();
+	public MultiMap<TId> Added { get; } = [];
 }

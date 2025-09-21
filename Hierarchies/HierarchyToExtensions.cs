@@ -1,14 +1,14 @@
 ﻿namespace Loken.Hierarchies;
 
 /// <summary>
-/// Extensions for mapping between different representations of relationships in a <see cref="Hierarchy{TItem, TId}"/>.
+/// Extensions for mapping from <see cref="Hierarchy{TItem, TId}"/> to other representations.
 /// </summary>
-public static class HierarchyMapExtensions
+public static class HierarchyToExtensions
 {
 	/// <summary>
 	/// Create a sequence of relations matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IEnumerable<(TId parent, TId child)> ToRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -18,7 +18,7 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a child-map matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, RelType type)
+	public static MultiMap<TId> ToMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy, RelType type)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -28,7 +28,7 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a child-map matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToChildMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
+	public static MultiMap<TId> ToChildMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -38,7 +38,7 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a descendant-map matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToDescendantMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
+	public static MultiMap<TId> ToDescendantMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -48,7 +48,7 @@ public static class HierarchyMapExtensions
 	/// <summary>
 	/// Create a ancestor-map matching the <paramref name="hierarchy"/>.
 	/// </summary>
-	public static IDictionary<TId, ISet<TId>> ToAncestorMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
+	public static MultiMap<TId> ToAncestorMap<TItem, TId>(this Hierarchy<TItem, TId> hierarchy)
 		where TItem : notnull
 		where TId : notnull
 	{

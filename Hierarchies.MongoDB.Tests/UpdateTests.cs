@@ -1,6 +1,4 @@
-﻿using Loken.System.Collections.MultiMap;
-
-namespace Loken.Hierarchies.Data.MongoDB;
+﻿namespace Loken.Hierarchies.Data.MongoDB;
 
 [Collection("MongoDB")]
 public class UpdateTests : IClassFixture<DbFixture>
@@ -16,15 +14,15 @@ public class UpdateTests : IClassFixture<DbFixture>
 	public void UpdateRelations_UsingStoredState()
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
-		var childMap = """
+		var childMap = MultiMap.Parse<string>("""
 			A:A1,A2
 			A2:A21
 			B:B1
 			B1:B11,B12,B13
-			""".ParseMultiMap();
+			""");
 
 		// Create a hierarchy and store it to the database.
-		var hierarchy = Hierarchy.CreateMapped(childMap);
+		var hierarchy = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(hierarchy, "companies", RelType.Children);
 
 		// Make modifications to the hierarchy.
@@ -48,19 +46,19 @@ public class UpdateTests : IClassFixture<DbFixture>
 	public void UpdateRelations_UsingKnownState()
 	{
 		var collection = Fixture.GetDatabase().GetHierarchies<string>().CreateRelationIndexes();
-		var childMap = """
+		var childMap = MultiMap.Parse<string>("""
 			A:A1,A2
 			A2:A21
 			B:B1
 			B1:B11,B12,B13
-			""".ParseMultiMap();
+			""");
 
 		// Keep an instance of the known state and store it to the database.
-		var known = Hierarchy.CreateMapped(childMap);
+		var known = Hierarchies.CreateFromChildMap(childMap);
 		collection.InsertRelations(known, "companies", RelType.Children);
 
 		// Create a working copy, modify it and update the database.
-		var modified = Hierarchy.CreateMatching(known);
+		var modified = Hierarchies.CreateFromHierarchy(known);
 		modified
 			.Detach("A")
 			.AttachRoot("C", "D")

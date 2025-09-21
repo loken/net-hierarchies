@@ -18,14 +18,14 @@ public class NodeJsonSerializationTests
 		}
 		""";
 
-		var root = Node.Create("root").Attach(Node.Create("a"));
-		var nodes = root.GetDescendants(true).ToArray();
+		var root = Nodes.Create("root").Attach(Nodes.Create("a"));
+		var nodes = root.GetDescendants(Descend.WithSelf).ToArray();
 
 		var actualJson = JsonConvert.SerializeObject(root, Formatting.Indented);
 		Assert.Equal(expectedJson, actualJson);
 
 		var deserializedRoot = JsonConvert.DeserializeObject<Node<string>>(actualJson)!;
-		var deserializedNodes = deserializedRoot.GetDescendants(true).ToArray();
+		var deserializedNodes = deserializedRoot.GetDescendants(Descend.WithSelf).ToArray();
 		Assert.Equal(nodes, deserializedNodes);
 	}
 }

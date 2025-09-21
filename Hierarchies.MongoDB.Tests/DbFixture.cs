@@ -22,7 +22,7 @@ public class DbFixture : IDisposable
 	{
 		var isCI = Environment.GetEnvironmentVariable("CI") == "true";
 		if (isCI)
-			return "mongodb://localhost:27017";
+			return "mongodb://localhost:27017/?directConnection=true";
 
 		DotEnv.Load();
 
@@ -33,7 +33,10 @@ public class DbFixture : IDisposable
 		var username = config.GetSection("MONGO_INITDB_ROOT_USERNAME").Value;
 		var password = config.GetSection("MONGO_INITDB_ROOT_PASSWORD").Value;
 
-		return $"mongodb://{username}:{password}@localhost:27017";
+		if (username is null || password is null)
+			return "mongodb://localhost:27017/?directConnection=true";
+
+		return $"mongodb://{username}:{password}@localhost:27017/?directConnection=true";
 	}
 
 	protected ISet<string> DatabaseNames { get; } = new HashSet<string>();

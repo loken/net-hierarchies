@@ -1,9 +1,9 @@
 ﻿namespace Loken.Hierarchies;
 
 /// <summary>
-/// Extension methods for turning <see cref="Node{TItem}"/> roots into various kinds of relational multi-maps.
+/// Extensions for mapping from <see cref="Node{TItem}"/> to other representations.
 /// </summary>
-public static class NodeMapExtensions
+public static class NodesToExtensions
 {
 	/// <summary>
 	/// Create a map of ids to ids of a given <see cref="RelType"/> by traversing the graph of the <paramref name="root"/>.
@@ -13,7 +13,7 @@ public static class NodeMapExtensions
 	/// <param name="root">The root to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A multi-map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify, RelType type)
+	public static MultiMap<TId> ToMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify, RelType type)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -28,7 +28,7 @@ public static class NodeMapExtensions
 	/// <param name="roots">The roots to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A multi-map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify, RelType type)
+	public static MultiMap<TId> ToMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify, RelType type)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -49,7 +49,7 @@ public static class NodeMapExtensions
 	/// <param name="root">The root to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-children map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToChildMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToChildMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -64,24 +64,37 @@ public static class NodeMapExtensions
 	/// <param name="roots">The roots to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-children map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToChildMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToChildMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new Dictionary<TId, ISet<TId>>();
+		var childMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
-
-			if (!node.IsLeaf)
+			var nodeId = identify(root.Item);
+			if (root.IsInternal)
 			{
-				var nodeId = identify(node.Item);
-				map.LazySet(nodeId).AddRange(node.Children.AsIds(identify));
+				var childIds = root.Children.ToIds(identify);
+				childMap.Add(nodeId, childIds);
 			}
-		}).EnumerateAll();
+			else
+			{
+				childMap.Add(nodeId);
+			}
+		}
 
-		return map;
+		var nodes = Flatten.Graph(roots, node => node.Children.Where(n => n.IsInternal));
+
+		foreach (var node in nodes)
+		{
+			var childNodes = node.Children;
+			var nodeId = identify(node.Item);
+			var childIds = childNodes.ToIds(identify);
+			childMap.Add(nodeId, childIds);
+		}
+
+		return childMap;
 	}
 
 	/// <summary>
@@ -92,7 +105,7 @@ public static class NodeMapExtensions
 	/// <param name="root">The root to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-descendants map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToDescendantMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToDescendantMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -107,23 +120,38 @@ public static class NodeMapExtensions
 	/// <param name="roots">The roots to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-children map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToDescendantMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToDescendantMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new Dictionary<TId, ISet<TId>>();
+		var descendantMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		var store = new Queue<(Node<TItem> node, ISet<TId>[] ancestors)>();
+		store.Enqueue(roots.Select(r => (r, Array.Empty<ISet<TId>>())));
+
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
+			var rootId = identify(root.Item);
+			descendantMap.Add(rootId);
+		}
 
+		while (store.Count > 0)
+		{
+			var (node, ancestors) = store.Dequeue();
 			var nodeId = identify(node.Item);
 
-			foreach (var ancestor in node.GetAncestors())
-				map.LazySet(identify(ancestor.Item)).Add(nodeId);
-		}).EnumerateAll();
+			foreach (var ancestor in ancestors)
+				ancestor.Add(nodeId);
 
-		return map;
+			if (node.IsInternal)
+			{
+				var nodeDescendants = descendantMap.LazySet(nodeId);
+				ISet<TId>[] childAncestors = [.. ancestors, nodeDescendants];
+				store.Enqueue(node.Children.Select(child => (child, childAncestors)));
+			}
+		}
+
+		return descendantMap;
 	}
 
 	/// <summary>
@@ -134,7 +162,7 @@ public static class NodeMapExtensions
 	/// <param name="root">The root to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-ancestor map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToAncestorMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToAncestorMap<TItem, TId>(this Node<TItem>? root, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
@@ -149,21 +177,97 @@ public static class NodeMapExtensions
 	/// <param name="roots">The roots to use for traversal.</param>
 	/// <param name="identify">Means of getting an ID for an item.</param>
 	/// <returns>A parent-to-ancestor map of ids.</returns>
-	public static IDictionary<TId, ISet<TId>> ToAncestorMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
+	public static MultiMap<TId> ToAncestorMap<TItem, TId>(this IEnumerable<Node<TItem>> roots, Func<TItem, TId> identify)
 		where TItem : notnull
 		where TId : notnull
 	{
-		var map = new Dictionary<TId, ISet<TId>>();
+		var ancestorMap = new MultiMap<TId>();
 
-		Traverse.Graph(roots, (node, signal) =>
+		var store = new Queue<(Node<TItem> node, TId[]? ancestors)>();
+		store.Enqueue(roots.Select(r => (r, null as TId[])));
+
+		foreach (var root in roots)
 		{
-			signal.Next(node.Children);
+			if (root.IsLeaf)
+				ancestorMap.Add(identify(root.Item));
+		}
+
+		while (store.Count > 0)
+		{
+			var (node, ancestors) = store.Dequeue();
+			var nodeId = identify(node.Item);
+
+			if (ancestors is not null)
+				ancestorMap.Add(nodeId, ancestors);
+
+			if (node.IsInternal)
+			{
+				TId[] childAncestors = ancestors is not null ? [nodeId, .. ancestors] : [nodeId];
+				store!.Enqueue(node.Children.Select(child => (child, childAncestors)));
+			}
+		}
+
+		return ancestorMap;
+	}
+
+
+	/// <summary>
+	/// Create a sequence of relations by traversing the graph of the <paramref name="roots"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item.</typeparam>
+	/// <typeparam name="TId">The type of IDs.</typeparam>
+	/// <param name="roots">The roots to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
+		this IEnumerable<Node<TItem>> roots,
+		Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		var relations = new List<Relation<TId>>();
+
+		Flatten.Graph(roots, node =>
+		{
+			var isRoot = node.IsRoot;
+			var isLeaf = node.IsLeaf;
+			if (isLeaf && isRoot)
+			{
+				var rootId = identify(node.Item);
+				relations.Add(new(rootId));
+
+				return [];
+			}
+
+			if (isLeaf)
+				return [];
 
 			var nodeId = identify(node.Item);
-			foreach (var ancestor in node.GetAncestors())
-				map.LazySet(nodeId).Add(identify(ancestor.Item));
-		}).EnumerateAll();
+			var children = node.Children;
+			var childIds = children.ToIds(identify);
+			foreach (var childId in childIds)
+				relations.Add(new(nodeId, childId));
 
-		return map;
+			return children.Where(child => child.IsInternal);
+		});
+
+		return relations;
+	}
+
+	/// <summary>
+	/// Create a sequence of relations by traversing the graph of the <paramref name="root"/>.
+	/// </summary>
+	/// <typeparam name="TItem">The type of item.</typeparam>
+	/// <typeparam name="TId">The type of IDs.</typeparam>
+	/// <param name="root">The root to use for traversal.</param>
+	/// <param name="identify">Means of getting an ID for an item.</param>
+	/// <returns>An enumerable of <see cref="Relation{TId}"/>s.</returns>
+	public static IEnumerable<Relation<TId>> ToRelations<TItem, TId>(
+		this Node<TItem> root,
+		Func<TItem, TId> identify)
+		where TItem : notnull
+		where TId : notnull
+	{
+		return ToRelations([root], identify);
 	}
 }
