@@ -23,7 +23,7 @@ public class FlattenGraphTests
 		var nodes = Flatten.Graph(IntRoot, node => node.Children, TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -34,7 +34,7 @@ public class FlattenGraphTests
 		var nodes = Flatten.Graph(IntRoot, node => node.Children, TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -48,7 +48,7 @@ public class FlattenGraphTests
 			TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -62,7 +62,7 @@ public class FlattenGraphTests
 			TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -82,7 +82,7 @@ public class FlattenGraphTests
 		});
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -104,7 +104,7 @@ public class FlattenGraphTests
 				signal.Skip();
 		});
 
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Single(actual);
 		Assert.Equal(expected, actual[0]);
@@ -125,7 +125,7 @@ public class FlattenGraphTests
 		var nodes = Flatten.Graph(first, node => node.Children, new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -145,7 +145,7 @@ public class FlattenGraphTests
 		var nodes = Flatten.Graph(first, (node, signal) => signal.Next(node.Children), new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -178,5 +178,65 @@ public class FlattenGraphTests
 
 		// Since the items are set up using a nomenclature such that its depth is the item.Length-1, assert it!
 		Assert.All(traversed, t => Assert.Equal(t.item.Length - 1, t.depth));
+	}
+
+	[Fact]
+	public void FlattenSignal_IncludeSelfFalse_BreadthFirst_YieldsOnlyDescendants()
+	{
+		var nodes = Flatten.Graph(IntRoot, (node, signal) => signal.Next(node.Children), Descend.BreadthFirstWithoutSelf);
+
+		var expected = new[] { 1, 2, 3, 11, 12, 31, 32, 121 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void FlattenSignal_IncludeSelfFalse_DepthFirst_YieldsOnlyDescendantsRespectingOrder()
+	{
+		var nodes = Flatten.Graph(IntRoot, (node, signal) => signal.Next(node.Children), Descend.DepthFirstWithoutSelf);
+
+		var expected = new[] { 3, 32, 31, 2, 1, 12, 121, 11 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void FlattenSignal_IncludeSelfFalse_BreadthFirst_Reverse_YieldsOnlyDescendantsInReverseSiblingOrder()
+	{
+		var nodes = Flatten.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			new()
+			{
+				IncludeSelf = false,
+				Type = TraversalType.BreadthFirst,
+				Siblings = SiblingOrder.Reverse
+			});
+
+		var expected = new[] { 3, 2, 1, 32, 31, 12, 11, 121 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void FlattenSignal_IncludeSelfFalse_DepthFirst_Reverse_YieldsOnlyDescendantsInReverseSiblingOrder()
+	{
+		var nodes = Flatten.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			new()
+			{
+				IncludeSelf = false,
+				Type = TraversalType.DepthFirst,
+				Siblings = SiblingOrder.Reverse,
+			});
+
+		var expected = new[] { 1, 11, 12, 121, 2, 3, 31, 32 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
 	}
 }

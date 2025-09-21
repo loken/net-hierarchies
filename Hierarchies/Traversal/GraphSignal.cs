@@ -7,7 +7,66 @@ namespace Loken.Hierarchies.Traversal;
 /// Use this to signal to the traversal what's <see cref="Next"/>,
 /// what to <see cref="Skip"/> and whether to <see cref="Stop"/>.
 /// </summary>
-public sealed class GraphSignal<TNode>
+public interface IGraphSignal<TNode>
+{
+	/// <summary>
+	/// Depth of the current root relative to the traversal roots.
+	/// </summary>
+	int Depth { get; }
+
+	/// <summary>
+	/// The number of elements returned so far.
+	/// </summary>
+	int Count { get; }
+
+	/// <summary>
+	/// Call this when you want to signal that the current root should be skipped,
+	/// meaning it will not be part of the output.
+	/// <para>Traversal will still continue to whatever roots are passed to
+	/// <see cref="Next"/> irrespective of calling <see cref="Skip"/>.</para>
+	/// <para>Mutually exclusive with <see cref="Yield"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	void Skip();
+
+	/// <summary>
+	/// Explicitly mark that the current node should be yielded (included in the output).
+	/// <para>By default, nodes are yielded unless <see cref="Skip"/> is called; use this for clarity in complex callbacks.</para>
+	/// <para>Mutually exclusive with <see cref="Skip"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	void Yield();
+
+	/// <summary>
+	/// Call this when traversal should continue to a sub sequence of child roots.
+	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	void Next(params TNode[] nodes);
+
+	/// <summary>
+	/// Call this when traversal should continue to a sub sequence of child roots.
+	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	void Next(IEnumerable<TNode> nodes);
+
+	/// <summary>
+	/// Prune the current branch by not traversing any children for this node.
+	/// <para>Functionally equivalent to not calling <see cref="Next(TNode[])"/> or <see cref="Next(IEnumerable{TNode})"/>.</para>
+	/// <para>Mutually exclusive with <see cref="Next(TNode[])"/> and <see cref="Next(IEnumerable{TNode})"/> for the same node; attempting to call both will throw.</para>
+	/// </summary>
+	void Prune();
+
+	/// <summary>
+	/// Call this when all traversal should stop immediately.
+	/// <para>Ending traversal of a particular branch is controlled by not calling
+	/// <see cref="Next"/> for that branch.</para>
+	/// </summary>
+	void Stop();
+}
+
+/// <summary>
+/// Use this to signal to the traversal what's <see cref="Next"/>,
+/// what to <see cref="Skip"/> and whether to <see cref="Stop"/>.
+/// </summary>
+public sealed class GraphSignal<TNode> : IGraphSignal<TNode>
 {
 	/// <summary>
 	/// Visited set for detecting cycles.
@@ -26,6 +85,11 @@ public sealed class GraphSignal<TNode>
 	/// Future nodes to process. Will be a stack or queue depending on the <see cref="TraversalType"/>.
 	/// </summary>
 	private readonly ILinear<TNode> Nodes;
+
+	/// <summary>
+	/// Whether to attach sibling collections in reverse order.
+	/// </summary>
+	private readonly bool Reverse;
 
 	/// <summary>
 	/// For depth tracking with <see cref="TraversalType.DepthFirst"/>.
@@ -68,7 +132,7 @@ public sealed class GraphSignal<TNode>
 	/// </summary>
 	private bool NextSet;
 
-	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst)
+	internal GraphSignal(IEnumerable<TNode> roots, bool detectCycles = false, TraversalType type = TraversalType.BreadthFirst, bool reverse = false)
 	{
 		if (detectCycles)
 		{
@@ -83,12 +147,14 @@ public sealed class GraphSignal<TNode>
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
+		Reverse = reverse;
+
 		if (roots is IList<TNode> rootList)
-			Nodes.AttachMany(rootList);
+			Nodes.AttachMany(rootList, Reverse);
 		else if (roots is ICollection<TNode> rootCollection)
-			Nodes.AttachMany(rootCollection);
+			Nodes.AttachMany(rootCollection, Reverse);
 		else
-			Nodes.AttachMany(roots);
+			Nodes.AttachMany(roots, Reverse);
 
 		DepthCount = Nodes.Count;
 
@@ -167,23 +233,10 @@ public sealed class GraphSignal<TNode>
 			Count++;
 	}
 
-	/// <summary>
-	/// Depth of the current root relative to the traversal roots.
-	/// </summary>
 	public int Depth { get; private set; } = 0;
 
-	/// <summary>
-	/// The number of elements returned so far.
-	/// </summary>
 	public int Count { get; private set; } = 0;
 
-	/// <summary>
-	/// Call this when you want to signal that the current root should be skipped,
-	/// meaning it will not be part of the output.
-	/// <para>Traversal will still continue to whatever roots are passed to
-	/// <see cref="Next"/> irrespective of calling <see cref="Skip"/>.</para>
-	/// <para>Mutually exclusive with <see cref="Yield"/> for the same node; attempting to call both will throw.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Skip()
 	{
@@ -193,11 +246,6 @@ public sealed class GraphSignal<TNode>
 		Skipped = true;
 	}
 
-	/// <summary>
-	/// Explicitly mark that the current node should be yielded (included in the output).
-	/// <para>By default, nodes are yielded unless <see cref="Skip"/> is called; use this for clarity in complex callbacks.</para>
-	/// <para>Mutually exclusive with <see cref="Skip"/> for the same node; attempting to call both will throw.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Yield()
 	{
@@ -208,10 +256,6 @@ public sealed class GraphSignal<TNode>
 		Yielded = true;
 	}
 
-	/// <summary>
-	/// Call this when traversal should continue to a sub sequence of child roots.
-	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(params TNode[] nodes)
 	{
@@ -219,17 +263,13 @@ public sealed class GraphSignal<TNode>
 			throw new InvalidOperationException($"Cannot call {nameof(Next)}() after {nameof(Prune)}(). {nameof(Prune)} and {nameof(Next)} are mutually exclusive for the same node.");
 
 		// Fast-path for arrays: call the most specific Attach overload available.
-		Nodes.AttachMany(nodes);
+		Nodes.AttachMany(nodes, Reverse);
 		if (IsDepthFirst && nodes.Length > 0)
 			BranchPush(nodes.Length);
 
 		NextSet = true;
 	}
 
-	/// <summary>
-	/// Call this when traversal should continue to a sub sequence of child roots.
-	/// <para>Mutually exclusive with <see cref="Prune"/> for the same node; attempting to call both will throw.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Next(IEnumerable<TNode> nodes)
 	{
@@ -240,11 +280,11 @@ public sealed class GraphSignal<TNode>
 
 		// Prefer list/collection overloads when available to avoid enumerator overhead.
 		if (nodes is IList<TNode> rootList)
-			Nodes.AttachMany(rootList);
+			Nodes.AttachMany(rootList, Reverse);
 		else if (nodes is ICollection<TNode> rootCollection)
-			Nodes.AttachMany(rootCollection);
+			Nodes.AttachMany(rootCollection, Reverse);
 		else
-			Nodes.AttachMany(nodes);
+			Nodes.AttachMany(nodes, Reverse);
 
 		var added = Nodes.Count - count;
 
@@ -254,11 +294,6 @@ public sealed class GraphSignal<TNode>
 		NextSet = true;
 	}
 
-	/// <summary>
-	/// Prune the current branch by not traversing any children for this node.
-	/// <para>Functionally equivalent to not calling <see cref="Next(TNode[])"/> or <see cref="Next(IEnumerable{TNode})"/>.</para>
-	/// <para>Mutually exclusive with <see cref="Next(TNode[])"/> and <see cref="Next(IEnumerable{TNode})"/> for the same node; attempting to call both will throw.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Prune()
 	{
@@ -269,11 +304,6 @@ public sealed class GraphSignal<TNode>
 		Pruned = true;
 	}
 
-	/// <summary>
-	/// Call this when all traversal should stop immediately.
-	/// <para>Ending traversal of a particular branch is controlled by not calling
-	/// <see cref="Next"/> for that branch.</para>
-	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Stop() => Nodes.Clear();
 
@@ -299,5 +329,43 @@ public sealed class GraphSignal<TNode>
 
 		arr[nextTop] = count;
 		BranchTop = nextTop;
+	}
+}
+
+/// <summary>
+/// Seed helper used when IncludeSelf == false to collect the initial frontier (children of the excluded roots)
+/// before constructing a real <see cref="GraphSignal{TNode}"/>.
+/// </summary>
+internal sealed class GraphSignalSeeding<TNode> : IGraphSignal<TNode>
+{
+	private readonly List<TNode> _seeds = new();
+	private bool _stopped;
+
+	public IReadOnlyList<TNode> Seeds => _seeds;
+
+	public int Depth => 0; // Children seeded become depth 0 of real traversal.
+	public int Count => 0; // No yielded nodes during seeding.
+
+	public void Skip() { /* Excluding roots already; no-op */ }
+	public void Yield() { /* No-op */ }
+	public void Prune() { /* Equivalent to not calling Next */ }
+	public void Stop() => _stopped = true;
+
+	public void Next(params TNode[] nodes)
+	{
+		if (_stopped || nodes.Length == 0)
+			return;
+		_seeds.AddRange(nodes);
+	}
+
+	public void Next(IEnumerable<TNode> nodes)
+	{
+		if (_stopped)
+			return;
+		if (nodes is ICollection<TNode> coll)
+			_seeds.AddRange(coll);
+		else
+			foreach (var n in nodes)
+				_seeds.Add(n);
 	}
 }

@@ -32,7 +32,7 @@ public class SearchGraphTests
 	public void SearchManyNext_BreadthFirst_FindsAllLeavesInOrder()
 	{
 		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.BreadthFirst);
-		var actual = matches.ToItems().ToArray();
+		var actual = matches.ToItems();
 
 		var expected = new[] { 2, 11, 31, 32, 121 };
 		Assert.Equal(expected, actual);
@@ -42,7 +42,7 @@ public class SearchGraphTests
 	public void SearchManyNext_DepthFirst_FindsAllLeavesInOrder()
 	{
 		var matches = Search.GraphMany(IntRoot, n => n.Children, n => n.IsLeaf, TraversalType.DepthFirst);
-		var actual = matches.ToItems().ToArray();
+		var actual = matches.ToItems();
 
 		var expected = new[] { 32, 31, 2, 121, 11 };
 		Assert.Equal(expected, actual);
@@ -60,7 +60,7 @@ public class SearchGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var match = Search.Graph(first, n => n.Children, n => n.Item == 4, new Descend { DetectCycles = true });
+		var match = Search.Graph(first, n => n.Children, n => n.Item == 4, new(DetectCycles: true));
 
 		Assert.NotNull(match);
 		Assert.Equal(4, match!.Item);
@@ -78,10 +78,59 @@ public class SearchGraphTests
 		// Make it circular!
 		last.Attach(first);
 
-		var matches = Search.GraphMany(first, n => n.Children, _ => true, new Descend { DetectCycles = true });
-		var actual = matches.ToItems().ToArray();
+		var matches = Search.GraphMany(first, n => n.Children, _ => true, new(DetectCycles: true));
+		var actual = matches.ToItems();
 
 		var expected = new[] { 1, 2, 3, 4 };
 		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void SearchNext_IncludeSelfFalse_SkipsRootMatch()
+	{
+		var match = Search.Graph(IntRoot, n => n.Children, n => n.Item == 0, Descend.WithoutSelf);
+
+		Assert.Null(match);
+	}
+
+	[Fact]
+	public void SearchNext_IncludeSelfFalse_FindsDescendant()
+	{
+		var match = Search.Graph(IntRoot, n => n.Children, n => n.Item == 2, Descend.WithoutSelf);
+
+		Assert.NotNull(match);
+		Assert.Equal(2, match!.Item);
+	}
+
+	[Fact]
+	public void SearchManyNext_IncludeSelfFalse_ExcludesRoot()
+	{
+		var matches = Search.GraphMany(IntRoot, n => n.Children, _ => true, Descend.WithoutSelf);
+		var actual = matches.ToItems();
+
+		var expected = new[] { 1, 2, 3, 11, 12, 31, 32, 121 };
+		Assert.Equal(expected, actual);
+		Assert.DoesNotContain(0, actual);
+	}
+
+	[Fact]
+	public void SearchManyNext_Reverse_SiblingOrder()
+	{
+		var matches = Search.GraphMany(IntRoot, n => n.Children, _ => true, new(Siblings: SiblingOrder.Reverse));
+		var actual = matches.ToItems();
+
+		var expected = new[] { 0, 3, 2, 1, 32, 31, 12, 11, 121 };
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void SearchManyNext_Reverse_IncludeSelfFalse_SiblingOrder()
+	{
+		var matches = Search.GraphMany(IntRoot, n => n.Children, _ => true, new(IncludeSelf: false, Siblings: SiblingOrder.Reverse));
+		var actual = matches.ToItems();
+
+		var expected = new[] { 3, 2, 1, 32, 31, 12, 11, 121 };
+		Assert.Equal(expected, actual);
+		Assert.DoesNotContain(0, actual);
 	}
 }

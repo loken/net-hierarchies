@@ -6,7 +6,7 @@
 /// <typeparam name="TNode">The type of node.</typeparam>
 /// <param name="node">The source node.</param>
 /// <param name="signal">Use this to signal how to traverse.</param>
-public delegate void TraverseNode<TNode>(TNode node, GraphSignal<TNode> signal);
+public delegate void TraverseNode<TNode>(TNode node, IGraphSignal<TNode> signal);
 
 /// <summary>
 /// Provides traversal for sequences, trees and graphs.
@@ -26,7 +26,7 @@ public static partial class Traverse
 		if (root is null)
 			yield break;
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
-		// Single-root path identical to legacy but driven by opts.DetectCycles / opts.Type.
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -48,16 +48,7 @@ public static partial class Traverse
 			{
 				yield return node;
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 	}
@@ -73,6 +64,7 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -86,12 +78,7 @@ public static partial class Traverse
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is IList<TNode> rootList)
-			store.AttachMany(rootList);
-		else if (roots is ICollection<TNode> rootCollection)
-			store.AttachMany(rootCollection);
-		else
-			store.AttachMany(roots);
+		store.AttachManySpecific(roots, reverse);
 
 		while (store.TryDetach(out var node))
 		{
@@ -99,16 +86,7 @@ public static partial class Traverse
 			{
 				yield return node;
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 	}
@@ -127,7 +105,17 @@ public static partial class Traverse
 			yield break;
 
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
-		var signal = new GraphSignal<TNode>(root.ToEnumerable(), opts.DetectCycles, opts.Type);
+		GraphSignal<TNode> signal;
+		if (opts.IncludeSelf == false)
+		{
+			var seeding = new GraphSignalSeeding<TNode>();
+			traverse(root, seeding);
+			signal = new GraphSignal<TNode>(seeding.Seeds, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+		else
+		{
+			signal = new GraphSignal<TNode>(root.ToEnumerable(), opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
 
 		while (signal.TryGetNext(out TNode? current))
 		{
@@ -151,7 +139,19 @@ public static partial class Traverse
 	public static IEnumerable<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
-		var signal = new GraphSignal<TNode>(roots, opts.DetectCycles, opts.Type);
+		GraphSignal<TNode> signal;
+		if (opts.IncludeSelf == false)
+		{
+			var seeding = new GraphSignalSeeding<TNode>();
+			var rootList = roots as ICollection<TNode> ?? roots.ToList();
+			foreach (var r in rootList)
+				traverse(r, seeding);
+			signal = new GraphSignal<TNode>(seeding.Seeds, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+		else
+		{
+			signal = new GraphSignal<TNode>(roots, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
 
 		while (signal.TryGetNext(out TNode? current))
 		{

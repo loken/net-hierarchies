@@ -78,7 +78,8 @@ public static class HierarchySearchExtensions
 			// Descendants facet
 			if (includeDescendants)
 			{
-				foreach (var node in hierarchy.GetDescendants(id, includeMatches ? Descend.WithSelf : (Descend?)null))
+				var descendOpts = includeMatches ? Descend.WithSelf : Descend.WithoutSelf;
+				foreach (var node in hierarchy.GetDescendants(id, descendOpts))
 				{
 					var nId = hierarchy.Identify(node.Item);
 					if (!items.ContainsKey(nId))

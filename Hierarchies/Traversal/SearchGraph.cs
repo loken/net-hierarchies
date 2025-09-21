@@ -19,6 +19,7 @@ public static partial class Search
 		if (root is null)
 			return default;
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -32,7 +33,8 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		store.Attach(root);
+		store.AttachNext(root, next, opts.IncludeSelf == true, reverse);
+
 		while (store.TryDetach(out var node))
 		{
 			if (visited is null || visited.Add(node))
@@ -40,16 +42,7 @@ public static partial class Search
 				if (predicate(node))
 					return node;
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 
@@ -68,6 +61,7 @@ public static partial class Search
 	public static TNode? Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -81,12 +75,7 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is IList<TNode> rootList)
-			store.AttachMany(rootList);
-		else if (roots is ICollection<TNode> rootCollection)
-			store.AttachMany(rootCollection);
-		else
-			store.AttachMany(roots);
+		store.AttachNext(roots, next, opts.IncludeSelf == true, reverse);
 
 		while (store.TryDetach(out var node))
 		{
@@ -95,16 +84,7 @@ public static partial class Search
 				if (predicate(node))
 					return node;
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 
@@ -125,6 +105,7 @@ public static partial class Search
 		if (root is null)
 			return [];
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -138,7 +119,7 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		store.Attach(root);
+		store.AttachNext(root, next, opts.IncludeSelf == true, reverse);
 
 		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
@@ -148,16 +129,7 @@ public static partial class Search
 				if (predicate(node))
 					result.Add(node);
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 
@@ -176,6 +148,7 @@ public static partial class Search
 	public static IList<TNode> GraphMany<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Func<TNode, bool> predicate, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 		if (opts.DetectCycles)
 		{
@@ -188,12 +161,7 @@ public static partial class Search
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is IList<TNode> rootList)
-			store.AttachMany(rootList);
-		else if (roots is ICollection<TNode> rootCollection)
-			store.AttachMany(rootCollection);
-		else
-			store.AttachMany(roots);
+		store.AttachNext(roots, next, opts.IncludeSelf == true, reverse);
 
 		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
@@ -203,16 +171,7 @@ public static partial class Search
 				if (predicate(node))
 					result.Add(node);
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 

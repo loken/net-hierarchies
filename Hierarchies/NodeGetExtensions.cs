@@ -18,10 +18,8 @@ public static class NodeGetExtensions
 	{
 		if (root is null)
 			return [];
-		var opts = Descend.Normalize(descend, includeSelfDefault: false); // descendants default exclude self
-		return opts.IncludeSelf == true
-			? Flatten.Graph(root, n => n.Children, opts)
-			: Flatten.Graph(root.Children, n => n.Children, opts);
+		var opts = Descend.Normalize(descend, includeSelfDefault: false);
+		return Flatten.Graph(root, n => n.Children, opts);
 	}
 
 	/// <summary>
@@ -35,9 +33,7 @@ public static class NodeGetExtensions
 		where TItem : notnull
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: false);
-		return opts.IncludeSelf == true
-			? Flatten.Graph(roots, n => n.Children, opts)
-			: Flatten.Graph(roots.SelectMany(r => r.Children), n => n.Children, opts);
+		return Flatten.Graph(roots, n => n.Children, opts);
 	}
 	#endregion
 

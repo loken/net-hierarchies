@@ -21,9 +21,7 @@ public static class NodeFindExtensions
 		if (root is null)
 			return null;
 		var opts = Descend.Normalize(descend, includeSelfDefault: false);
-		return opts.IncludeSelf == true
-			? Search.Graph(root, n => n.Children, predicate, opts)
-			: Search.Graph(root.Children, n => n.Children, predicate, opts);
+		return Search.Graph(root, n => n.Children, predicate, opts);
 	}
 
 	/// <summary>
@@ -39,9 +37,7 @@ public static class NodeFindExtensions
 		where TItem : notnull
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: false);
-		return opts.IncludeSelf == true
-			? Search.Graph(roots, n => n.Children, predicate, opts)
-			: Search.Graph(roots.SelectMany(r => r.Children), n => n.Children, predicate, opts);
+		return Search.Graph(roots, n => n.Children, predicate, opts);
 	}
 
 	/// <summary>
@@ -59,9 +55,7 @@ public static class NodeFindExtensions
 		if (root is null)
 			return [];
 		var opts = Descend.Normalize(descend, includeSelfDefault: false);
-		return opts.IncludeSelf == true
-			? Search.GraphMany(root, n => n.Children, predicate, opts)
-			: Search.GraphMany(root.Children, n => n.Children, predicate, opts);
+		return Search.GraphMany(root, n => n.Children, predicate, opts);
 	}
 
 	/// <summary>
@@ -77,9 +71,7 @@ public static class NodeFindExtensions
 		where TItem : notnull
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: false);
-		return opts.IncludeSelf == true
-			? Search.GraphMany(roots, n => n.Children, predicate, opts)
-			: Search.GraphMany(roots.SelectMany(r => r.Children), n => n.Children, predicate, opts);
+		return Search.GraphMany(roots, n => n.Children, predicate, opts);
 	}
 	#endregion
 

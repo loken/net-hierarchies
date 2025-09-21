@@ -18,6 +18,7 @@ public static partial class Flatten
 		if (root is null)
 			return [];
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -31,7 +32,8 @@ public static partial class Flatten
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		store.Attach(root);
+		store.AttachNext(root, next, opts.IncludeSelf == true, reverse);
+
 		var result = new List<TNode>();
 
 		while (store.TryDetach(out var node))
@@ -40,16 +42,7 @@ public static partial class Flatten
 			{
 				result.Add(node);
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 
@@ -67,6 +60,7 @@ public static partial class Flatten
 	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>?> next, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
+		var reverse = opts.Siblings == SiblingOrder.Reverse;
 		HashSet<TNode>? visited = null;
 
 		if (opts.DetectCycles)
@@ -80,12 +74,7 @@ public static partial class Flatten
 			? new LinearStack<TNode>()
 			: new LinearQueue<TNode>();
 
-		if (roots is IList<TNode> rootList)
-			store.AttachMany(rootList);
-		else if (roots is ICollection<TNode> rootCollection)
-			store.AttachMany(rootCollection);
-		else
-			store.AttachMany(roots);
+		store.AttachNext(roots, next, opts.IncludeSelf == true, reverse);
 
 		var result = new List<TNode>();
 		while (store.TryDetach(out var node))
@@ -94,16 +83,7 @@ public static partial class Flatten
 			{
 				result.Add(node);
 
-				var children = next(node);
-				if (children is not null)
-				{
-					if (children is IList<TNode> childList)
-						store.AttachMany(childList);
-					else if (children is ICollection<TNode> childCollection)
-						store.AttachMany(childCollection);
-					else
-						store.AttachMany(children);
-				}
+				store.AttachManySpecific(next(node), reverse);
 			}
 		}
 
@@ -124,7 +104,19 @@ public static partial class Flatten
 			return [];
 
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
-		var signal = new GraphSignal<TNode>(root.ToEnumerable(), opts.DetectCycles, opts.Type);
+		GraphSignal<TNode> signal;
+		if (opts.IncludeSelf == false)
+		{
+			var seeding = new GraphSignalSeeding<TNode>();
+			traverse(root, seeding);
+
+			signal = new GraphSignal<TNode>(seeding.Seeds, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+		else
+		{
+			signal = new GraphSignal<TNode>(root.ToEnumerable(), opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+
 		var result = new List<TNode>();
 
 		while (signal.TryGetNext(out TNode? current))
@@ -148,7 +140,20 @@ public static partial class Flatten
 	public static IList<TNode> Graph<TNode>(IEnumerable<TNode> roots, TraverseNode<TNode> traverse, Descend? descend = null)
 	{
 		var opts = Descend.Normalize(descend, includeSelfDefault: true);
-		var signal = new GraphSignal<TNode>(roots, opts.DetectCycles, opts.Type);
+		GraphSignal<TNode> signal;
+		if (opts.IncludeSelf == false)
+		{
+			var seeding = new GraphSignalSeeding<TNode>();
+			foreach (var root in roots)
+				traverse(root, seeding);
+
+			signal = new GraphSignal<TNode>(seeding.Seeds, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+		else
+		{
+			signal = new GraphSignal<TNode>(roots, opts.DetectCycles, opts.Type, opts.Siblings == SiblingOrder.Reverse);
+		}
+
 		var result = new List<TNode>();
 
 		while (signal.TryGetNext(out TNode? current))

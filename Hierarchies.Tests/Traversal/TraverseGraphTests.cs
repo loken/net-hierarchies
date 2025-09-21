@@ -23,7 +23,7 @@ public class TraverseGraphTests
 		var nodes = Traverse.Graph(IntRoot, node => node.Children, TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -34,7 +34,7 @@ public class TraverseGraphTests
 		var nodes = Traverse.Graph(IntRoot, node => node.Children, TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -48,7 +48,7 @@ public class TraverseGraphTests
 			TraversalType.BreadthFirst);
 
 		var expected = new[] { 0, 1, 2, 3, 11, 12, 31, 32, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -62,7 +62,7 @@ public class TraverseGraphTests
 			TraversalType.DepthFirst);
 
 		var expected = new[] { 0, 3, 32, 31, 2, 1, 12, 121, 11 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -82,7 +82,7 @@ public class TraverseGraphTests
 		});
 
 		var expected = new[] { 0, 1, 2, 3, 121 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -124,7 +124,7 @@ public class TraverseGraphTests
 		var nodes = Traverse.Graph(first, node => node.Children, new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -144,7 +144,7 @@ public class TraverseGraphTests
 		var nodes = Traverse.Graph(first, (node, signal) => signal.Next(node.Children), new Descend { DetectCycles = true });
 
 		var expected = new[] { 1, 2, 3, 4 };
-		var actual = nodes.ToItems().ToArray();
+		var actual = nodes.ToItems();
 
 		Assert.Equal(expected, actual);
 	}
@@ -237,5 +237,66 @@ public class TraverseGraphTests
 		});
 
 		Assert.Contains("Prune and Next are mutually exclusive", ex.Message);
+	}
+
+	[Fact]
+	public void TraverseSignal_IncludeSelfFalse_BreadthFirst_YieldsOnlyDescendants()
+	{
+		var nodes = Traverse.Graph(IntRoot, (node, signal) => signal.Next(node.Children), Descend.BreadthFirstWithoutSelf);
+
+		var expected = new[] { 1, 2, 3, 11, 12, 31, 32, 121 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_IncludeSelfFalse_DepthFirst_YieldsOnlyDescendantsRespectingOrder()
+	{
+		var nodes = Traverse.Graph(IntRoot, (node, signal) => signal.Next(node.Children), Descend.DepthFirstWithoutSelf);
+
+		var expected = new[] { 3, 32, 31, 2, 1, 12, 121, 11 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_IncludeSelfFalse_BreadthFirst_Reverse_YieldsOnlyDescendantsInReverseSiblingOrder()
+	{
+		var nodes = Traverse.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			new()
+			{
+				IncludeSelf = false,
+				Type = TraversalType.BreadthFirst,
+				Siblings = SiblingOrder.Reverse,
+			});
+
+		var expected = new[] { 3, 2, 1, 32, 31, 12, 11, 121 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void TraverseSignal_IncludeSelfFalse_DepthFirst_Reverse_YieldsOnlyDescendantsInReverseSiblingOrder()
+	{
+		var nodes = Traverse.Graph(
+			IntRoot,
+			(node, signal) => signal.Next(node.Children),
+			new()
+			{
+				IncludeSelf = false,
+				Type = TraversalType.DepthFirst,
+				Siblings = SiblingOrder.Reverse,
+			});
+
+		// Based on semantics of reversed depth-first: visit first child subtree (1) before siblings.
+		var expected = new[] { 1, 11, 12, 121, 2, 3, 31, 32 };
+		var actual = nodes.ToItems();
+
+		Assert.Equal(expected, actual);
 	}
 }
